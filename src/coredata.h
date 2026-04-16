@@ -38,9 +38,13 @@
 
 #include <X11/Xlib.h>
 
+#include <stdbool.h>
+
 typedef struct {
 	Display* Display;
 	Window Root;
+
+	bool debug;
 
 	XEvent events;
 

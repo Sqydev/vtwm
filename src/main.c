@@ -37,6 +37,7 @@
 
 #include <X11/Xlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <stdio.h>
@@ -79,7 +80,18 @@ void Spawn(int argvCount, ...) {
 }
 
 // NOTE: I'm learning so I'll comment the shit out of this
-int main() {
+int main(int argc, char** argv) {
+	DATA.debug = false;
+	if(argc > 1 && strcmp(argv[1], "--debug") == 0) {
+		DATA.debug = true;
+	}
+
+	if(DATA.debug) {
+		setenv("DISPLAY", ":1", 1);
+		setenv("WAYLAND_DISPLAY", "", 1);
+		setenv("WINIT_UNIX_BACKEND", "x11", 1);
+	}
+
 	// NOTE: Get the connention with X server
 	DATA.Display = XOpenDisplay(NULL);
 
@@ -131,7 +143,7 @@ int main() {
 
 				// NOTE: SHOW IT
 				XMapWindow(DATA.Display, DATA.events.xmaprequest.window);
-				
+
 				break;
 			}
 

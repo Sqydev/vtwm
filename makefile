@@ -66,7 +66,7 @@ OBJ := $(patsubst $(SRC_DIR)/%.c,$(OBJ_SUBDIR)/%.o,$(SRC))
 DEP := $(OBJ:.o=.d)
 
 .PHONY: all release install build local-build san-build check-build \
-        test-build wm run-xsession run-xephyr debug-xephyr restart-xephyr kill-xephyr \
+        test-build wm run-xsession run-xephyr kill-xephyr \
         docker-bleeding docker-normal docker-stable \
         docker-bleeding-musl docker-normal-musl docker-stable-musl \
         docker-static-musl clean clean-all
@@ -99,10 +99,6 @@ test-build: san-build check-build
 wm: run-xsession
 
 run-xsession: build
-	@echo "Starting clean X11 session..."
-	@echo "Make sure you are NOT inside another WM (Hyprland, KDE, etc.)"
-	@echo "Switch to TTY and run this."
-	@sleep 1
 	@exec startx ./xinit-wm.sh --
 
 run-xephyr: build
@@ -110,17 +106,7 @@ run-xephyr: build
 	@Xephyr $(XEPHYR_DISPLAY) -screen $(XEPHYR_RES) &
 	@sleep 1
 	@echo "Launching WM..."
-	@DISPLAY=$(XEPHYR_DISPLAY) $(OUT)
-
-restart-xephyr:
-	@echo "Restarting WM..."
-	@pkill -f $(TARGET) || true
-	@DISPLAY=$(XEPHYR_DISPLAY) $(OUT)
-
-debug-xephyr: build
-	@Xephyr $(XEPHYR_DISPLAY) -screen $(XEPHYR_RES) &
-	@sleep 1
-	@DISPLAY=$(XEPHYR_DISPLAY) gdb $(OUT)
+	@DISPLAY=$(XEPHYR_DISPLAY) $(OUT) --debug
 
 kill-xephyr:
 	@pkill Xephyr || true
