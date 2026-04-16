@@ -88,8 +88,8 @@ int main(int argc, char** argv) {
 
 	if(DATA.debug) {
 		setenv("DISPLAY", ":1", 1);
-		setenv("WAYLAND_DISPLAY", "", 1);
-		setenv("WINIT_UNIX_BACKEND", "x11", 1);
+		unsetenv("WAYLAND_DISPLAY");
+    	unsetenv("WAYLAND_SOCKET");
 	}
 
 	// NOTE: Get the connention with X server
@@ -143,6 +143,13 @@ int main(int argc, char** argv) {
 
 				// NOTE: SHOW IT
 				XMapWindow(DATA.Display, DATA.events.xmaprequest.window);
+
+				XSetInputFocus( // NOTE: Set focus
+				    DATA.Display,
+				    w, // NOTE: Whith window
+				    RevertToPointerRoot, // NOTE: 
+				    CurrentTime // NOTE: 
+				);
 
 				break;
 			}
