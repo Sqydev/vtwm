@@ -66,7 +66,7 @@ OBJ := $(patsubst $(SRC_DIR)/%.c,$(OBJ_SUBDIR)/%.o,$(SRC))
 DEP := $(OBJ:.o=.d)
 
 .PHONY: all release install build local-build san-build check-build \
-        test-build run-xephyr debug-xephyr restart-xephyr kill-xephyr \
+        test-build wm run-xsession run-xephyr debug-xephyr restart-xephyr kill-xephyr \
         docker-bleeding docker-normal docker-stable \
         docker-bleeding-musl docker-normal-musl docker-stable-musl \
         docker-static-musl clean clean-all
@@ -95,6 +95,15 @@ check-build:
 	$(MAKE) PROFILE=check LIBC=glibc CFLAGS="$(BASE_CFLAGS) $(REL_CFLAGS)" build
 
 test-build: san-build check-build
+
+wm: run-xsession
+
+run-xsession: build
+	@echo "Starting clean X11 session..."
+	@echo "Make sure you are NOT inside another WM (Hyprland, KDE, etc.)"
+	@echo "Switch to TTY and run this."
+	@sleep 1
+	@exec startx ./xinit-wm.sh --
 
 run-xephyr: build
 	@echo "Starting Xephyr on $(XEPHYR_DISPLAY)..."

@@ -36,6 +36,7 @@
 #include "./coredata.h"
 
 #include <X11/Xlib.h>
+#include <stdarg.h>
 #include <unistd.h>
 
 #include <stdio.h>
@@ -43,16 +44,38 @@
 
 CoreData DATA;
 
-void spawn_xterm() {
+void Spawn(int argvCount, ...) {
+    va_list va;
+    va_start(va, argvCount);
+
+    char* argv[argvCount + 1];
+
+    int i = 0;
+
+    char* command = va_arg(va, char*);
+    argv[i++] = command;
+
+    for(int j = 0; j < argvCount; j++) {
+        argv[i++] = va_arg(va, char*);
+    }
+
+    argv[i] = NULL;
+
     pid_t pid = fork();
 
-    if (pid == 0) {
-        char *args[] = {"xterm", NULL};
-        execvp("xterm", args);
-
-        perror("execvp failed");
-        _exit(1);
+    if(pid < 0) {
+        perror("fork failed");
+        va_end(va);
+        return;
     }
+
+    if(pid == 0) {
+        execvp(command, argv);
+        perror("execvp failed");
+        exit(1);
+    }
+
+    va_end(va);
 }
 
 // NOTE: I'm learning so I'll comment the shit out of this
@@ -77,7 +100,7 @@ int main() {
 		SubstructureNotifyMask // NOTE: Notyfy about things like: New window, type shit
 	);
 
-	spawn_xterm();
+	Spawn(1, "alacritty");
 
 	while(1) {
 		// NOTE: Blocking(so yk no 100% cpu usadge and works only if there's work to do)
@@ -88,6 +111,24 @@ int main() {
 		switch(DATA.events.type) {
 			// NOTE: Some app want's to get it's window shown :)
 			case MapRequest: {
+				Window w = DATA.events.xmaprequest.window;
+
+				XWindowChanges changes;
+			    changes.x = 0;
+			    changes.y = 0;
+			    changes.width = DisplayWidth(DATA.Display, DefaultScreen(DATA.Display));
+			    changes.height = DisplayHeight(DATA.Display, DefaultScreen(DATA.Display));
+
+			    XConfigureWindow(
+			        DATA.Display,
+			        w,
+			        CWX | CWY | CWWidth | CWHeight,
+			        &changes
+			    );
+
+				// NOTE: Tell app we support close protocol
+            	XSetWMProtocols(DATA.Display, w, &DATA.WM_DELETE_WINDOW, 1);
+
 				// NOTE: SHOW IT
 				XMapWindow(DATA.Display, DATA.events.xmaprequest.window);
 				
@@ -100,10 +141,6 @@ int main() {
 	
 				// NOTE: What we'll chainge becouse we are cherry pickng
 			    XWindowChanges changes;
-			    changes.x = AppWant->x;
-			    changes.y = AppWant->y;
-			    changes.width = AppWant->width;
-			    changes.height = AppWant->height;
 			    changes.border_width = AppWant->border_width;
 			    changes.sibling = AppWant->above;
 			    changes.stack_mode = AppWant->detail;
@@ -112,8 +149,20 @@ int main() {
 			    XConfigureWindow(DATA.Display, AppWant->window, AppWant->value_mask, &changes);
 			    break;
 			}
+
+			case ClientMessage: {
+            	XClientMessageEvent *msg = &DATA.events.xclient;
+
+            	if (msg->message_type == DATA.WM_PROTOCOLS && (Atom)msg->data.l[0] == DATA.WM_DELETE_WINDOW) {
+                	Window w = msg->window;
+                	XDestroyWindow(DATA.Display, w);
+           		}
+
+            	break;
+        	}
 		}
 	}
+	XCloseDisplay(DATA.Display);
 
 	return EXIT_SUCCESS;
 }
