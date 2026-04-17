@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Vtwm
-Comment=Treminal based wm
-Exec=/run/current-system/sw/bin/vtwm
-Type=Application
+Comment=Terminal based wm
+Exec=vtwm
+TryExec=vtwm
+Type=XSession
