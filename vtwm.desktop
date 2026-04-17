@@ -1,5 +1,5 @@
 [Desktop Entry]
 Name=Vtwm
 Comment=Treminal based wm
-Exec=vtwm
+Exec=/run/current-system/sw/bin/vtwm
 Type=Application
