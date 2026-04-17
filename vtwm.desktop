@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Vtwm
-Comment=Terminal based wm
-Exec=vtwm
-TryExec=vtwm
+Name=Vtwm (X11)
+Comment=VTWM by Sqydev
+Exec=/run/current-system/sw/bin/vtwm
+TryExec=/run/current-system/sw/bin/vtwm
 Type=XSession
