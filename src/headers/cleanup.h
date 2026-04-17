@@ -33,8 +33,8 @@
 *    source or binary distribution.
 */
 
-#ifndef X11WM_CLEANUP_H
-#define X11WM_CLEANUP_H
+#ifndef VTWM_CLEANUP_H
+#define VTWM_CLEANUP_H
 
 void CleanUp(void);
 

@@ -33,8 +33,8 @@
 *    source or binary distribution.
 */
 
-#ifndef X11WM_COREDATA_H
-#define X11WM_COREDATA_H
+#ifndef VTWM_COREDATA_H
+#define VTWM_COREDATA_H
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xinerama.h>

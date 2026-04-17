@@ -20,25 +20,12 @@ X11_LDFLAGS := -lX11 -lXinerama
 XEPHYR_DISPLAY ?= :1
 XEPHYR_RES     ?= 800x600
 
-ifeq ($(PROFILE),windows)
-  CC := x86_64-w64-mingw32-gcc
-  EXE_EXT := .exe
-else
-  EXE_EXT :=
-endif
-
 ifeq ($(LIBC),static-musl)
   LIBC_CFLAGS  := -static
   LIBC_LDFLAGS := -static
 else
   LIBC_CFLAGS  :=
   LIBC_LDFLAGS :=
-endif
-
-ifeq ($(PROFILE),windows-static)
-  CC := x86_64-w64-mingw32-gcc
-  EXE_EXT := .exe
-  LDFLAGS += -static -static-libgcc -static-libstdc++
 endif
 
 CFLAGS += $(BASE_CFLAGS) $(REL_CFLAGS) $(LIBC_CFLAGS) $(STD) $(POSIX_C_SRC)
@@ -48,7 +35,7 @@ LDFLAGS ?= $(LIBC_LDFLAGS)
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := compiled
-TARGET  := X11WM
+TARGET  := vtwm
 
 OBJ_SUBDIR := $(OBJ_DIR)/$(PROFILE)-$(LIBC)
 
@@ -58,14 +45,14 @@ else
   BIN_SUBDIR := test
 endif
 
-OUT := $(BIN_DIR)/$(BIN_SUBDIR)/$(TARGET)-$(PROFILE)-$(LIBC)$(EXE_EXT)
+OUT := $(BIN_DIR)/$(BIN_SUBDIR)/$(TARGET)-$(PROFILE)-$(LIBC)
 
 # Sources
 SRC := $(sort $(shell find $(SRC_DIR) -name '*.c'))
 OBJ := $(patsubst $(SRC_DIR)/%.c,$(OBJ_SUBDIR)/%.o,$(SRC))
 DEP := $(OBJ:.o=.d)
 
-.PHONY: all release install build local-build san-build check-build \
+.PHONY: all release install upgrade update build local-build san-build check-build \
         test-build wm run-xsession \
         docker-bleeding docker-normal docker-stable \
         docker-bleeding-musl docker-normal-musl docker-stable-musl \
@@ -73,14 +60,18 @@ DEP := $(OBJ:.o=.d)
 
 all: local-build san-build check-build
 
-release: $(SRC)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(SRC)
-
 PREFIX  ?=
 DESTDIR ?=
 
-install:
-	install -Dm755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
+install: build
+	install -Dm755 $(OUT) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
+	install -Dm644 vtwm.desktop $(DESTDIR)/usr/share/xsessions/vtwm.desktop
+
+upgrade: update build install
+
+update:
+	git fetch origin
+	git merge --ff-only origin/main
 
 build: $(OUT)
 
@@ -99,7 +90,7 @@ test-build: san-build check-build
 wm: run-xsession
 
 run-xsession: build
-	@exec startx ./xinit-wm.sh --
+	@exec startx exec compiled/local/vtwm-local-glibc --
 
 $(OUT): $(OBJ)
 	@mkdir -p $(@D)
@@ -116,18 +107,6 @@ GID := $(shell id -g)
 DOCKER_USER := --rm -u $(UID):$(GID) -v "$(shell pwd)":/src -w /src
 DOCKER_ROOT := --rm -v "$(shell pwd)":/src -w /src
 FIX_PERMS   := ; chown -R $(UID):$(GID) $(OBJ_DIR) $(BIN_DIR)
-
-docker-windows:
-	docker run $(DOCKER_ROOT) debian:stable-slim sh -c "\
-		apt-get update && \
-		apt-get install -y --no-install-recommends mingw-w64 make gcc && \
-		$(MAKE) PROFILE=windows LIBC=glibc build $(FIX_PERMS)"
-
-docker-windows-static:
-	docker run $(DOCKER_ROOT) debian:stable-slim sh -c "\
-		apt-get update && \
-		apt-get install -y --no-install-recommends mingw-w64 make gcc && \
-		$(MAKE) PROFILE=windows-static LIBC=glibc build $(FIX_PERMS)"
 
 docker-bleeding:
 	docker run $(DOCKER_USER) gcc:latest $(MAKE) PROFILE=bleeding LIBC=glibc build

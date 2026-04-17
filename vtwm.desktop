@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Vtwm
+Comment=Treminal based wm
+Exec=vtwm
+Type=Application

@@ -33,8 +33,8 @@
 *    source or binary distribution.
 */
 
-#ifndef X11WM_INIT_H
-#define X11WM_INIT_H
+#ifndef VTWM_INIT_H
+#define VTWM_INIT_H
 
 void Init(void);
 
