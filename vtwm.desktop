@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Vtwm (X11)
 Comment=VTWM by Sqydev
-Exec=/run/current-system/sw/bin/vtwm
-TryExec=/run/current-system/sw/bin/vtwm
+Exec=startx exec /run/current-system/sw/bin/vtwm
+TryExec=startx exec /run/current-system/sw/bin/vtwm
 Type=XSession
