@@ -29,9 +29,9 @@
 
 		installPhase = ''
 		  make install PREFIX=$out DESTDIR=
-
 		  mkdir -p $out/share/xsessions
-		  cp vtwm.desktop $out/share/xsessions/vtwm.desktop
+		  substitute vtwm.desktop $out/share/xsessions/vtwm.desktop \
+		    --replace "Exec=vtwm" "Exec=$out/bin/vtwm"
 		'';
     };
   in
