@@ -1,5 +1,5 @@
 {
-  description = "install vtwm for nixos";
+  description = "vtwm nixos installer";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
 
@@ -10,42 +10,29 @@
 
     vtwm = pkgs.stdenv.mkDerivation {
       pname = "vtwm";
-      version = "0.1.0"; # Good practice to include a version
+      version = "0.1.0";
       src = ./.;
 
-      # If your Makefile uses a variable for the session path, override it here.
-      # If it's hardcoded, we use postPatch to fix it globally.
-      postPatch = ''
-        substituteInPlace makefile \
-          --replace "/usr" "$out"
-      '';
-
-      # Using makeFlags is cleaner than overriding phases manually
-      makeFlags = [ "PREFIX=$(out)" ];
-
-      # Note: buildPhase and installPhase are usually handled automatically 
-      # by stdenv if you have a standard Makefile. 
-      # Only override them if your Makefile requires non-standard arguments.
-      installPhase = ''
-        runHook preInstall
-        make install PREFIX=$out
-        runHook postInstall
-      '';
+      buildInputs = with pkgs; [
+        libX11
+        libXinerama
+      ];
 
       nativeBuildInputs = with pkgs; [
-        # Add any build tools here (e.g., pkg-config)
+        pkg-config
+        gnumake
       ];
 
-      buildInputs = with pkgs; [
-        xorg.libX11
-        xorg.libXinerama
-        # Add other X11 dependencies here
-      ];
+      buildPhase = ''
+        make build
+      '';
+
+      installPhase = ''
+        make install PREFIX=$out DESTDIR=
+      '';
     };
-  in {
-    packages.${system} = {
-      vtwm = vtwm;
-      default = vtwm;
-    };
+  in
+  {
+    packages.${system}.default = vtwm;
   };
 }

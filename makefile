@@ -60,12 +60,12 @@ DEP := $(OBJ:.o=.d)
 
 all: local-build san-build check-build
 
-PREFIX  ?= 
+PREFIX ?= /usr
 DESTDIR ?=
 
-install: build
+install:
 	install -Dm755 $(OUT) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
-	install -Dm644 vtwm.desktop $(DESTDIR)/usr/share/xsessions/vtwm.desktop
+	install -Dm644 vtwm.desktop $(DESTDIR)$(PREFIX)/share/xsessions/vtwm.desktop
 
 upgrade: update build install
 
