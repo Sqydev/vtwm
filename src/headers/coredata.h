@@ -60,8 +60,6 @@ typedef struct {
 
 	XEvent events;
 
-	Atom WM_DELETE_WINDOW;
-    Atom WM_PROTOCOLS;
 } CoreData;
 
 extern CoreData DATA;

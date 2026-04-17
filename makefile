@@ -66,7 +66,7 @@ OBJ := $(patsubst $(SRC_DIR)/%.c,$(OBJ_SUBDIR)/%.o,$(SRC))
 DEP := $(OBJ:.o=.d)
 
 .PHONY: all release install build local-build san-build check-build \
-        test-build wm run-xsession run-xephyr kill-xephyr \
+        test-build wm run-xsession \
         docker-bleeding docker-normal docker-stable \
         docker-bleeding-musl docker-normal-musl docker-stable-musl \
         docker-static-musl clean clean-all
@@ -100,16 +100,6 @@ wm: run-xsession
 
 run-xsession: build
 	@exec startx ./xinit-wm.sh --
-
-run-xephyr: build
-	@echo "Starting Xephyr on $(XEPHYR_DISPLAY)..."
-	@Xephyr $(XEPHYR_DISPLAY) -screen $(XEPHYR_RES) &
-	@sleep 1
-	@echo "Launching WM..."
-	@DISPLAY=$(XEPHYR_DISPLAY) $(OUT) --debug
-
-kill-xephyr:
-	@pkill Xephyr || true
 
 $(OUT): $(OBJ)
 	@mkdir -p $(@D)

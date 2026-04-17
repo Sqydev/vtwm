@@ -1,2 +1,4 @@
-obj/local-glibc/init.o: src/init.c src/./headers/coredata.h
+obj/local-glibc/init.o: src/init.c src/./headers/coredata.h \
+ src/./headers/cleanup.h
 src/./headers/coredata.h:
+src/./headers/cleanup.h:

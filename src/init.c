@@ -34,8 +34,10 @@
 */
 
 #include "./headers/coredata.h"
+#include "./headers/cleanup.h"
 
 #include <X11/Xlib.h>
+#include <X11/Xproto.h>
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -54,7 +56,7 @@ void Spawn(int argvCount, ...) {
     char* command = va_arg(va, char*);
     argv[i++] = command;
 
-    for(int j = 0; j < argvCount; j++) {
+    for(int j = 1; j < argvCount; j++) {
         argv[i++] = va_arg(va, char*);
     }
 
@@ -83,6 +85,25 @@ void SpawnTerminals(void) {
     for(int i = 0; i < DATA.Monitors.Count; i++) {
         Spawn(1, "alacritty");
     }
+}
+
+int WindowManagerErrorHandler(Display *display, XErrorEvent *event) {
+    if(event->error_code == BadWindow || (event->request_code == X_SetInputFocus && event->error_code == BadMatch) || (event->request_code == X_ConfigureWindow && event->error_code == BadMatch)) {
+        return 0;
+    }
+
+    char error_text[1024];
+    XGetErrorText(display, event->error_code, error_text, sizeof(error_text));
+    
+    fprintf(stderr, "\n=== [WM ERROR] ===\n");
+    fprintf(stderr, "X11 ERROR: %s\n", error_text);
+    fprintf(stderr, "Request Code: %d\n", event->request_code);
+    fprintf(stderr, "Error Code: %d\n", event->error_code);
+    fprintf(stderr, "Resource ID: %lu\n", event->resourceid);
+    fprintf(stderr, "==================\n\n");
+
+	CleanUp();
+	exit(1);
 }
 
 void Init(void) {
@@ -122,8 +143,10 @@ void Init(void) {
 
 	DATA.Monitors.Currrent = 0;
 
-	DATA.WM_DELETE_WINDOW = XInternAtom(DATA.Rooty.Display, "WM_DELETE_WINDOW", False);
-	DATA.WM_PROTOCOLS = XInternAtom(DATA.Rooty.Display, "WM_PROTOCOLS", False);
-
 	SpawnTerminals();
+
+	XWarpPointer(DATA.Rooty.Display, None, DefaultRootWindow(DATA.Rooty.Display), 0, 0, 0, 0, DATA.Monitors.Thing[0].x_org + (DATA.Monitors.Thing[0].width / 2), DATA.Monitors.Thing[0].y_org + (DATA.Monitors.Thing[0].height / 2));
+
+	// NOTE: Make errors don't crash by default(for example doing action with some window that doesn't exist just stops the action)
+	XSetErrorHandler(WindowManagerErrorHandler);
 }

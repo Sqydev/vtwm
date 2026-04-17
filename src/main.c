@@ -80,11 +80,18 @@ int main() {
 			        &changes
 			    );
 
-				// NOTE: Tell app we support close protocol
-            	XSetWMProtocols(DATA.Rooty.Display, window, &DATA.WM_DELETE_WINDOW, 1);
-
 				// NOTE: SHOW IT
 				XMapWindow(DATA.Rooty.Display, DATA.events.xmaprequest.window);
+
+				XSetInputFocus( // NOTE: Set focus
+				    DATA.Rooty.Display,
+				    window, // NOTE: Which window
+				    RevertToPointerRoot, // NOTE: When window desintegrates then focus goes to window bellow
+				    CurrentTime // NOTE: Time cuz it's async
+				);
+
+				// NOTE: I wanna get this type of event
+				XSelectInput(DATA.Rooty.Display, window, EnterWindowMask);
 
 				break;
 			}
@@ -104,19 +111,11 @@ int main() {
 			    break;
 			}
 
-			case ClientMessage: {
-            	XClientMessageEvent *msg = &DATA.events.xclient;
-
-            	if (msg->message_type == DATA.WM_PROTOCOLS && (Atom)msg->data.l[0] == DATA.WM_DELETE_WINDOW) {
-                	Window w = msg->window;
-                	XDestroyWindow(DATA.Rooty.Display, w);
-           		}
-
-            	break;
-        	}
-
 			case EnterNotify: {
-				Window window = DATA.events.xcrossing.window;
+				Window window = DATA.events.xcrossing.subwindow;
+    			if(window == None || window == DATA.Rooty.Root) { window = DATA.events.xcrossing.window; }
+
+    			if(DATA.events.xcrossing.mode != NotifyNormal) { break; }
 
 				XSetInputFocus( // NOTE: Set focus
 				    DATA.Rooty.Display,
