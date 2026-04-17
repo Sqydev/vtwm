@@ -1,20 +1,27 @@
 {
   description = "install vtwm for nixos";
 
-  outputs = { self, nixpkgs }: {
-    packages.x86_64-linux.vtwm =
-      nixpkgs.legacyPackages.x86_64-linux.stdenv.mkDerivation {
-        name = "vtwm";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
 
-        src = ./.;
+  outputs = { self, nixpkgs }:
+  let
+    system = "x86_64-linux";
+    pkgs = nixpkgs.legacyPackages.${system};
 
-        buildPhase = ''
-          make
-        '';
+    vtwm = pkgs.stdenv.mkDerivation {
+      name = "vtwm";
+      src = ./.;
 
-        installPhase = ''
-          make install PREFIX=$out
-        '';
-      };
+      buildPhase = ''
+        make
+      '';
+
+      installPhase = ''
+        make install PREFIX=$out
+      '';
+    };
+  in {
+    packages.${system}.vtwm = vtwm;
+    packages.${system}.default = vtwm;
   };
 }
