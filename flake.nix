@@ -27,9 +27,12 @@
         make build
       '';
 
-      installPhase = ''
-        make install PREFIX=$out DESTDIR=
-      '';
+		installPhase = ''
+		  make install PREFIX=$out DESTDIR=
+
+		  mkdir -p $out/share/xsessions
+		  cp vtwm.desktop $out/share/xsessions/vtwm.desktop
+		'';
     };
   in
   {
