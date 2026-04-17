@@ -1,15 +1,5 @@
 {
-  description = "vtwm nixos installer";
-  # NOTE: for the lack of better option. to upgrade type:
-  # sudo nixos-rebuild switch --option tarball-ttl 0
-  #    To install on system add to your config.nix:
-  # let
-  # 	vtwm = builtins.getFlake "git+https://github.com/Sqydev/vtwm.git";
-  # in
-  #   And in environment.systemPackages = with pkgs; [
-  # vtwm.packages.${pkgs.system}.default
-  # And like enywhere:
-  # services.vtwm.enable = true;
+  description = "vtwm";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
 
@@ -23,8 +13,8 @@
       version = "0.1.0";
       src = ./.;
 
-      buildInputs = [ pkgs.libX11 pkgs.libXinerama ];
       nativeBuildInputs = [ pkgs.pkg-config pkgs.gnumake ];
+      buildInputs = [ pkgs.libX11 pkgs.libXinerama ];
 
       buildPhase = "make build";
 
@@ -37,7 +27,8 @@
     packages.${system}.default = vtwmPkg;
 
     nixosModules.default = { config, lib, pkgs, ... }: {
-      options.services.vtwm.enable = lib.mkEnableOption "vtwm window manager";
+      options.services.vtwm.enable =
+        lib.mkEnableOption "vtwm window manager";
 
       config = lib.mkIf config.services.vtwm.enable {
         services.xserver.enable = true;
@@ -46,9 +37,10 @@
           {
             name = "vtwm";
             manage = "window";
-            start = "exec ${vtwmPkg}/bin/vtwm";
+            start = "exec vtwm";
           }
         ];
+
         environment.systemPackages = [ vtwmPkg ];
       };
     };

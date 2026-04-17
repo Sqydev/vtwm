@@ -1,0 +1,14 @@
+add this to your config:
+{ config, pkgs, ... }:
+
+let
+  vtwm = builtins.getFlake "github:Sqydev/vtwm";
+in
+
+{
+  imports = [
+    vtwm.nixosModules.default
+  ];
+
+  services.vtwm.enable = true;
+}
