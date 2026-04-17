@@ -14,7 +14,7 @@ CC ?= gcc
 STD ?= -std=c99
 POSIX_C_SRC ?= -D_POSIX_C_SOURCE=200809L
 
-X11_LDFLAGS := -lX11
+X11_LDFLAGS := -lX11 -lXinerama
 
 # Xephyr test env
 XEPHYR_DISPLAY ?= :1

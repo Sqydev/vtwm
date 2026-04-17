@@ -1,2 +1,4 @@
-obj/check-glibc/main.o: src/main.c src/./coredata.h
-src/./coredata.h:
+obj/check-glibc/main.o: src/main.c src/./headers/coredata.h \
+ src/./headers/init.h
+src/./headers/coredata.h:
+src/./headers/init.h:

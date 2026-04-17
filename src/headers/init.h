@@ -33,25 +33,9 @@
 *    source or binary distribution.
 */
 
-#ifndef X11WM_COREDATA_H
-#define X11WM_COREDATA_H
+#ifndef X11WM_INIT_H
+#define X11WM_INIT_H
 
-#include <X11/Xlib.h>
-
-#include <stdbool.h>
-
-typedef struct {
-	Display* Display;
-	Window Root;
-
-	bool debug;
-
-	XEvent events;
-
-	Atom WM_DELETE_WINDOW;
-    Atom WM_PROTOCOLS;
-} CoreData;
-
-extern CoreData DATA;
+void Init(void);
 
 #endif

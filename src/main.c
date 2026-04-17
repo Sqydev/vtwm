@@ -33,123 +33,58 @@
 *    source or binary distribution.
 */
 
-#include "./coredata.h"
+#include "./headers/coredata.h"
+#include "./headers/init.h"
 
 #include <X11/Xlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <unistd.h>
+#include <X11/extensions/Xinerama.h>
 
-#include <stdio.h>
 #include <stdlib.h>
 
 CoreData DATA;
 
-void Spawn(int argvCount, ...) {
-    va_list va;
-    va_start(va, argvCount);
-
-    char* argv[argvCount + 1];
-
-    int i = 0;
-
-    char* command = va_arg(va, char*);
-    argv[i++] = command;
-
-    for(int j = 0; j < argvCount; j++) {
-        argv[i++] = va_arg(va, char*);
-    }
-
-    argv[i] = NULL;
-
-    pid_t pid = fork();
-
-    if(pid < 0) {
-        perror("fork failed");
-        va_end(va);
-        return;
-    }
-
-    if(pid == 0) {
-        execvp(command, argv);
-        perror("execvp failed");
-        exit(1);
-    }
-
-    va_end(va);
-}
-
 // NOTE: I'm learning so I'll comment the shit out of this
-int main(int argc, char** argv) {
-	DATA.debug = false;
-	if(argc > 1 && strcmp(argv[1], "--debug") == 0) {
-		DATA.debug = true;
-	}
-
-	if(DATA.debug) {
-		setenv("DISPLAY", ":1", 1);
-		unsetenv("WAYLAND_DISPLAY");
-    	unsetenv("WAYLAND_SOCKET");
-	}
-
-	// NOTE: Get the connention with X server
-	DATA.Display = XOpenDisplay(NULL);
-
-	if(!DATA.Display) {
-		printf("ERROR: There's arleady a WM RUNNING?!\n");
-		return EXIT_FAILURE;
-	}
-
-	// NOTE: Like do root thing. Like it's root of all windows
-	DATA.Root = DefaultRootWindow(DATA.Display);
-
-	// NOTE: What events do I wanna get and take control over(I'll split it up)
-	XSelectInput(
-		DATA.Display, // NOTE: To which Display
-		DATA.Root, // NOTE: To which Root
-		SubstructureRedirectMask // NOTE: ALL OF THEM
-		| // NOTE: And
-		SubstructureNotifyMask // NOTE: Notyfy about things like: New window, type shit
-	);
-
-	Spawn(1, "alacritty");
+int main() {
+	Init();
 
 	while(1) {
 		// NOTE: Blocking(so yk no 100% cpu usadge and works only if there's work to do)
 		// Wait for next event from X server and save it to DATA.events
-		XNextEvent(DATA.Display, &DATA.events);
+		XNextEvent(DATA.Rooty.Display, &DATA.events);
 
 		// NOTE: Accualy do somethig with events(split into types)
 		switch(DATA.events.type) {
 			// NOTE: Some app want's to get it's window shown :)
 			case MapRequest: {
-				Window w = DATA.events.xmaprequest.window;
+				Window window = DATA.events.xmaprequest.window;
+
+				XineramaScreenInfo monitor;
+				if(DATA.Init.leftTerms < 1) {
+					monitor = DATA.Monitors.Thing[DATA.Monitors.Currrent];
+				}
+				else {
+					monitor = DATA.Monitors.Thing[DATA.Init.leftTerms - 1];
+					DATA.Init.leftTerms--;
+				}
 
 				XWindowChanges changes;
-			    changes.x = 0;
-			    changes.y = 0;
-			    changes.width = DisplayWidth(DATA.Display, DefaultScreen(DATA.Display));
-			    changes.height = DisplayHeight(DATA.Display, DefaultScreen(DATA.Display));
+			    changes.x = monitor.x_org;
+			    changes.y = monitor.y_org;
+			    changes.width = monitor.width;
+			    changes.height = monitor.height;
 
 			    XConfigureWindow(
-			        DATA.Display,
-			        w,
+			        DATA.Rooty.Display,
+			        window,
 			        CWX | CWY | CWWidth | CWHeight,
 			        &changes
 			    );
 
 				// NOTE: Tell app we support close protocol
-            	XSetWMProtocols(DATA.Display, w, &DATA.WM_DELETE_WINDOW, 1);
+            	XSetWMProtocols(DATA.Rooty.Display, window, &DATA.WM_DELETE_WINDOW, 1);
 
 				// NOTE: SHOW IT
-				XMapWindow(DATA.Display, DATA.events.xmaprequest.window);
-
-				XSetInputFocus( // NOTE: Set focus
-				    DATA.Display,
-				    w, // NOTE: Whith window
-				    RevertToPointerRoot, // NOTE: 
-				    CurrentTime // NOTE: 
-				);
+				XMapWindow(DATA.Rooty.Display, DATA.events.xmaprequest.window);
 
 				break;
 			}
@@ -165,7 +100,7 @@ int main(int argc, char** argv) {
 			    changes.stack_mode = AppWant->detail;
 			
 				// NOTE: Accualy configure it
-			    XConfigureWindow(DATA.Display, AppWant->window, AppWant->value_mask, &changes);
+			    XConfigureWindow(DATA.Rooty.Display, AppWant->window, AppWant->value_mask, &changes);
 			    break;
 			}
 
@@ -174,14 +109,60 @@ int main(int argc, char** argv) {
 
             	if (msg->message_type == DATA.WM_PROTOCOLS && (Atom)msg->data.l[0] == DATA.WM_DELETE_WINDOW) {
                 	Window w = msg->window;
-                	XDestroyWindow(DATA.Display, w);
+                	XDestroyWindow(DATA.Rooty.Display, w);
            		}
 
             	break;
         	}
+
+			case EnterNotify: {
+				Window window = DATA.events.xcrossing.window;
+
+				XSetInputFocus( // NOTE: Set focus
+				    DATA.Rooty.Display,
+				    window, // NOTE: Which window
+				    RevertToPointerRoot, // NOTE: When window desintegrates then focus goes to window bellow
+				    CurrentTime // NOTE: Time cuz it's async
+				);
+
+				// NOTE: And not update monitor
+				int x;
+				int y;
+
+    			Window root;
+				Window child;
+
+    			int win_x;
+				int win_y;
+
+    			unsigned int mask;
+
+				// NOTE: Take cursor pos. I wont comment
+				XQueryPointer(
+			        DATA.Rooty.Display,
+			        DATA.Rooty.Root,
+			        &root,
+			        &child,
+			        &x,
+			        &y,
+			        &win_x,
+			        &win_y,
+			        &mask
+			    );
+
+				// NOTE: Do monitor loop and do box collision
+				for(int i = 0; i < DATA.Monitors.Count; i++) {
+			        XineramaScreenInfo m = DATA.Monitors.Thing[i];
+			
+			        if(x >= m.x_org && x < m.x_org + m.width && y >= m.y_org && y < m.y_org + m.height) {
+						DATA.Monitors.Currrent = i;
+			            break;
+			        }
+			    }
+
+				break;
+			}
 		}
 	}
-	XCloseDisplay(DATA.Display);
-
 	return EXIT_SUCCESS;
 }
