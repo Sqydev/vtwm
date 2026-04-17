@@ -90,7 +90,7 @@ test-build: san-build check-build
 wm: run-xsession
 
 run-xsession: build
-	@exec startx exec compiled/local/vtwm-local-glibc --
+	@exec startx ./compiled/local/vtwm-local-glibc --
 
 $(OUT): $(OBJ)
 	@mkdir -p $(@D)

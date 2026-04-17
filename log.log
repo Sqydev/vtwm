@@ -1,0 +1,82 @@
+xauth:  file /home/sqyd/.serverauth.9719 does not exist
+
+
+X.Org X Server 1.21.1.21
+X Protocol Version 11, Revision 0
+Current Operating System: Linux nixy 6.12.81 #1-NixOS SMP PREEMPT_DYNAMIC Sat Apr 11 12:24:56 UTC 2026 x86_64
+Kernel command line: initrd=\EFI\nixos\858g7ivaaqlrp8718bl40ibx0iy733gr-initrd-linux-6.12.81-initrd.efi init=/nix/store/63dhdr7qjb4ykcbxg5q2g04g4wlfwx6n-nixos-system-nixy-25.11.9320.1766437c5509/init mem_sleep_default=deep loglevel=4 lsm=landlock,yama,bpf,apparmor apparmor=1 nvidia-drm.modeset=1 nvidia-drm.fbdev=1 nvidia.NVreg_PreserveVideoMemoryAllocations=1
+ 
+Current version of pixman: 0.46.4
+	Before reporting problems, check http://wiki.x.org
+	to make sure that you have the latest version.
+Markers: (--) probed, (**) from config file, (==) default setting,
+	(++) from command line, (!!) notice, (II) informational,
+	(WW) warning, (EE) error, (NI) not implemented, (??) unknown.
+(==) Log file: "/home/sqyd/.local/share/xorg/Xorg.1.log", Time: Sat Apr 18 00:14:34 2026
+(==) Using config file: "/etc/X11/xorg.conf"
+(==) Using config directory: "/etc/X11/xorg.conf.d"
+(==) Using system config directory "/nix/store/y6kl7w51y0jxhi3yrlx6gdfg8b0c71d1-xorg-server-21.1.21/share/X11/xorg.conf.d"
+The XKEYBOARD keymap compiler (xkbcomp) reports:
+> Warning:          Could not resolve keysym XF86OK
+> Warning:          Could not resolve keysym XF86GoTo
+> Warning:          Could not resolve keysym XF86VendorLogo
+> Warning:          Could not resolve keysym XF86MediaSelectProgramGuide
+> Warning:          Could not resolve keysym XF86MediaSelectProgramGuide
+> Warning:          Could not resolve keysym XF86MediaSelectHome
+> Warning:          Could not resolve keysym XF86MediaLanguageMenu
+> Warning:          Could not resolve keysym XF86MediaTitleMenu
+> Warning:          Could not resolve keysym XF86AudioChannelMode
+> Warning:          Could not resolve keysym XF86MediaSelectPC
+> Warning:          Could not resolve keysym XF86MediaSelectTV
+> Warning:          Could not resolve keysym XF86MediaSelectCable
+> Warning:          Could not resolve keysym XF86MediaSelectVCR
+> Warning:          Could not resolve keysym XF86MediaSelectVCRPlus
+> Warning:          Could not resolve keysym XF86MediaSelectSatellite
+> Warning:          Could not resolve keysym XF86MediaSelectCD
+> Warning:          Could not resolve keysym XF86MediaSelectTape
+> Warning:          Could not resolve keysym XF86MediaSelectRadio
+> Warning:          Could not resolve keysym XF86MediaSelectTuner
+> Warning:          Could not resolve keysym XF86MediaPlayer
+> Warning:          Could not resolve keysym XF86MediaSelectTeletext
+> Warning:          Could not resolve keysym XF86MediaSelectAuxiliary
+> Warning:          Could not resolve keysym XF86MediaPlaySlow
+> Warning:          Could not resolve keysym XF86NumberEntryMode
+> Warning:          Could not resolve keysym XF86RefreshRateToggle
+> Warning:          Could not resolve keysym XF86Accessibility
+> Warning:          Could not resolve keysym XF86DoNotDisturb
+Errors from xkbcomp are not fatal to the X server
+The XKEYBOARD keymap compiler (xkbcomp) reports:
+> Warning:          Could not resolve keysym XF86OK
+> Warning:          Could not resolve keysym XF86GoTo
+> Warning:          Could not resolve keysym XF86VendorLogo
+> Warning:          Could not resolve keysym XF86MediaSelectProgramGuide
+> Warning:          Could not resolve keysym XF86MediaSelectProgramGuide
+> Warning:          Could not resolve keysym XF86MediaSelectHome
+> Warning:          Could not resolve keysym XF86MediaLanguageMenu
+> Warning:          Could not resolve keysym XF86MediaTitleMenu
+> Warning:          Could not resolve keysym XF86AudioChannelMode
+> Warning:          Could not resolve keysym XF86MediaSelectPC
+> Warning:          Could not resolve keysym XF86MediaSelectTV
+> Warning:          Could not resolve keysym XF86MediaSelectCable
+> Warning:          Could not resolve keysym XF86MediaSelectVCR
+> Warning:          Could not resolve keysym XF86MediaSelectVCRPlus
+> Warning:          Could not resolve keysym XF86MediaSelectSatellite
+> Warning:          Could not resolve keysym XF86MediaSelectCD
+> Warning:          Could not resolve keysym XF86MediaSelectTape
+> Warning:          Could not resolve keysym XF86MediaSelectRadio
+> Warning:          Could not resolve keysym XF86MediaSelectTuner
+> Warning:          Could not resolve keysym XF86MediaPlayer
+> Warning:          Could not resolve keysym XF86MediaSelectTeletext
+> Warning:          Could not resolve keysym XF86MediaSelectAuxiliary
+> Warning:          Could not resolve keysym XF86MediaPlaySlow
+> Warning:          Could not resolve keysym XF86NumberEntryMode
+> Warning:          Could not resolve keysym XF86RefreshRateToggle
+> Warning:          Could not resolve keysym XF86Accessibility
+> Warning:          Could not resolve keysym XF86DoNotDisturb
+Errors from xkbcomp are not fatal to the X server
+X connection to :1 broken (explicit kill or server shutdown).
+X connection to :1 broken (explicit kill or server shutdown).
+X connection to :1 broken (explicit kill or server shutdown).
+xinit: connection to X server lost
+
+waiting for X server to shut down 

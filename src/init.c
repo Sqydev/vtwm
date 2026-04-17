@@ -35,6 +35,7 @@
 
 #include "./headers/coredata.h"
 #include "./headers/cleanup.h"
+#include "./headers/utils.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -44,40 +45,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-
-void Spawn(int argvCount, ...) {
-    va_list va;
-    va_start(va, argvCount);
-
-    char* argv[argvCount + 1];
-
-    int i = 0;
-
-    char* command = va_arg(va, char*);
-    argv[i++] = command;
-
-    for(int j = 1; j < argvCount; j++) {
-        argv[i++] = va_arg(va, char*);
-    }
-
-    argv[i] = NULL;
-
-    pid_t pid = fork();
-
-    if(pid < 0) {
-        perror("fork failed");
-        va_end(va);
-        return;
-    }
-
-    if(pid == 0) {
-        execvp(command, argv);
-        perror("execvp failed");
-        exit(1);
-    }
-
-    va_end(va);
-}
 
 void SpawnTerminals(void) {
 	DATA.Init.leftTerms = DATA.Monitors.Count;
@@ -142,6 +109,11 @@ void Init(void) {
 	}
 
 	DATA.Monitors.Currrent = 0;
+	
+	// NOTE: Set scale
+	// system("xrdb -merge ~/.Xresources");
+	//setenv("GDK_SCALE", "2", 1);
+	//setenv("QT_SCALE_FACTOR", "1.5", 1);
 
 	SpawnTerminals();
 

@@ -37,7 +37,7 @@
           {
             name = "vtwm";
             manage = "window";
-            start = "exec vtwm";
+			start = "${vtwmPkg}/bin/vtwm";
           }
         ];
 
