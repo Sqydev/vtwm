@@ -2,6 +2,5 @@
 Type=XSession
 Exec=/nix/store/v89w5rald7m52in84ab8d391ar7dl5p5-plasma-workspace-6.5.6/bin/startplasma-x11
 TryExec=/nix/store/v89w5rald7m52in84ab8d391ar7dl5p5-plasma-workspace-6.5.6/bin/startplasma-x11
-DesktopNames=vtmw
 Name=Vtwm (X11)
 Comment=VTWM by Sqydev
