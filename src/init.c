@@ -111,9 +111,10 @@ void Init(void) {
 	DATA.Monitors.Currrent = 0;
 	
 	// NOTE: Set scale
-	//system("xrdb -merge ~/.Xresources");
-	//setenv("GDK_SCALE", "2", 1);
-	//setenv("QT_SCALE_FACTOR", "1.5", 1);
+	// If there isn't config there set to fallback 96
+	system("xrdb -merge <<< \"Xft.dpi: 96\"");
+	// If there is than take it from ~/.Xresources. (MAKE YOUR OWN CONFIG FILE)
+	system("xrdb -merge ~/.Xresources");
 
 	SpawnTerminals();
 

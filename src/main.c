@@ -40,6 +40,7 @@
 #include <X11/extensions/Xinerama.h>
 
 #include <stdlib.h>
+#include <unistd.h>
 
 CoreData DATA;
 

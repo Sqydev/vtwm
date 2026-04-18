@@ -60,7 +60,7 @@ DEP := $(OBJ:.o=.d)
 
 all: local-build san-build check-build
 
-PREFIX ?= /usr
+PREFIX ?= 
 DESTDIR ?=
 
 install:

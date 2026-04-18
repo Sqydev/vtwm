@@ -35,7 +35,7 @@
 
         services.xserver.displayManager.session = [
           {
-            name = "vtwm";
+            name = "Vtwm";
             manage = "window";
 			start = "${vtwmPkg}/bin/vtwm";
           }
