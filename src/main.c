@@ -35,9 +35,12 @@
 
 #include "./headers/coredata.h"
 #include "./headers/init.h"
+#include "./headers/cleanup.h"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xinerama.h>
+#include <X11/keysym.h>
+#include <X11/keysymdef.h>
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -47,6 +50,17 @@ CoreData DATA;
 // NOTE: I'm learning so I'll comment the shit out of this
 int main() {
 	Init();
+
+	// NOTE: Listen for win+alt+m
+	XGrabKey(
+	    DATA.Rooty.Display,
+	    XKeysymToKeycode(DATA.Rooty.Display, XStringToKeysym("m")),
+	    Mod4Mask | Mod1Mask,
+	    DATA.Rooty.Root,
+	    True,
+    	GrabModeAsync,
+    	GrabModeAsync
+	);
 
 	while(1) {
 		// NOTE: Blocking(so yk no 100% cpu usadge and works only if there's work to do)
@@ -96,6 +110,20 @@ int main() {
 
 				break;
 			}
+
+			case KeyPress: {
+			    KeySym sym = XLookupKeysym(&DATA.events.xkey, 0);
+
+				if (sym == XK_m) {
+       				if((DATA.events.xkey.state & Mod4Mask) && (DATA.events.xkey.state & Mod1Mask)) {
+       					CleanUp();
+						exit(EXIT_SUCCESS);
+					}
+   				}
+
+   				break;
+			}
+
 
 			case ConfigureRequest: {
 				// NOTE: What app wants

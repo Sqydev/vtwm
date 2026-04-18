@@ -33,10 +33,13 @@
 *    source or binary distribution.
 */
 
+#include "headers/cleanup.h"
 #include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 void Spawn(int argvCount, ...) {
     va_list va;
@@ -66,8 +69,31 @@ void Spawn(int argvCount, ...) {
     if(pid == 0) {
         execvp(command, argv);
         perror("execvp failed");
-        exit(1);
+		CleanUp();
+        exit(EXIT_FAILURE);
     }
 
     va_end(va);
+}
+
+// TODO: Make this temp mkdir_p be not temp
+int mkdir_p(const char *path, mode_t mode) {
+    char tmp[1024];
+    char *p;
+
+    snprintf(tmp, sizeof(tmp), "%s", path);
+
+    for (p = tmp + 1; *p; p++) {
+        if (*p == '/') {
+            *p = '\0';
+            if (mkdir(tmp, mode) != 0 && errno != EEXIST)
+                return -1;
+            *p = '/';
+        }
+    }
+
+    if (mkdir(tmp, mode) != 0 && errno != EEXIST)
+        return -1;
+
+    return 0;
 }

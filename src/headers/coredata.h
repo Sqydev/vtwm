@@ -58,8 +58,12 @@ typedef struct {
 		int leftTerms;
 	} Init;
 
-	XEvent events;
+	struct {
+		char* path;
+		char* dir;
+	} Config;
 
+	XEvent events;
 } CoreData;
 
 extern CoreData DATA;

@@ -37,8 +37,21 @@
 
 #include <X11/Xlib.h>
 
-void CleanUp(void) {
-	XFree(DATA.Monitors.Thing);
+#include <stdlib.h>
 
-	XCloseDisplay(DATA.Rooty.Display);
+void CleanUp(void) {
+	if(DATA.Monitors.Thing) {
+		XFree(DATA.Monitors.Thing);
+	}
+
+	if(DATA.Rooty.Display) {
+		XCloseDisplay(DATA.Rooty.Display);
+	}
+
+	if(DATA.Config.path) {
+		free(DATA.Config.path);
+	}
+	if(DATA.Config.dir) {
+		free(DATA.Config.dir);
+	}
 }

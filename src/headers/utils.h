@@ -36,6 +36,9 @@
 #ifndef VTWM_UTILS_H
 #define VTWM_UTILS_H
 
+#include <sys/stat.h>
+
 void Spawn(int argvCount, ...);
+int mkdir_p(const char *path, mode_t mode);
 
 #endif

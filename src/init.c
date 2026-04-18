@@ -36,6 +36,7 @@
 #include "./headers/coredata.h"
 #include "./headers/cleanup.h"
 #include "./headers/utils.h"
+#include "config/config.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -70,15 +71,38 @@ int WindowManagerErrorHandler(Display *display, XErrorEvent *event) {
     fprintf(stderr, "==================\n\n");
 
 	CleanUp();
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 void Init(void) {
+	const char *home = getenv("HOME");
+	if(!home) {
+		fprintf(stderr, "HOME not set\n");
+		CleanUp();
+		exit(EXIT_FAILURE);
+	}
+
+	if(asprintf(&DATA.Config.path, "%s/.config/vtwm/vtwm.conf", home) == -1) {
+		fprintf(stderr, "asprintf failed\n");
+		CleanUp();
+		exit(EXIT_FAILURE);
+	}
+	if(asprintf(&DATA.Config.dir, "%s/.config/vtwm/", home) == -1) {
+		fprintf(stderr, "asprintf failed\n");
+		CleanUp();
+		exit(EXIT_FAILURE);
+	}
+
+	if(!LoadConfig()) {
+		GenerateConfig();
+	}
+
 	// NOTE: Get the connention with X server
 	DATA.Rooty.Display = XOpenDisplay(NULL);
 
 	if(!DATA.Rooty.Display) {
-		printf("ERROR: There's arleady a WM RUNNING?!\n");
+		printf("XOpenDisplay failed\n");
+		CleanUp();
 		exit(EXIT_FAILURE);
 	}
 
@@ -94,18 +118,22 @@ void Init(void) {
 		SubstructureNotifyMask // NOTE: Notyfy about things like: New window, type shit
 		|
 		EnterWindowMask // NOTE: Notyfy when mouse is on window
+		|
+		KeyPressMask
 	);
 
 	if(!XineramaIsActive(DATA.Rooty.Display)) {
 	    fprintf(stderr, "Xinerama not active\n");
-	    exit(1);
+		CleanUp();
+	    exit(EXIT_FAILURE);
 	}
 
 	DATA.Monitors.Thing = XineramaQueryScreens(DATA.Rooty.Display, &DATA.Monitors.Count);
 
 	if(!DATA.Monitors.Thing || DATA.Monitors.Count <= 0) {
 	    fprintf(stderr, "No screens found\n");
-	    exit(1);
+		CleanUp();
+	    exit(EXIT_FAILURE);
 	}
 
 	DATA.Monitors.Currrent = 0;
