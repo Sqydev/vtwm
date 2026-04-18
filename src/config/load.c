@@ -33,8 +33,19 @@
 *    source or binary distribution.
 */
 
+#include "./config.h"
+
+#include "../headers/coredata.h"
+
 #include <stdbool.h>
+#include <stdio.h>
 
 bool LoadConfig(void) {
-	return false;
+    FILE* conf = fopen(DATA.Config.path, "r");
+    if(!conf) {
+		return false;
+    }
+
+    fclose(conf);
+	return true;
 }

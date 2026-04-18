@@ -36,6 +36,8 @@
 #ifndef VTWM_CONFIG_H
 #define VTWM_CONFIG_H
 
+#include <stdbool.h>
+
 char* GetDefaultConfig(void);
 
 bool LoadConfig(void);
