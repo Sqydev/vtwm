@@ -2,7 +2,7 @@ add this to your config:
 { config, pkgs, ... }:
 
 let
-  vtwm = builtins.getFlake "github:Sqydev/vtwm";
+  vtwm = builtins.getFlake "github:Sqydev/vtwm?ref=X11";
 in
 
 {
