@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=XSession
-Name=Vtwm
+Name=vtwm
 Comment=VTWM by Sqydev
 Exec=vtwm
 TryExec=vtwm

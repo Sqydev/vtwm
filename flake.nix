@@ -28,14 +28,14 @@
 
     nixosModules.default = { config, lib, pkgs, ... }: {
       options.services.vtwm.enable =
-        lib.mkEnableOption "vtwm window manager";
+        lib.mkEnableOption "VTWM by Sqydev";
 
       config = lib.mkIf config.services.vtwm.enable {
         services.xserver.enable = true;
 
         services.xserver.displayManager.session = [
           {
-            name = "Vtwm";
+            name = "vtwm";
             manage = "window";
 			start = "${vtwmPkg}/bin/vtwm";
           }
