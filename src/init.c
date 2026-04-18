@@ -74,7 +74,15 @@ int WindowManagerErrorHandler(Display *display, XErrorEvent *event) {
 	exit(EXIT_FAILURE);
 }
 
+void SetUpDefaultConfig(void) {
+	// NOTE: Set scale
+	// If there isn't config there set to fallback 96
+	system("xrdb -merge <<< \"Xft.dpi: 96\"");
+}
+
 void Init(void) {
+	SetUpDefaultConfig();
+
 	const char *home = getenv("HOME");
 	if(!home) {
 		fprintf(stderr, "HOME not set\n");
@@ -138,12 +146,6 @@ void Init(void) {
 
 	DATA.Monitors.Currrent = 0;
 	
-	// NOTE: Set scale
-	// If there isn't config there set to fallback 96
-	system("xrdb -merge <<< \"Xft.dpi: 96\"");
-	// If there is than take it from ~/.Xresources. (MAKE YOUR OWN CONFIG FILE)
-	system("xrdb -merge ~/.Xresources");
-
 	SpawnTerminals();
 
 	XWarpPointer(DATA.Rooty.Display, None, DefaultRootWindow(DATA.Rooty.Display), 0, 0, 0, 0, DATA.Monitors.Thing[0].x_org + (DATA.Monitors.Thing[0].width / 2), DATA.Monitors.Thing[0].y_org + (DATA.Monitors.Thing[0].height / 2));
