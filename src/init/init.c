@@ -33,10 +33,10 @@
 *    source or binary distribution.
 */
 
-#include "./headers/coredata.h"
-#include "./headers/cleanup.h"
-#include "./headers/utils.h"
-#include "./config/config.h"
+#include "../coredata.h"
+#include "../cleanup/cleanup.h"
+#include "../utils/utils.h"
+#include "../config/config.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>

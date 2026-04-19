@@ -33,9 +33,9 @@
 *    source or binary distribution.
 */
 
-#include "./headers/coredata.h"
-#include "./headers/init.h"
-#include "./headers/cleanup.h"
+#include "./coredata.h"
+#include "./init/init.h"
+#include "./cleanup/cleanup.h"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xinerama.h>

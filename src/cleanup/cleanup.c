@@ -33,7 +33,8 @@
 *    source or binary distribution.
 */
 
-#include "./headers/coredata.h"
+#include "../coredata.h"
+#include "../cleanup/cleanup.h"
 
 #include <X11/Xlib.h>
 

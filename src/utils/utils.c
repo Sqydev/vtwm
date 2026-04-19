@@ -33,7 +33,8 @@
 *    source or binary distribution.
 */
 
-#include "headers/cleanup.h"
+#include "../cleanup/cleanup.h"
+
 #include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>

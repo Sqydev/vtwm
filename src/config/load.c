@@ -34,7 +34,8 @@
 */
 
 #include "./config.h"
-#include "../headers/coredata.h"
+#include "../coredata.h"
+#include "../config/config.h"
 
 #include <ctype.h>
 #include <stdbool.h>
