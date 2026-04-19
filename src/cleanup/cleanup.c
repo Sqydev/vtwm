@@ -35,6 +35,8 @@
 
 #include "../coredata.h"
 #include "../cleanup/cleanup.h"
+#include "../logging/logging.h"
+#include "../config/config.h"
 
 #include <X11/Xlib.h>
 
@@ -44,22 +46,13 @@ void CleanUp(void) {
 	if(DATA.Monitors.Thing) {
 		XFree(DATA.Monitors.Thing);
 	}
-
 	if(DATA.Rooty.Display) {
 		XCloseDisplay(DATA.Rooty.Display);
 	}
-
-	if(DATA.Config.path) {
-		free(DATA.Config.path);
-	}
-	if(DATA.Config.dir) {
-		free(DATA.Config.dir);
-	}
-	if(DATA.Config.termCommand) {
-		free(DATA.Config.termCommand);
-	}
-
 	if(DATA.Terminals.pids) {
 		free(DATA.Terminals.pids);
 	}
+	CleanUpConfig();
+
+	CleanUpLogging();
 }

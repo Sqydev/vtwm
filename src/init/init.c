@@ -33,129 +33,25 @@
 *    source or binary distribution.
 */
 
-#include "../coredata.h"
-#include "../cleanup/cleanup.h"
-#include "../utils/utils.h"
+#include "./init.h"
+
 #include "../config/config.h"
+#include "../logging/logging.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 
-#include <stdio.h>
 #include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 
-void SpawnTerminals(void) {
-    for(int i = DATA.Monitors.Count; i >= 0; i--) {
-        pid_t pid = Spawn(1, DATA.Config.termCommand);
-        if(pid > 0) {
-            DATA.Terminals.pids[i] = pid;
-        }
-    }
-}
-
-int WindowManagerErrorHandler(Display *display, XErrorEvent *event) {
-    if(event->error_code == BadWindow || (event->request_code == X_SetInputFocus && event->error_code == BadMatch) || (event->request_code == X_ConfigureWindow && event->error_code == BadMatch)) {
-        return 0;
-    }
-
-    char error_text[1024];
-    XGetErrorText(display, event->error_code, error_text, sizeof(error_text));
-    
-    fprintf(stderr, "\n=== [WM ERROR] ===\n");
-    fprintf(stderr, "X11 ERROR: %s\n", error_text);
-    fprintf(stderr, "Request Code: %d\n", event->request_code);
-    fprintf(stderr, "Error Code: %d\n", event->error_code);
-    fprintf(stderr, "Resource ID: %lu\n", event->resourceid);
-    fprintf(stderr, "==================\n\n");
-
-	CleanUp();
-	exit(EXIT_FAILURE);
-}
-
-void SetUpDefaultConfig(void) {
-	DATA.Config.termCommand = strdup("alacritty");
-
-	// NOTE: Set scale
-	// If there isn't config there set to fallback 96
-	system("echo \"Xft.dpi: 96\" | xrdb -merge");
-}
-
 void Init(void) {
-	SetUpDefaultConfig();
+	InitLogging();
 
-	const char *home = getenv("HOME");
-	if(!home) {
-		fprintf(stderr, "HOME not set\n");
-		CleanUp();
-		exit(EXIT_FAILURE);
-	}
+	InitConfig();
 
-	if(asprintf(&DATA.Config.path, "%s/.config/vtwm/vtwm.conf", home) == -1) {
-		fprintf(stderr, "asprintf failed\n");
-		CleanUp();
-		exit(EXIT_FAILURE);
-	}
-	if(asprintf(&DATA.Config.dir, "%s/.config/vtwm/", home) == -1) {
-		fprintf(stderr, "asprintf failed\n");
-		CleanUp();
-		exit(EXIT_FAILURE);
-	}
+	InitX11();
 
-	if(!LoadConfig()) {
-		GenerateConfig();
-	}
+	InitMonitors();
 
-	// NOTE: Get the connention with X server
-	DATA.Rooty.Display = XOpenDisplay(NULL);
-
-	if(!DATA.Rooty.Display) {
-		printf("XOpenDisplay failed\n");
-		CleanUp();
-		exit(EXIT_FAILURE);
-	}
-
-	// NOTE: Like do root thing. Like it's root of all windows
-	DATA.Rooty.Root = DefaultRootWindow(DATA.Rooty.Display);
-
-	// NOTE: What events do I wanna get and take control over(I'll split it up)
-	XSelectInput(
-		DATA.Rooty.Display, // NOTE: To which Display
-		DATA.Rooty.Root, // NOTE: To which Root
-		SubstructureRedirectMask // NOTE: ALL OF THEM
-		| // NOTE: And
-		SubstructureNotifyMask // NOTE: Notyfy about things like: New window, type shit
-		|
-		EnterWindowMask // NOTE: Notyfy when mouse is on window
-		|
-		KeyPressMask
-	);
-
-	if(!XineramaIsActive(DATA.Rooty.Display)) {
-	    fprintf(stderr, "Xinerama not active\n");
-		CleanUp();
-	    exit(EXIT_FAILURE);
-	}
-
-	DATA.Monitors.Thing = XineramaQueryScreens(DATA.Rooty.Display, &DATA.Monitors.Count);
-
-	if(!DATA.Monitors.Thing || DATA.Monitors.Count <= 0) {
-	    fprintf(stderr, "No screens found\n");
-		CleanUp();
-	    exit(EXIT_FAILURE);
-	}
-
-	DATA.Monitors.Currrent = 0;
-
-	DATA.Terminals.pids = malloc(DATA.Monitors.Count * sizeof(pid_t));
-	
-	SpawnTerminals();
-
-	XWarpPointer(DATA.Rooty.Display, None, DefaultRootWindow(DATA.Rooty.Display), 0, 0, 0, 0, DATA.Monitors.Thing[0].x_org + (DATA.Monitors.Thing[0].width / 2), DATA.Monitors.Thing[0].y_org + (DATA.Monitors.Thing[0].height / 2));
-
-	// NOTE: Make errors don't crash by default(for example doing action with some window that doesn't exist just stops the action)
-	XSetErrorHandler(WindowManagerErrorHandler);
+	InitTerminals();
 }

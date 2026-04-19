@@ -38,33 +38,35 @@
 #include "../cleanup/cleanup.h"
 #include "../utils/utils.h"
 #include "../config/config.h"
+#include "../logging/logging.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 void GenerateConfig(void) {
 	if(mkdir_p(DATA.Config.dir, 0777) != 0) {
-        perror("mkdir -p failed\n");
+		TraceLog("Mkdir -p for %s failed", DATA.Config.dir);
 		CleanUp();
 		exit(EXIT_FAILURE);
 	}
 
     FILE* conf = fopen(DATA.Config.path, "w");
     if(!conf) {
-        perror("fopen failed\n");
+		TraceLog("Failed to create config in %s. Panicing", DATA.Config.path);
 		CleanUp();
 		exit(EXIT_FAILURE);
     }
 
     const char* cfg = GetExampleConfig();
     if(!cfg) {
+		TraceLog("For some reason getting config template failed. Panicing");
         fclose(conf);
 		CleanUp();
 		exit(EXIT_FAILURE);
     }
 
     if(fputs(cfg, conf) == EOF) {
-        perror("fputs failed\n");
+		TraceLog("Fputs failed. Idk why. But still, Panicing");
     	fclose(conf);
 		CleanUp();
 		exit(EXIT_FAILURE);

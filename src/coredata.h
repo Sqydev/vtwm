@@ -40,6 +40,7 @@
 #include <X11/extensions/Xinerama.h>
 
 #include <stdbool.h>
+#include <stdio.h>
 
 typedef struct {
 	struct {
@@ -64,6 +65,13 @@ typedef struct {
 
 		char* termCommand;
 	} Config;
+
+	struct {
+		char* logPath;
+		char* logDir;
+
+		FILE* logFile;
+	} Logging;
 
 	XEvent events;
 } CoreData;

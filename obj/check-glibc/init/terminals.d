@@ -1,0 +1,4 @@
+obj/check-glibc/init/terminals.o: src/init/terminals.c \
+ src/init/../coredata.h src/init/../utils/utils.h
+src/init/../coredata.h:
+src/init/../utils/utils.h:

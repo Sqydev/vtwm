@@ -36,6 +36,14 @@
 #ifndef VTWM_INIT_H
 #define VTWM_INIT_H
 
+#include <X11/Xlib.h>
+
 void Init(void);
+
+int X11ErrorHandler(Display *display, XErrorEvent *event);
+
+void InitX11(void);
+void InitMonitors(void);
+void InitTerminals(void);
 
 #endif
