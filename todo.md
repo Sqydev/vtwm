@@ -1,4 +1,10 @@
+For now SpawnTerminals is working for only ONE arg. fix it
+
+Make option to configure mouse. becouse it's ugly now
+
 Cleanup your code
+
+When you onfocus browser and focus it again the keyboard doesn't work:(
 
 Make your own config
 

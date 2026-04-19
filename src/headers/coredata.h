@@ -55,8 +55,8 @@ typedef struct {
 	} Monitors;
 
 	struct {
-		int leftTerms;
-	} Init;
+		pid_t* pids;
+	} Terminals;
 
 	struct {
 		char* path;

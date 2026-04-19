@@ -39,6 +39,8 @@ char* GetExampleConfig(void) {
 	"\n"
 	"set terminal.command = \"alacritty\"\n"
 	"\n"
+	"set scale.value = \"96\"\n"
+	"\n"
 	"bind SUPER, ALT, M => {\n"
 	"	\"exit\"\n"
 	"}\n";

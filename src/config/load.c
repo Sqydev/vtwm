@@ -76,16 +76,36 @@ char* unquote(char* text) {
 typedef struct {
     const char* section;
     const char* key;
-    void (*apply)(const char* value);
+    void (*apply)(const char* key, const char* value);
 } SetHandler;
 
-void apply_terminal_command(const char* value) {
+void apply_terminal_command(const char* key, const char* value) {
+	(void)key;
+
     free(DATA.Config.termCommand);
     DATA.Config.termCommand = strdup(value);
 }
 
+void set_xrbd_scale(const char* key, const char* value) {
+	(void)key;
+
+	char* xrdbComm;
+	if(asprintf(&xrdbComm, "echo \"Xft.dpi: %s\" | xrdb -merge", value) == -1) {
+		return;
+	}
+
+	system(xrdbComm);
+	free(xrdbComm);
+}
+
+void set_env(const char* env, const char* value) {
+	setenv(env, value, 1);
+}
+
 const SetHandler SET_HANDLERS[] = {
     { "terminal", "command", apply_terminal_command },
+    { "scale", "value", set_xrbd_scale },
+    { "env", "*", set_env },
 };
 
 void handle_set(char* args) {
@@ -112,8 +132,8 @@ void handle_set(char* args) {
     const char* key = dot + 1;
 
     for(size_t i = 0; i < sizeof(SET_HANDLERS) / sizeof(*SET_HANDLERS); i++) {
-        if(strcmp(SET_HANDLERS[i].section, section) == 0 && strcmp(SET_HANDLERS[i].key, key) == 0) {
-            SET_HANDLERS[i].apply(value);
+        if(strcmp(SET_HANDLERS[i].section, section) == 0 && (strcmp(SET_HANDLERS[i].key, key) == 0 || strcmp(SET_HANDLERS[i].key, "*") == 0)) {
+            SET_HANDLERS[i].apply(key, value);
             return;
         }
     }

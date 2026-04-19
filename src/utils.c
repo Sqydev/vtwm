@@ -41,7 +41,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-void Spawn(int argvCount, ...) {
+pid_t Spawn(int argvCount, ...) {
     va_list va;
     va_start(va, argvCount);
 
@@ -63,7 +63,7 @@ void Spawn(int argvCount, ...) {
     if(pid < 0) {
         perror("fork failed");
         va_end(va);
-        return;
+        return -1;
     }
 
     if(pid == 0) {
@@ -74,6 +74,8 @@ void Spawn(int argvCount, ...) {
     }
 
     va_end(va);
+
+	return pid;
 }
 
 // TODO: Make this temp mkdir_p be not temp

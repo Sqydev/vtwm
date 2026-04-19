@@ -71,44 +71,49 @@ int main() {
 		switch(DATA.events.type) {
 			// NOTE: Some app want's to get it's window shown :)
 			case MapRequest: {
-				Window window = DATA.events.xmaprequest.window;
+			    Window window = DATA.events.xmaprequest.window;
 
-				XineramaScreenInfo monitor;
-				if(DATA.Init.leftTerms < 1) {
-					monitor = DATA.Monitors.Thing[DATA.Monitors.Currrent];
-				}
-				else {
-					monitor = DATA.Monitors.Thing[DATA.Init.leftTerms - 1];
-					DATA.Init.leftTerms--;
-				}
+			    Atom netWmPid = XInternAtom(DATA.Rooty.Display, "_NET_WM_PID", False);
+			    Atom cardinal = XInternAtom(DATA.Rooty.Display, "CARDINAL", False);
+			    Atom actualType;
+			    int actualFormat;
+			    unsigned long nItems, bytesAfter;
+			    unsigned char* prop = NULL;
+			    pid_t windowPid = -1;
 
-				XWindowChanges changes;
+			    if(XGetWindowProperty(DATA.Rooty.Display, window, netWmPid, 0, 1, False, cardinal, &actualType, &actualFormat, &nItems, &bytesAfter, &prop) == Success && prop) {
+			        windowPid = (pid_t)(*(unsigned long*)prop);
+			        XFree(prop);
+			    }
+
+			    int assignedMonitor = -1;
+			    if(windowPid > 0) {
+			        for(int i = 0; i < DATA.Monitors.Count; i++) {
+			            if(DATA.Terminals.pids[i] == windowPid) {
+			                assignedMonitor = i;
+			                DATA.Terminals.pids[i] = -1;
+			                break;
+			            }
+			        }
+			    }
+
+			    XineramaScreenInfo monitor = (assignedMonitor >= 0) ? DATA.Monitors.Thing[assignedMonitor] : DATA.Monitors.Thing[DATA.Monitors.Currrent];
+
+			    XWindowChanges changes;
 			    changes.x = monitor.x_org;
 			    changes.y = monitor.y_org;
 			    changes.width = monitor.width;
 			    changes.height = monitor.height;
 
-			    XConfigureWindow(
-			        DATA.Rooty.Display,
-			        window,
-			        CWX | CWY | CWWidth | CWHeight,
-			        &changes
-			    );
+			    XConfigureWindow(DATA.Rooty.Display, window, CWX | CWY | CWWidth | CWHeight, &changes);
 
-				// NOTE: SHOW IT
-				XMapWindow(DATA.Rooty.Display, DATA.events.xmaprequest.window);
+			    XMapWindow(DATA.Rooty.Display, window);
 
-				XSetInputFocus( // NOTE: Set focus
-				    DATA.Rooty.Display,
-				    window, // NOTE: Which window
-				    RevertToPointerRoot, // NOTE: When window desintegrates then focus goes to window bellow
-				    CurrentTime // NOTE: Time cuz it's async
-				);
+			    XSetInputFocus(DATA.Rooty.Display, window, RevertToPointerRoot, CurrentTime);
 
-				// NOTE: I wanna get this type of event
-				XSelectInput(DATA.Rooty.Display, window, EnterWindowMask);
+			    XSelectInput(DATA.Rooty.Display, window, EnterWindowMask);
 
-				break;
+			    break;
 			}
 
 			case KeyPress: {

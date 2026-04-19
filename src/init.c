@@ -49,10 +49,11 @@
 #include <unistd.h>
 
 void SpawnTerminals(void) {
-	DATA.Init.leftTerms = DATA.Monitors.Count;
-
-    for(int i = 0; i < DATA.Monitors.Count; i++) {
-        Spawn(1, DATA.Config.termCommand);
+    for(int i = DATA.Monitors.Count; i >= 0; i--) {
+        pid_t pid = Spawn(1, DATA.Config.termCommand);
+        if(pid > 0) {
+            DATA.Terminals.pids[i] = pid;
+        }
     }
 }
 
@@ -80,7 +81,7 @@ void SetUpDefaultConfig(void) {
 
 	// NOTE: Set scale
 	// If there isn't config there set to fallback 96
-	system("xrdb -merge <<< \"Xft.dpi: 96\"");
+	system("echo \"Xft.dpi: 96\" | xrdb -merge");
 }
 
 void Init(void) {
@@ -148,6 +149,8 @@ void Init(void) {
 	}
 
 	DATA.Monitors.Currrent = 0;
+
+	DATA.Terminals.pids = malloc(DATA.Monitors.Count * sizeof(pid_t));
 	
 	SpawnTerminals();
 

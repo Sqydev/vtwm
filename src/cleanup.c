@@ -57,4 +57,8 @@ void CleanUp(void) {
 	if(DATA.Config.termCommand) {
 		free(DATA.Config.termCommand);
 	}
+
+	if(DATA.Terminals.pids) {
+		free(DATA.Terminals.pids);
+	}
 }
