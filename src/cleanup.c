@@ -54,4 +54,7 @@ void CleanUp(void) {
 	if(DATA.Config.dir) {
 		free(DATA.Config.dir);
 	}
+	if(DATA.Config.termCommand) {
+		free(DATA.Config.termCommand);
+	}
 }

@@ -61,6 +61,8 @@ typedef struct {
 	struct {
 		char* path;
 		char* dir;
+
+		char* termCommand;
 	} Config;
 
 	XEvent events;

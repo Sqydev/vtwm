@@ -36,7 +36,7 @@
 #include "./headers/coredata.h"
 #include "./headers/cleanup.h"
 #include "./headers/utils.h"
-#include "config/config.h"
+#include "./config/config.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -45,13 +45,14 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 void SpawnTerminals(void) {
 	DATA.Init.leftTerms = DATA.Monitors.Count;
 
     for(int i = 0; i < DATA.Monitors.Count; i++) {
-        Spawn(1, "alacritty");
+        Spawn(1, DATA.Config.termCommand);
     }
 }
 
@@ -75,6 +76,8 @@ int WindowManagerErrorHandler(Display *display, XErrorEvent *event) {
 }
 
 void SetUpDefaultConfig(void) {
+	DATA.Config.termCommand = strdup("alacritty");
+
 	// NOTE: Set scale
 	// If there isn't config there set to fallback 96
 	system("xrdb -merge <<< \"Xft.dpi: 96\"");

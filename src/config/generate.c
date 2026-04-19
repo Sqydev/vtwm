@@ -55,7 +55,7 @@ void GenerateConfig(void) {
 		exit(EXIT_FAILURE);
     }
 
-    const char* cfg = GetDefaultConfig();
+    const char* cfg = GetExampleConfig();
     if(!cfg) {
         fclose(conf);
 		CleanUp();

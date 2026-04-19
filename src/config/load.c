@@ -34,18 +34,114 @@
 */
 
 #include "./config.h"
-
 #include "../headers/coredata.h"
 
+#include <ctype.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char* trim(char* text) {
+	while(isspace((unsigned char) *text)) {
+		text++;
+	}
+
+	char* end = text + strlen(text);
+
+	while(end > text && isspace((unsigned char) *(end - 1))) {
+		end--;
+	}
+
+	*end = '\0';
+	return text;
+}
+
+char* unquote(char* text) {
+	if(*text != '"') {
+		return text;
+	}
+
+	text++;
+
+	char* closingQuote = strrchr(text, '"');
+	if(closingQuote) {
+    	*closingQuote = '\0';
+	}
+
+	return text;
+}
+
+typedef struct {
+    const char* section;
+    const char* key;
+    void (*apply)(const char* value);
+} SetHandler;
+
+void apply_terminal_command(const char* value) {
+    free(DATA.Config.termCommand);
+    DATA.Config.termCommand = strdup(value);
+}
+
+const SetHandler SET_HANDLERS[] = {
+    { "terminal", "command", apply_terminal_command },
+};
+
+void handle_set(char* args) {
+    char* equalsSign = strchr(args, '=');
+    if(!equalsSign) {
+        return;
+	}
+
+    *equalsSign = '\0';
+
+    char* left_side = trim(args);
+    char* value = trim(equalsSign + 1);
+
+    value = unquote(value);
+
+    char* dot = strchr(left_side, '.');
+    if(!dot) {
+        return;
+	}
+
+    *dot = '\0';
+
+    const char* section = left_side;
+    const char* key = dot + 1;
+
+    for(size_t i = 0; i < sizeof(SET_HANDLERS) / sizeof(*SET_HANDLERS); i++) {
+        if(strcmp(SET_HANDLERS[i].section, section) == 0 && strcmp(SET_HANDLERS[i].key, key) == 0) {
+            SET_HANDLERS[i].apply(value);
+            return;
+        }
+    }
+}
 
 bool LoadConfig(void) {
-    FILE* conf = fopen(DATA.Config.path, "r");
-    if(!conf) {
-		return false;
+    FILE* config_file = fopen(DATA.Config.path, "r");
+    if(!config_file) {
+        return false;
+	}
+
+    char* line = NULL;
+    size_t line_capacity = 0;
+
+    while(getline(&line, &line_capacity, config_file) != -1) {
+        char* trimmed = trim(line);
+
+        if(*trimmed == '\0' || *trimmed == '#') {
+            continue;
+		}
+
+        if(strncmp(trimmed, "set ", 4) == 0) {
+            handle_set(trimmed + 4);
+            continue;
+        }
     }
 
-    fclose(conf);
-	return true;
+    free(line);
+    fclose(config_file);
+    return true;
 }

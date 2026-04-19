@@ -38,7 +38,7 @@
 
 #include <stdbool.h>
 
-char* GetDefaultConfig(void);
+char* GetExampleConfig(void);
 
 bool LoadConfig(void);
 void GenerateConfig(void);

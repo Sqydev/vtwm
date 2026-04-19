@@ -33,11 +33,11 @@
 *    source or binary distribution.
 */
 
-char* GetDefaultConfig(void) {
+char* GetExampleConfig(void) {
 	return
 	"# DEFAULT CONFIG. MAKE IT YOUR OWN BY DELETING THIS LINE\n"
 	"\n"
-	"set terminal = \"alacritty\"\n"
+	"set terminal.command = \"alacritty\"\n"
 	"\n"
 	"bind SUPER, ALT, M => {\n"
 	"	\"exit\"\n"
