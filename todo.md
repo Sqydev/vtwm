@@ -1,3 +1,5 @@
+Make the terminal on the main monitor be ALWAYLS focused.
+
 Make terminalCommand work with multiple args
 
 Make option to configure mouse. becouse it's ugly now

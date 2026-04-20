@@ -45,9 +45,7 @@ void InitTerminals(void) {
         DATA.Terminals.pids[i] = -1;
     }
 
-    for(int i = 0; i < DATA.Monitors.Count; i++) {
-        if(i == DATA.Monitors.Currrent) { continue; }
-
+    for(int i = 1; i < DATA.Monitors.Count; i++) {
         pid_t pid = Spawn(1, DATA.Config.termCommand);
         if(pid > 0) {
             DATA.Terminals.pids[i] = pid;
@@ -56,6 +54,6 @@ void InitTerminals(void) {
 
     pid_t pid = Spawn(1, DATA.Config.termCommand);
     if(pid > 0) {
-        DATA.Terminals.pids[DATA.Monitors.Currrent] = pid;
+        DATA.Terminals.pids[0] = pid;
     }
 }
