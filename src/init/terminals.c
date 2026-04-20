@@ -39,13 +39,23 @@
 #include <stdlib.h>
 
 void InitTerminals(void) {
-	DATA.Terminals.pids = malloc(DATA.Monitors.Count * sizeof(pid_t));
-	
-    for(int i = DATA.Monitors.Count - 1; i >= 0; i--) {
+    DATA.Terminals.pids = malloc(DATA.Monitors.Count * sizeof(pid_t));
+
+    for(int i = 0; i < DATA.Monitors.Count; i++) {
+        DATA.Terminals.pids[i] = -1;
+    }
+
+    for(int i = 0; i < DATA.Monitors.Count; i++) {
+        if(i == DATA.Monitors.Currrent) { continue; }
+
         pid_t pid = Spawn(1, DATA.Config.termCommand);
         if(pid > 0) {
             DATA.Terminals.pids[i] = pid;
         }
     }
-}
 
+    pid_t pid = Spawn(1, DATA.Config.termCommand);
+    if(pid > 0) {
+        DATA.Terminals.pids[DATA.Monitors.Currrent] = pid;
+    }
+}

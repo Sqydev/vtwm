@@ -34,6 +34,7 @@
 */
 
 #include "../cleanup/cleanup.h"
+#include "../logging/logging.h"
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -62,14 +63,14 @@ pid_t Spawn(int argvCount, ...) {
     pid_t pid = fork();
 
     if(pid < 0) {
-        perror("fork failed");
+		TraceLog("fork() failed");
         va_end(va);
         return -1;
     }
 
     if(pid == 0) {
         execvp(command, argv);
-        perror("execvp failed");
+		TraceLog("execvp() failed");
 		CleanUp();
         exit(EXIT_FAILURE);
     }

@@ -71,7 +71,7 @@ void EventLoop(void) {
 
 			    int assignedMonitor = -1;
 			    if(windowPid > 0) {
-			        for(int i = 0; i < DATA.Monitors.Count; i++) {
+			        for(int i = DATA.Monitors.Count - 1; i >= 0; i--) {
 			            if(DATA.Terminals.pids[i] == windowPid) {
 			                assignedMonitor = i;
 			                DATA.Terminals.pids[i] = -1;
@@ -83,6 +83,7 @@ void EventLoop(void) {
 			    XineramaScreenInfo monitor = (assignedMonitor >= 0) ? DATA.Monitors.Thing[assignedMonitor] : DATA.Monitors.Thing[DATA.Monitors.Currrent];
 
 			    XWindowChanges changes;
+
 			    changes.x = monitor.x_org;
 			    changes.y = monitor.y_org;
 			    changes.width = monitor.width;
