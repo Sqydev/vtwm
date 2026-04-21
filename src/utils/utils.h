@@ -39,6 +39,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+pid_t SpawnArr(char** command);
 pid_t Spawn(int argvCount, ...);
 int mkdir_p(const char *path, mode_t mode);
 

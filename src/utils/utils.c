@@ -43,6 +43,24 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+pid_t SpawnArr(char** command) {
+    pid_t pid = fork();
+
+    if(pid < 0) {
+		TraceLog("fork() failed");
+        return -1;
+    }
+
+    if(pid == 0) {
+        execvp(command[0], command);
+		TraceLog("execvp() failed");
+		CleanUp();
+        exit(EXIT_FAILURE);
+    }
+
+	return pid;
+}
+
 pid_t Spawn(int argvCount, ...) {
     va_list va;
     va_start(va, argvCount);
