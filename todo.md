@@ -1,5 +1,3 @@
-So, now you need to fix config system to NOT trim OR formal=t anything in beetwen ""
-
 Make the terminal on the main monitor be ALWAYLS focused.
 
 Make option to configure mouse. becouse it's ugly now
