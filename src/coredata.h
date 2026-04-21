@@ -64,6 +64,8 @@ typedef struct {
 		char* dir;
 
 		char* termCommand;
+		size_t termCommandArrCount;
+		char** termCommandArr;
 	} Config;
 
 	struct {

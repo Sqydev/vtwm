@@ -87,4 +87,9 @@ void CleanUpConfig(void) {
 	if(DATA.Config.termCommand) {
 		free(DATA.Config.termCommand);
 	}
+
+    for(size_t i = 0; i < DATA.Config.termCommandArrCount; i++) {
+        free(DATA.Config.termCommandArr[i]);
+    }
+    free(DATA.Config.termCommandArr);
 }

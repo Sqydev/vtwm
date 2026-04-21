@@ -34,15 +34,14 @@
 */
 
 #include "../coredata.h"
-
+ 
 #include "../utils/utils.h"
 #include "../logging/logging.h"
-
+ 
 #include <stdlib.h>
-#include <string.h>
-
+ 
 void InitTerminals(void) {
-	TraceLog("Starting terminals");
+    TraceLog("Starting terminals");
 
     DATA.Terminals.pids = malloc(DATA.Monitors.Count * sizeof(pid_t));
 
@@ -50,42 +49,17 @@ void InitTerminals(void) {
         DATA.Terminals.pids[i] = -1;
     }
 
-	size_t tookcnt = 0;
-	char* ptr = DATA.Config.termCommand;
-	while(*ptr != '\0') {
-    	if(*ptr == ' ') { tookcnt++; }
-    	ptr++;
-    	while(*ptr == ' ') { ptr++; }
-	}
-
-	char** spawnArr = malloc((tookcnt + 2) * sizeof(char*));
-	char* token = strtok(DATA.Config.termCommand, " ");
-	for(size_t i = 0; token != NULL; i++) {
-    	spawnArr[i] = malloc((strlen(token) + 1) * sizeof(char));
-    	strcpy(spawnArr[i], token);
-    	token = strtok(NULL, " ");
-	}
-	spawnArr[tookcnt + 1] = NULL;
-
-	TraceLog("Termianl command == %s", DATA.Config.termCommand);
-	for(size_t i = 0; i <= tookcnt; i++) {
-		TraceLog("Termianl command tokenised == %s", spawnArr[i]);
-	}
+    TraceLog("Terminal command == %s", DATA.Config.termCommand);
 
     for(int i = 1; i < DATA.Monitors.Count; i++) {
-        pid_t pid = Spawn(1, DATA.Config.termCommand);
+        pid_t pid = SpawnArr(DATA.Config.termCommandArr);
         if(pid > 0) {
             DATA.Terminals.pids[i] = pid;
         }
     }
-	
-    pid_t pid = SpawnArr(spawnArr);
+
+    pid_t pid = SpawnArr(DATA.Config.termCommandArr);
     if(pid > 0) {
         DATA.Terminals.pids[0] = pid;
     }
-
-	for(size_t i = 0; i < tookcnt; i++) {
-		free(spawnArr[i]);
-	}
-	free(spawnArr);
 }

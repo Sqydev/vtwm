@@ -36,102 +36,135 @@
 #include "./config.h"
 #include "../coredata.h"
 #include "../config/config.h"
-
+ 
 #include <ctype.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+ 
 char* trim(char* text) {
 	while(isspace((unsigned char) *text)) {
 		text++;
 	}
-
+ 
 	char* end = text + strlen(text);
-
+ 
 	while(end > text && isspace((unsigned char) *(end - 1))) {
 		end--;
 	}
-
+ 
 	*end = '\0';
 	return text;
 }
-
+ 
 char* unquote(char* text) {
 	if(*text != '"') {
 		return text;
 	}
-
+ 
 	text++;
-
+ 
 	char* closingQuote = strrchr(text, '"');
 	if(closingQuote) {
     	*closingQuote = '\0';
 	}
-
+ 
 	return text;
 }
-
+ 
 typedef struct {
     const char* section;
     const char* key;
     void (*apply)(const char* key, const char* value);
 } SetHandler;
-
+ 
 void apply_terminal_command(const char* key, const char* value) {
 	(void)key;
-
+ 
     free(DATA.Config.termCommand);
     DATA.Config.termCommand = strdup(value);
-}
 
+    char* tmp = strdup(DATA.Config.termCommand);
+    char* tok = strtok(tmp, " ");
+    while(tok != NULL) {
+        DATA.Config.termCommandArrCount++;
+        tok = strtok(NULL, " ");
+    }
+    free(tmp);
+
+    DATA.Config.termCommandArr = malloc((DATA.Config.termCommandArrCount + 1) * sizeof(char*));
+
+    char* termCopy = strdup(DATA.Config.termCommand);
+    char* token = strtok(termCopy, " ");
+
+    size_t i = 0;
+    while(token != NULL) {
+        DATA.Config.termCommandArr[i] = strdup(token);
+        i++;
+        token = strtok(NULL, " ");
+    }
+    DATA.Config.termCommandArr[i] = NULL;
+
+	free(termCopy);
+}
+ 
 void set_xrbd_scale(const char* key, const char* value) {
 	(void)key;
-
+ 
 	char* xrdbComm;
 	if(asprintf(&xrdbComm, "echo \"Xft.dpi: %s\" | xrdb -merge", value) == -1) {
 		return;
 	}
-
+ 
 	system(xrdbComm);
 	free(xrdbComm);
 }
-
+ 
 void set_env(const char* env, const char* value) {
 	setenv(env, value, 1);
 }
-
+ 
 const SetHandler SET_HANDLERS[] = {
     { "terminal", "command", apply_terminal_command },
     { "scale", "value", set_xrbd_scale },
     { "env", "*", set_env },
 };
-
+ 
 void handle_set(char* args) {
     char* equalsSign = strchr(args, '=');
     if(!equalsSign) {
         return;
 	}
-
+ 
     *equalsSign = '\0';
-
+ 
     char* left_side = trim(args);
-    char* value = trim(equalsSign + 1);
-
-    value = unquote(value);
-
+ 
+    char* raw = equalsSign + 1;
+    while(isspace((unsigned char)*raw)) raw++;
+ 
+    char* value;
+    if(*raw == '"') {
+        raw++;
+        char* closing = strrchr(raw, '"');
+        if(closing) *closing = '\0';
+        value = raw;
+    } else {
+        value = trim(raw);
+    }
+ 
     char* dot = strchr(left_side, '.');
     if(!dot) {
         return;
 	}
-
+ 
     *dot = '\0';
-
+ 
     const char* section = left_side;
     const char* key = dot + 1;
-
+ 
     for(size_t i = 0; i < sizeof(SET_HANDLERS) / sizeof(*SET_HANDLERS); i++) {
         if(strcmp(SET_HANDLERS[i].section, section) == 0 && (strcmp(SET_HANDLERS[i].key, key) == 0 || strcmp(SET_HANDLERS[i].key, "*") == 0)) {
             SET_HANDLERS[i].apply(key, value);
@@ -139,29 +172,29 @@ void handle_set(char* args) {
         }
     }
 }
-
+ 
 bool LoadConfig(void) {
     FILE* config_file = fopen(DATA.Config.path, "r");
     if(!config_file) {
         return false;
 	}
-
+ 
     char* line = NULL;
     size_t line_capacity = 0;
-
+ 
     while(getline(&line, &line_capacity, config_file) != -1) {
         char* trimmed = trim(line);
-
+ 
         if(*trimmed == '\0' || *trimmed == '#') {
             continue;
 		}
-
+ 
         if(strncmp(trimmed, "set ", 4) == 0) {
             handle_set(trimmed + 4);
             continue;
         }
     }
-
+ 
     free(line);
     fclose(config_file);
     return true;
