@@ -1,5 +1,3 @@
-Make the terminal on the main monitor be ALWAYLS focused.
-
 Make option to configure mouse. becouse it's ugly now
 
 Cleanup your code

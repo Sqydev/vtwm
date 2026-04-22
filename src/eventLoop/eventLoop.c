@@ -93,7 +93,9 @@ void EventLoop(void) {
 
 			    XMapWindow(DATA.Rooty.Display, window);
 
-			    XSetInputFocus(DATA.Rooty.Display, window, RevertToPointerRoot, CurrentTime);
+				if(assignedMonitor <= 0) {
+    				XSetInputFocus(DATA.Rooty.Display, window, RevertToPointerRoot, CurrentTime);
+				}
 
 			    XSelectInput(DATA.Rooty.Display, window, EnterWindowMask);
 
