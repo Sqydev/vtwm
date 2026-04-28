@@ -33,12 +33,13 @@
 *    source or binary distribution.
 */
 
+#include "./eventLoop.h"
+#include "./events/doRequests.h"
+
 #include "../coredata.h"
-#include "../cleanup/cleanup.h"
 
 #include <X11/Xlib.h>
 
-#include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/Xinerama.h>
 #include <X11/keysym.h>
@@ -46,139 +47,27 @@
 
 void EventLoop(void) {
 	while(1) {
-		// NOTE: Blocking(so yk no 100% cpu usadge and works only if there's work to do)
-		// Wait for next event from X server and save it to DATA.events
 		XNextEvent(DATA.Rooty.Display, &DATA.events);
 
-		// NOTE: Accualy do somethig with events(split into types)
 		switch(DATA.events.type) {
-			// NOTE: Some app want's to get it's window shown :)
 			case MapRequest: {
-			    Window window = DATA.events.xmaprequest.window;
-
-			    Atom netWmPid = XInternAtom(DATA.Rooty.Display, "_NET_WM_PID", False);
-			    Atom cardinal = XInternAtom(DATA.Rooty.Display, "CARDINAL", False);
-			    Atom actualType;
-			    int actualFormat;
-			    unsigned long nItems, bytesAfter;
-			    unsigned char* prop = NULL;
-			    pid_t windowPid = -1;
-
-			    if(XGetWindowProperty(DATA.Rooty.Display, window, netWmPid, 0, 1, False, cardinal, &actualType, &actualFormat, &nItems, &bytesAfter, &prop) == Success && prop) {
-			        windowPid = (pid_t)(*(unsigned long*)prop);
-			        XFree(prop);
-			    }
-
-			    int assignedMonitor = -1;
-			    if(windowPid > 0) {
-			        for(int i = DATA.Monitors.Count - 1; i >= 0; i--) {
-			            if(DATA.Terminals.pids[i] == windowPid) {
-			                assignedMonitor = i;
-			                DATA.Terminals.pids[i] = -1;
-			                break;
-			            }
-			        }
-			    }
-
-			    XineramaScreenInfo monitor = (assignedMonitor >= 0) ? DATA.Monitors.Thing[assignedMonitor] : DATA.Monitors.Thing[DATA.Monitors.Currrent];
-
-			    XWindowChanges changes;
-
-			    changes.x = monitor.x_org;
-			    changes.y = monitor.y_org;
-			    changes.width = monitor.width;
-			    changes.height = monitor.height;
-
-			    XConfigureWindow(DATA.Rooty.Display, window, CWX | CWY | CWWidth | CWHeight, &changes);
-
-			    XMapWindow(DATA.Rooty.Display, window);
-
-				if(assignedMonitor <= 0) {
-    				XSetInputFocus(DATA.Rooty.Display, window, RevertToPointerRoot, CurrentTime);
-				}
-
-			    XSelectInput(DATA.Rooty.Display, window, EnterWindowMask);
-
+				DoMapRequest();
 			    break;
 			}
 
 			case KeyPress: {
-			    KeySym sym = XLookupKeysym(&DATA.events.xkey, 0);
-
-				if (sym == XK_m) {
-       				if((DATA.events.xkey.state & Mod4Mask) && (DATA.events.xkey.state & Mod1Mask)) {
-       					CleanUp();
-						exit(EXIT_SUCCESS);
-					}
-   				}
-
+				DoKeyPress();
    				break;
 			}
 
 
 			case ConfigureRequest: {
-				// NOTE: What app wants
-			    XConfigureRequestEvent* AppWant = &DATA.events.xconfigurerequest;
-	
-				// NOTE: What we'll chainge becouse we are cherry pickng
-			    XWindowChanges changes;
-			    changes.border_width = AppWant->border_width;
-			    changes.sibling = AppWant->above;
-			    changes.stack_mode = AppWant->detail;
-			
-				// NOTE: Accualy configure it
-			    XConfigureWindow(DATA.Rooty.Display, AppWant->window, AppWant->value_mask, &changes);
+				DoConfigureRequest();
 			    break;
 			}
 
 			case EnterNotify: {
-				Window window = DATA.events.xcrossing.subwindow;
-    			if(window == None || window == DATA.Rooty.Root) { window = DATA.events.xcrossing.window; }
-
-    			if(DATA.events.xcrossing.mode != NotifyNormal) { break; }
-
-				XSetInputFocus( // NOTE: Set focus
-				    DATA.Rooty.Display,
-				    window, // NOTE: Which window
-				    RevertToPointerRoot, // NOTE: When window desintegrates then focus goes to window bellow
-				    CurrentTime // NOTE: Time cuz it's async
-				);
-
-				// NOTE: And not update monitor
-				int x;
-				int y;
-
-    			Window root;
-				Window child;
-
-    			int win_x;
-				int win_y;
-
-    			unsigned int mask;
-
-				// NOTE: Take cursor pos. I wont comment
-				XQueryPointer(
-			        DATA.Rooty.Display,
-			        DATA.Rooty.Root,
-			        &root,
-			        &child,
-			        &x,
-			        &y,
-			        &win_x,
-			        &win_y,
-			        &mask
-			    );
-
-				// NOTE: Do monitor loop and do box collision
-				for(int i = 0; i < DATA.Monitors.Count; i++) {
-			        XineramaScreenInfo m = DATA.Monitors.Thing[i];
-			
-			        if(x >= m.x_org && x < m.x_org + m.width && y >= m.y_org && y < m.y_org + m.height) {
-						DATA.Monitors.Currrent = i;
-			            break;
-			        }
-			    }
-
+				DoEnterNotify();
 				break;
 			}
 		}
