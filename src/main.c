@@ -47,19 +47,10 @@
 
 CoreData DATA;
 
-int main() {
+int main(void) {
 	Init();
 
-	// NOTE: Listen for win+alt+m
-	XGrabKey(
-	    DATA.Rooty.Display,
-	    XKeysymToKeycode(DATA.Rooty.Display, XStringToKeysym("m")),
-	    Mod4Mask | Mod1Mask,
-	    DATA.Rooty.Root,
-	    True,
-    	GrabModeAsync,
-    	GrabModeAsync
-	);
+	XGrabKey(DATA.Rooty.Display, XKeysymToKeycode(DATA.Rooty.Display, XStringToKeysym("m")), Mod4Mask | Mod1Mask, DATA.Rooty.Root, True, GrabModeAsync, GrabModeAsync);
 
 	EventLoop();
 

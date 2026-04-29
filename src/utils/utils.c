@@ -35,8 +35,12 @@
 
 #include "../cleanup/cleanup.h"
 #include "../logging/logging.h"
+#include "../coredata.h"
+
+#include <X11/X.h>
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -105,17 +109,35 @@ int mkdir_p(const char *path, mode_t mode) {
 
     snprintf(tmp, sizeof(tmp), "%s", path);
 
-    for (p = tmp + 1; *p; p++) {
-        if (*p == '/') {
+    for(p = tmp + 1; *p; p++) {
+        if(*p == '/') {
             *p = '\0';
-            if (mkdir(tmp, mode) != 0 && errno != EEXIST)
+            if(mkdir(tmp, mode) != 0 && errno != EEXIST) {
                 return -1;
+			}
             *p = '/';
         }
     }
 
-    if (mkdir(tmp, mode) != 0 && errno != EEXIST)
-        return -1;
+    if(mkdir(tmp, mode) != 0 && errno != EEXIST) { return -1; }
 
     return 0;
+}
+
+// NOTE: Wierd ahh pid getter from the internet
+pid_t GetWindowPid(Window window) {
+    Atom netWmPid = XInternAtom(DATA.Rooty.Display, "_NET_WM_PID", false);
+    Atom cardinal = XInternAtom(DATA.Rooty.Display, "CARDINAL", false);
+    Atom actualType;
+    int actualFormat;
+    unsigned long nItems, bytesAfter;
+    unsigned char *prop = NULL;
+    pid_t pid = -1;
+
+    if(XGetWindowProperty(DATA.Rooty.Display, window, netWmPid, 0, 1, false, cardinal, &actualType, &actualFormat, &nItems, &bytesAfter, &prop) == Success && prop) {
+        pid = (pid_t)(*(unsigned long *)prop);
+        XFree(prop);
+    }
+
+    return pid;
 }

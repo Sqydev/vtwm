@@ -34,35 +34,27 @@
 */
 
 #include "../../coredata.h"
+#include "../../utils/utils.h"
 
 #include <X11/Xlib.h>
+#include <X11/extensions/Xinerama.h>
+#include <sys/types.h>
 
 void DoMapRequest(void) {
     Window window = DATA.events.xmaprequest.window;
 
-    Atom netWmPid = XInternAtom(DATA.Rooty.Display, "_NET_WM_PID", False);
-    Atom cardinal = XInternAtom(DATA.Rooty.Display, "CARDINAL", False);
-    Atom actualType;
-    int actualFormat;
-    unsigned long nItems, bytesAfter;
-    unsigned char* prop = NULL;
-    pid_t windowPid = -1;
+	int assignedMonitor = -1;
+	pid_t windowPid = GetWindowPid(window);
 
-    if(XGetWindowProperty(DATA.Rooty.Display, window, netWmPid, 0, 1, False, cardinal, &actualType, &actualFormat, &nItems, &bytesAfter, &prop) == Success && prop) {
-        windowPid = (pid_t)(*(unsigned long*)prop);
-        XFree(prop);
-    }
-
-    int assignedMonitor = -1;
-    if(windowPid > 0) {
-        for(int i = DATA.Monitors.Count - 1; i >= 0; i--) {
-            if(DATA.Terminals.pids[i] == windowPid) {
-                assignedMonitor = i;
-                DATA.Terminals.pids[i] = -1;
-                break;
-            }
-        }
-    }
+	if(windowPid > 0) {
+		for(int i = DATA.Monitors.Count - 1; i >= 0; i--) {
+			if(DATA.Terminals.pids[i] == windowPid) {
+				assignedMonitor = i;
+				DATA.Terminals.pids[i] = -1;
+				break;
+			}
+		}
+	}
 
     XineramaScreenInfo monitor = (assignedMonitor >= 0) ? DATA.Monitors.Thing[assignedMonitor] : DATA.Monitors.Thing[DATA.Monitors.Currrent];
 

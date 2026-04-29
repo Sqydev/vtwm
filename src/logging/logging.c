@@ -47,7 +47,6 @@ void InitLogging(void) {
     char date[64];
     time_t now = time(NULL);
     struct tm* currTime = localtime(&now);
-	// Magic function
     strftime(date, sizeof(date), "%Y-%m-%d_%H-%M-%S", currTime);
 
     const char* home = getenv("HOME");
@@ -87,7 +86,7 @@ void TraceLog(const char* log, ...) {
     char date[64];
     time_t now = time(NULL);
     struct tm* currTime = localtime(&now);
-	// Magic function
+
     strftime(date, sizeof(date), "%Y-%m-%d_%H-%M-%S", currTime);
 	fprintf(DATA.Logging.logFile, "[%s] ", date);
 	vfprintf(DATA.Logging.logFile, log, va);

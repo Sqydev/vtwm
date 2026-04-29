@@ -36,11 +36,15 @@
 #ifndef VTWM_UTILS_H
 #define VTWM_UTILS_H
 
+#include <X11/Xlib.h>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 
 pid_t SpawnArr(char** command);
 pid_t Spawn(int argvCount, ...);
 int mkdir_p(const char *path, mode_t mode);
+
+pid_t GetWindowPid(Window window);
 
 #endif
