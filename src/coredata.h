@@ -41,6 +41,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <sys/types.h>
 
 typedef struct {
 	struct {
@@ -53,11 +54,9 @@ typedef struct {
 		int Currrent;
 
 		XineramaScreenInfo* Thing;
-	} Monitors;
 
-	struct {
-		pid_t* pids;
-	} Terminals;
+		pid_t* mtermsPids;
+	} Monitors;
 
 	struct {
 		char* path;

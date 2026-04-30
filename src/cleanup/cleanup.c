@@ -49,8 +49,8 @@ void CleanUp(void) {
 	if(DATA.Rooty.Display) {
 		XCloseDisplay(DATA.Rooty.Display);
 	}
-	if(DATA.Terminals.pids) {
-		free(DATA.Terminals.pids);
+	if(DATA.Monitors.mtermsPids) {
+		free(DATA.Monitors.mtermsPids);
 	}
 	CleanUpConfig();
 

@@ -48,9 +48,9 @@ void DoMapRequest(void) {
 
 	if(windowPid > 0) {
 		for(int i = DATA.Monitors.Count - 1; i >= 0; i--) {
-			if(DATA.Terminals.pids[i] == windowPid) {
+			if(DATA.Monitors.mtermsPids[i] == windowPid) {
 				assignedMonitor = i;
-				DATA.Terminals.pids[i] = -1;
+				DATA.Monitors.mtermsPids[i] = -1;
 				break;
 			}
 		}

@@ -43,10 +43,10 @@
 void InitTerminals(void) {
     TraceLog("Starting terminals");
 
-    DATA.Terminals.pids = malloc(DATA.Monitors.Count * sizeof(pid_t));
+    DATA.Monitors.mtermsPids = malloc(DATA.Monitors.Count * sizeof(pid_t));
 
     for(int i = 0; i < DATA.Monitors.Count; i++) {
-        DATA.Terminals.pids[i] = -1;
+        DATA.Monitors.mtermsPids[i] = -1;
     }
 
     TraceLog("Terminal command == %s", DATA.Config.termCommand);
@@ -54,12 +54,12 @@ void InitTerminals(void) {
     for(int i = 1; i < DATA.Monitors.Count; i++) {
         pid_t pid = SpawnArr(DATA.Config.termCommandArr);
         if(pid > 0) {
-            DATA.Terminals.pids[i] = pid;
+            DATA.Monitors.mtermsPids[i] = pid;
         }
     }
 
     pid_t pid = SpawnArr(DATA.Config.termCommandArr);
     if(pid > 0) {
-        DATA.Terminals.pids[0] = pid;
+        DATA.Monitors.mtermsPids[0] = pid;
     }
 }

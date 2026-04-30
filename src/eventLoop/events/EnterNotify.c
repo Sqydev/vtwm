@@ -42,7 +42,7 @@ void DoEnterNotify(void) {
 	Window window = DATA.events.xcrossing.subwindow;
     if(window == None || window == DATA.Rooty.Root) { window = DATA.events.xcrossing.window; }
 
-    if(DATA.events.xcrossing.mode != NotifyNormal) { break; }
+    if(DATA.events.xcrossing.mode != NotifyNormal) { return;; }
 
 	XSetInputFocus( // NOTE: Set focus
 	    DATA.Rooty.Display,
