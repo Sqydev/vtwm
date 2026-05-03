@@ -45,7 +45,7 @@ char* GetExampleConfig(void);
 
 void SetUpDefaultConfig(void);
 
-bool LoadConfig(void);
+void LoadConfig(void);
 void GenerateConfig(void);
 
 #endif

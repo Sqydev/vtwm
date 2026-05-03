@@ -34,14 +34,13 @@
 */
 
 char* GetExampleConfig(void) {
-	return
-	"# DEFAULT CONFIG. MAKE IT YOUR OWN BY DELETING THIS LINE\n"
-	"\n"
-	"set terminal.command = \"alacritty\"\n"
-	"\n"
-	"set scale.value = \"96\"\n"
-	"\n"
-	"bind SUPER, ALT, M => {\n"
-	"	\"exit\"\n"
-	"}\n";
+    return 
+	"-- VTWM default config\n"
+    "\n"
+    "set(\"terminal.command\", \"alacritty\")\n"
+    "set(\"scale.value\", 96)\n"
+    "\n"
+    "bind(\"SUPER+ALT+M\", function()\n"
+    "    exit()\n"
+    "end)\n";
 }

@@ -35,167 +35,62 @@
 
 #include "./config.h"
 #include "../coredata.h"
-#include "../config/config.h"
- 
-#include <ctype.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdio.h>
+#include "../logging/logging.h"
+
+#include <lauxlib.h>
+#include <lualib.h>
+#include <lua.h>
+
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
- 
-char* trim(char* text) {
-	while(isspace((unsigned char) *text)) {
-		text++;
-	}
- 
-	char* end = text + strlen(text);
- 
-	while(end > text && isspace((unsigned char) *(end - 1))) {
-		end--;
-	}
- 
-	*end = '\0';
-	return text;
-}
- 
-char* unquote(char* text) {
-	if(*text != '"') {
-		return text;
-	}
- 
-	text++;
- 
-	char* closingQuote = strrchr(text, '"');
-	if(closingQuote) {
-    	*closingQuote = '\0';
-	}
- 
-	return text;
-}
- 
-typedef struct {
-    const char* section;
-    const char* key;
-    void (*apply)(const char* key, const char* value);
-} SetHandler;
- 
-void apply_terminal_command(const char* key, const char* value) {
-	(void)key;
- 
-    free(DATA.Config.termCommand);
-    DATA.Config.termCommand = strdup(value);
 
-    char* tmp = strdup(DATA.Config.termCommand);
-    char* tok = strtok(tmp, " ");
-    while(tok != NULL) {
-        DATA.Config.termCommandArrCount++;
-        tok = strtok(NULL, " ");
-    }
-    free(tmp);
+int l_set(lua_State *L) {
+    const char *key = luaL_checkstring(L, 1);
 
-    DATA.Config.termCommandArr = malloc((DATA.Config.termCommandArrCount + 1) * sizeof(char*));
+    if(strcmp(key, "terminal.command") == 0) {
+        const char *val = luaL_checkstring(L, 2);
 
-    char* termCopy = strdup(DATA.Config.termCommand);
-    char* token = strtok(termCopy, " ");
+        free(DATA.Config.termCommand);
+        DATA.Config.termCommand = strdup(val);
+    }
+    else if(strcmp(key, "scale.value") == 0) {
+        int dpi = luaL_checkinteger(L, 2);
 
-    size_t i = 0;
-    while(token != NULL) {
-        DATA.Config.termCommandArr[i] = strdup(token);
-        i++;
-        token = strtok(NULL, " ");
+        char cmd[128];
+        snprintf(cmd, sizeof(cmd), "echo \"Xft.dpi: %d\" | xrdb -merge", dpi);
+        system(cmd);
     }
-    DATA.Config.termCommandArr[i] = NULL;
 
-	free(termCopy);
-}
- 
-void set_xrbd_scale(const char* key, const char* value) {
-	(void)key;
- 
-	char* xrdbComm;
-	if(asprintf(&xrdbComm, "echo \"Xft.dpi: %s\" | xrdb -merge", value) == -1) {
-		return;
-	}
- 
-	system(xrdbComm);
-	free(xrdbComm);
-}
- 
-void set_env(const char* env, const char* value) {
-	setenv(env, value, 1);
-}
- 
-const SetHandler SET_HANDLERS[] = {
-    { "terminal", "command", apply_terminal_command },
-    { "scale", "value", set_xrbd_scale },
-    { "env", "*", set_env },
-};
- 
-void handle_set(char* args) {
-    char* equalsSign = strchr(args, '=');
-    if(!equalsSign) {
-        return;
-	}
- 
-    *equalsSign = '\0';
- 
-    char* left_side = trim(args);
- 
-    char* raw = equalsSign + 1;
-    while(isspace((unsigned char)*raw)) raw++;
- 
-    char* value;
-    if(*raw == '"') {
-        raw++;
-        char* closing = strrchr(raw, '"');
-        if(closing) *closing = '\0';
-        value = raw;
-    } else {
-        value = trim(raw);
+    else if(strncmp(key, "env.", 4) == 0) {
+        const char *env = key + 4;
+        const char *val = luaL_checkstring(L, 2);
+        setenv(env, val, 1);
     }
- 
-    char* dot = strchr(left_side, '.');
-    if(!dot) {
-        return;
-	}
- 
-    *dot = '\0';
- 
-    const char* section = left_side;
-    const char* key = dot + 1;
- 
-    for(size_t i = 0; i < sizeof(SET_HANDLERS) / sizeof(*SET_HANDLERS); i++) {
-        if(strcmp(SET_HANDLERS[i].section, section) == 0 && (strcmp(SET_HANDLERS[i].key, key) == 0 || strcmp(SET_HANDLERS[i].key, "*") == 0)) {
-            SET_HANDLERS[i].apply(key, value);
-            return;
-        }
-    }
+
+    return 0;
 }
- 
-bool LoadConfig(void) {
-    FILE* config_file = fopen(DATA.Config.path, "r");
-    if(!config_file) {
-        return false;
-	}
- 
-    char* line = NULL;
-    size_t line_capacity = 0;
- 
-    while(getline(&line, &line_capacity, config_file) != -1) {
-        char* trimmed = trim(line);
- 
-        if(*trimmed == '\0' || *trimmed == '#') {
-            continue;
-		}
- 
-        if(strncmp(trimmed, "set ", 4) == 0) {
-            handle_set(trimmed + 4);
-            continue;
-        }
+
+void LoadConfig(void) {
+    lua_State* lua = luaL_newstate();
+
+    luaL_requiref(lua, "_G", luaopen_base, 1); lua_pop(lua, 1);
+    luaL_requiref(lua, LUA_TABLIBNAME, luaopen_table, 1); lua_pop(lua, 1);
+    luaL_requiref(lua, LUA_STRLIBNAME, luaopen_string, 1); lua_pop(lua, 1);
+    luaL_requiref(lua, LUA_MATHLIBNAME, luaopen_math, 1); lua_pop(lua, 1);
+
+    lua_pushnil(lua); lua_setglobal(lua, "dofile");
+    lua_pushnil(lua); lua_setglobal(lua, "load");
+    lua_pushnil(lua); lua_setglobal(lua, "loadfile");
+
+    lua_register(lua, "set", l_set);
+
+    if(access(DATA.Config.path, F_OK) != 0) {
+        TraceLog("Config not found, generating");
+        GenerateConfig();
     }
- 
-    free(line);
-    fclose(config_file);
-    return true;
+
+    if(luaL_dofile(lua, DATA.Config.path) != LUA_OK) {
+        TraceLog("Lua config error: %s", lua_tostring(lua, -1));
+    }
 }

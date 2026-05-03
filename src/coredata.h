@@ -50,6 +50,12 @@ typedef struct {
 	} Rooty;
 
 	struct {
+		bool on;
+
+		pid_t** windows;
+	} Tiling;
+
+	struct {
 		int Count;
 		int Currrent;
 

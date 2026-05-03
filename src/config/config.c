@@ -52,7 +52,7 @@ void InitConfig(void) {
         exit(EXIT_FAILURE);
     }
 
-    const char* config_path_fmt = "%s/.config/vtwm/vtwm.conf";
+    const char* config_path_fmt = "%s/.config/vtwm/vtwm.lua";
     const char* config_dir_fmt = "%s/.config/vtwm/";
 
     size_t path_len = snprintf(NULL, 0, config_path_fmt, home) + 1;
@@ -71,10 +71,7 @@ void InitConfig(void) {
     snprintf(DATA.Config.dir, dir_len, config_dir_fmt, home);
 
 	TraceLog("Trying to load the config");
-    if(!LoadConfig()) {
-		TraceLog("Couldn't load the config. Generating fresh one");
-    	GenerateConfig();
-    }
+    LoadConfig();
 }
 
 void CleanUpConfig(void) {
