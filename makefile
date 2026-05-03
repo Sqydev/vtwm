@@ -14,12 +14,6 @@ CC ?= gcc
 STD ?= -std=c99
 POSIX_C_SRC ?= -D_POSIX_C_SOURCE=200809L
 
-X11_LDFLAGS := -lX11 -lXinerama
-
-# Xephyr test env
-XEPHYR_DISPLAY ?= :1
-XEPHYR_RES     ?= 800x600
-
 ifeq ($(LIBC),static-musl)
   LIBC_CFLAGS  := -static
   LIBC_LDFLAGS := -static
@@ -29,7 +23,7 @@ else
 endif
 
 CFLAGS += $(BASE_CFLAGS) $(REL_CFLAGS) $(LIBC_CFLAGS) $(STD) $(POSIX_C_SRC)
-LDFLAGS ?= $(LIBC_LDFLAGS)
+LDFLAGS = $(LIBC_LDFLAGS) -lX11 -lXinerama -llua
 
 # Paths
 SRC_DIR := src
@@ -76,11 +70,11 @@ update:
 build: $(OUT)
 
 local-build:
-	$(MAKE) PROFILE=local LIBC=glibc CFLAGS="$(BASE_CFLAGS) $(REL_CFLAGS)" LDFLAGS="" build
+	$(MAKE) PROFILE=local LIBC=glibc CFLAGS="$(BASE_CFLAGS) $(REL_CFLAGS)" build
 
 san-build:
 	$(MAKE) PROFILE=san LIBC=glibc CFLAGS="$(BASE_CFLAGS) $(DEV_CFLAGS)" \
-		LDFLAGS="-fsanitize=address,undefined $(X11_LDFLAGS)" build
+		LDFLAGS="-fsanitize=address,undefined" build
 
 check-build:
 	$(MAKE) PROFILE=check LIBC=glibc CFLAGS="$(BASE_CFLAGS) $(REL_CFLAGS)" build
@@ -90,11 +84,11 @@ test-build: san-build check-build
 wm: run-xsession
 
 run-xsession: build
-	@exec startx ./compiled/local/vtwm-local-glibc --
+	startx ./compiled/local/vtwm-local-glibc --
 
 $(OUT): $(OBJ)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) $(OBJ) -o $@ $(LDFLAGS) $(X11_LDFLAGS)
+	$(CC) $(CFLAGS) $(OBJ) -o $@ $(LDFLAGS)
 
 $(OBJ_SUBDIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(@D)
