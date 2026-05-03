@@ -38,9 +38,5 @@ char* GetExampleConfig(void) {
 	"-- VTWM default config\n"
     "\n"
     "set(\"terminal.command\", \"alacritty\")\n"
-    "set(\"scale.value\", 96)\n"
-    "\n"
-    "bind(\"SUPER+ALT+M\", function()\n"
-    "    exit()\n"
-    "end)\n";
+    "set(\"scale.value\", 96)\n";
 }

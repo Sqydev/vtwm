@@ -44,6 +44,8 @@ void SetUpDefaultConfig(void) {
 	TraceLog("Setting up default config settings");
 
 	DATA.Config.termCommand = strdup("alacritty");
+	DATA.Config.termCommandArr[0] = DATA.Config.termCommand;
+	DATA.Config.termCommandArrCount = 1;
 
 	// NOTE: Set scale
 	// If there isn't config there set to fallback 96

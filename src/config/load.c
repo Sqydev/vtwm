@@ -45,26 +45,50 @@
 #include <stdlib.h>
 #include <string.h>
 
-int l_set(lua_State *L) {
-    const char *key = luaL_checkstring(L, 1);
+int l_set(lua_State* lua) {
+    const char* key = luaL_checkstring(lua, 1);
 
     if(strcmp(key, "terminal.command") == 0) {
-        const char *val = luaL_checkstring(L, 2);
+        const char* val = luaL_checkstring(lua, 2);
 
         free(DATA.Config.termCommand);
         DATA.Config.termCommand = strdup(val);
+
+		char* tmp = strdup(DATA.Config.termCommand);
+    	char* tok = strtok(tmp, " ");
+	    while(tok != NULL) {
+        	DATA.Config.termCommandArrCount++;
+    	    tok = strtok(NULL, " ");
+	    }
+    	free(tmp);
+
+	    DATA.Config.termCommandArr = malloc((DATA.Config.termCommandArrCount + 1) * sizeof(char*));
+
+    	char* termCopy = strdup(DATA.Config.termCommand);
+	    char* token = strtok(termCopy, " ");
+
+    	size_t i = 0;
+	    while(token != NULL) {
+        	DATA.Config.termCommandArr[i] = strdup(token);
+    	    i++;
+	        token = strtok(NULL, " ");
+	    }
+	    DATA.Config.termCommandArr[i] = NULL;
+
+		free(termCopy);
+
+		TraceLog("Terminal command is: %s", DATA.Config.termCommand);
     }
     else if(strcmp(key, "scale.value") == 0) {
-        int dpi = luaL_checkinteger(L, 2);
+        int dpi = luaL_checkinteger(lua, 2);
 
         char cmd[128];
         snprintf(cmd, sizeof(cmd), "echo \"Xft.dpi: %d\" | xrdb -merge", dpi);
         system(cmd);
     }
-
     else if(strncmp(key, "env.", 4) == 0) {
-        const char *env = key + 4;
-        const char *val = luaL_checkstring(L, 2);
+        const char* env = key + 4;
+        const char* val = luaL_checkstring(lua, 2);
         setenv(env, val, 1);
     }
 
