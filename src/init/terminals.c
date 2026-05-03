@@ -52,13 +52,23 @@ void InitTerminals(void) {
     TraceLog("Terminal command == %s", DATA.Config.termCommand);
 
     for(int i = 1; i < DATA.Monitors.Count; i++) {
-        pid_t pid = SpawnArr(DATA.Config.termCommandArr);
+		pid_t pid;
+        if(DATA.Config.termCommandArr) {
+			pid = SpawnArr(DATA.Config.termCommandArr);
+		} else {
+			pid = Spawn(1, DATA.Config.termCommand);
+		}
         if(pid > 0) {
             DATA.Monitors.mtermsPids[i] = pid;
         }
     }
 
-    pid_t pid = SpawnArr(DATA.Config.termCommandArr);
+	pid_t pid;
+    if(DATA.Config.termCommandArr) {
+		pid = SpawnArr(DATA.Config.termCommandArr);
+	} else {
+		pid = Spawn(1, DATA.Config.termCommand);
+	}
     if(pid > 0) {
         DATA.Monitors.mtermsPids[0] = pid;
     }
