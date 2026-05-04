@@ -43,10 +43,27 @@
 #include <stdio.h>
 #include <sys/types.h>
 
+// NOTE: You do multiple of keys/mods by doing or operation on them
+typedef struct {
+	int mods;
+	int keys;
+
+	size_t actionsCount;
+	struct {
+		char** argv;
+		size_t argc;
+
+		bool terminalAction;
+	} *actions;
+} KeyBind;
+
 typedef struct {
 	struct {
 		Display* Display;
 		Window Root;
+
+		KeyBind* keybinds;
+		size_t keybindsCount;
 	} Rooty;
 
 	struct {

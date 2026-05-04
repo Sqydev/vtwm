@@ -96,6 +96,29 @@ void TraceLog(const char* log, ...) {
 	va_end(va);
 }
 
+void TraceLogFirstLast(bool first, bool last, const char* log, ...) {
+	if(!DATA.Logging.logFile) { return; }
+
+    va_list va;
+    va_start(va, log);
+
+	if(first) {
+    	char date[64];
+    	time_t now = time(NULL);
+    	struct tm* currTime = localtime(&now);
+
+    	strftime(date, sizeof(date), "%Y-%m-%d_%H-%M-%S", currTime);
+		fprintf(DATA.Logging.logFile, "[%s] ", date);
+	}
+	vfprintf(DATA.Logging.logFile, log, va);
+	if(last) {
+		fprintf(DATA.Logging.logFile, "\n");
+	}
+	fflush(DATA.Logging.logFile);
+
+	va_end(va);
+}
+
 void CleanUpLogging(void) {
 	if(DATA.Logging.logFile) {
 		fclose(DATA.Logging.logFile);

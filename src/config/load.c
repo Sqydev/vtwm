@@ -36,6 +36,7 @@
 #include "./config.h"
 #include "../coredata.h"
 #include "../logging/logging.h"
+#include "../cleanup/cleanup.h"
 
 #include <lauxlib.h>
 #include <lualib.h>
@@ -53,6 +54,7 @@ int l_set(lua_State* lua) {
 
         free(DATA.Config.termCommand);
         DATA.Config.termCommand = strdup(val);
+		DATA.Config.termCommandArrCount = 0;
 
 		char* tmp = strdup(DATA.Config.termCommand);
     	char* tok = strtok(tmp, " ");
@@ -62,6 +64,15 @@ int l_set(lua_State* lua) {
 	    }
     	free(tmp);
 
+		if(DATA.Config.termCommandArr) {
+    		for(size_t i = 0; i < DATA.Config.termCommandArrCount; i++) {
+        		free(DATA.Config.termCommandArr[i]);
+    		}
+    		free(DATA.Config.termCommandArr);
+		}
+
+		DATA.Config.termCommandArr = NULL;
+		DATA.Config.termCommandArrCount = 0;
 	    DATA.Config.termCommandArr = malloc((DATA.Config.termCommandArrCount + 1) * sizeof(char*));
 
     	char* termCopy = strdup(DATA.Config.termCommand);
@@ -78,6 +89,11 @@ int l_set(lua_State* lua) {
 		free(termCopy);
 
 		TraceLog("Terminal command is: %s", DATA.Config.termCommand);
+		TraceLogFirstLast(true, false, "Terminal array is: ");
+		for(size_t i = 0; i < DATA.Config.termCommandArrCount; i++) {
+			if(i + 1 != DATA.Config.termCommandArrCount) { TraceLogFirstLast(false, false, "%s ", DATA.Config.termCommandArr[i]); }
+			else { TraceLogFirstLast(false, true, "%s", DATA.Config.termCommandArr[i]); }
+		}
     }
     else if(strcmp(key, "scale.value") == 0) {
         int dpi = luaL_checkinteger(lua, 2);
@@ -85,14 +101,77 @@ int l_set(lua_State* lua) {
         char cmd[128];
         snprintf(cmd, sizeof(cmd), "echo \"Xft.dpi: %d\" | xrdb -merge", dpi);
         system(cmd);
+
+		TraceLog("Set scale to: %d dpi", dpi);
     }
     else if(strncmp(key, "env.", 4) == 0) {
         const char* env = key + 4;
         const char* val = luaL_checkstring(lua, 2);
         setenv(env, val, 1);
+		TraceLog("Set env: %s to %s", env, val);
     }
 
     return 0;
+}
+
+int l_bind(lua_State* lua) {
+	const char* key = luaL_checkstring(lua, 1);
+	(void)key;
+	luaL_checktype(lua, 2, LUA_TTABLE);
+
+	KeyBind bind = {0};
+
+	bind.actionsCount = lua_rawlen(lua, 2);
+	bind.actions = malloc(sizeof(*bind.actions) * bind.actionsCount);
+	if(!bind.actions) {
+    	TraceLog("malloc failed :(");
+		CleanUp();
+		exit(EXIT_FAILURE);
+	}
+
+	for(size_t i = 0; i < bind.actionsCount; i++) {
+		// YAY, queues
+		lua_rawgeti(lua, 2, i + 1);
+
+		luaL_checktype(lua, -1, LUA_TTABLE);
+
+		bind.actions[i].argc = lua_rawlen(lua, -1);
+		TraceLog("Bind %zu argc: %zu", i, bind.actions[i].argc);
+
+		bind.actions[i].argv = malloc(sizeof(char*) * (bind.actions[i].argc + 1));
+		bind.actions[i].terminalAction = true;
+
+		for(size_t j = 0; j < bind.actions[i].argc; j++) {
+			lua_rawgeti(lua, -1, j + 1);
+
+			bind.actions[i].argv[j] = strdup(luaL_checkstring(lua, -1));
+
+			lua_pop(lua, 1);
+		}
+
+		TraceLogFirstLast(true, false, "Bind %zu argv: ", bind.actions[i].argc);
+		for(size_t z = 0; z < bind.actions[i].argc; z++) {
+			if(z + 1 != bind.actions[i].argc) { TraceLogFirstLast(false, false, "%s ", bind.actions[i].argv[z]); }
+			else { TraceLogFirstLast(false, true, "%s", bind.actions[i].argv[z]); }
+		}
+
+		bind.actions[i].argv[bind.actions[i].argc] = NULL;
+
+		lua_pop(lua, 1);
+	}
+
+	KeyBind* tmp = realloc( DATA.Rooty.keybinds, sizeof(KeyBind) * (DATA.Rooty.keybindsCount + 1));
+	if(!tmp) {
+    	TraceLog("malloc failed :(");
+		CleanUp();
+		exit(EXIT_FAILURE);
+	}
+	DATA.Rooty.keybinds = tmp;
+
+	DATA.Rooty.keybinds[DATA.Rooty.keybindsCount] = bind;
+	DATA.Rooty.keybindsCount++;
+
+	return 0;
 }
 
 void LoadConfig(void) {
@@ -108,6 +187,8 @@ void LoadConfig(void) {
     lua_pushnil(lua); lua_setglobal(lua, "loadfile");
 
     lua_register(lua, "set", l_set);
+	DATA.Rooty.keybindsCount = 0;
+	lua_register(lua, "bind", l_bind);
 
     if(access(DATA.Config.path, F_OK) != 0) {
         TraceLog("Config not found, generating");
@@ -117,4 +198,6 @@ void LoadConfig(void) {
     if(luaL_dofile(lua, DATA.Config.path) != LUA_OK) {
         TraceLog("Lua config error: %s", lua_tostring(lua, -1));
     }
+
+	lua_close(lua);
 }

@@ -37,6 +37,12 @@ char* GetExampleConfig(void) {
     return 
 	"-- VTWM default config\n"
     "\n"
+	"MainMod = \"Mod4\"\n"
+    "\n"
     "set(\"terminal.command\", \"alacritty\")\n"
-    "set(\"scale.value\", 96)\n";
+    "set(\"scale.value\", 96)\n"
+	"\n"
+	"bind(MainMod, {\n"
+	"	{\"example\", \"example\"}\n"
+	"})";
 }

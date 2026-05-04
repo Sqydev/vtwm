@@ -75,18 +75,31 @@ void InitConfig(void) {
 }
 
 void CleanUpConfig(void) {
-	if(DATA.Config.path) {
-		free(DATA.Config.path);
-	}
-	if(DATA.Config.dir) {
-		free(DATA.Config.dir);
-	}
-	if(DATA.Config.termCommand) {
-		free(DATA.Config.termCommand);
-	}
+    for(size_t i = 0; i < DATA.Rooty.keybindsCount; i++) {
+        KeyBind* bind = &DATA.Rooty.keybinds[i];
+
+        for(size_t j = 0; j < bind->actionsCount; j++) {
+            for(size_t k = 0; k < bind->actions[j].argc; k++) {
+                free(bind->actions[j].argv[k]);
+            }
+
+            free(bind->actions[j].argv);
+        }
+
+        free(bind->actions);
+    }
+
+    free(DATA.Rooty.keybinds);
+
+    DATA.Rooty.keybinds = NULL;
+    DATA.Rooty.keybindsCount = 0;
+
+	free(DATA.Config.path);
+    free(DATA.Config.dir);
+    free(DATA.Config.termCommand);
 
     for(size_t i = 0; i < DATA.Config.termCommandArrCount; i++) {
         free(DATA.Config.termCommandArr[i]);
     }
-    free(DATA.Config.termCommandArr);
+	free(DATA.Config.termCommandArr);
 }

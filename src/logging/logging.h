@@ -37,8 +37,11 @@
 #ifndef VTWM_LOGGING_H
 #define VTWM_LOGGING_H
 
+#include <stdbool.h>
+
 void InitLogging(void);
-void TraceLog(char* log, ...);
+void TraceLog(const char* log, ...);
+void TraceLogFirstLast(bool first, bool last, const char* log, ...);
 void CleanUpLogging(void);
 
 #endif
