@@ -46,5 +46,8 @@ char* GetExampleConfig(void) {
     "\n"
     "bind({\"Super\", \"Alt\"}, \"m\", {\n"
     "    {\"exit\"}\n"
+    "})\n"
+    "bind(\"Super\", \"b\", {\n"
+    "    {\"librewolf\"}\n"
     "})\n";
 }
