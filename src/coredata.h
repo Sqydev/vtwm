@@ -43,17 +43,15 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-// NOTE: You do multiple of keys/mods by doing or operation on them
+// NOTE: You do multiple of mods by doing or operation on them
 typedef struct {
-	int mods;
-	int keys;
+	unsigned int mods;
+	KeySym key;
 
 	size_t actionsCount;
 	struct {
 		char** argv;
 		size_t argc;
-
-		bool terminalAction;
 	} *actions;
 } KeyBind;
 

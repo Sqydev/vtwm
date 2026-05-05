@@ -46,6 +46,51 @@
 #include <stdlib.h>
 #include <string.h>
 
+int parse_mod(const char* mod_str) {
+    if(strcmp(mod_str, "Mod1") == 0 || strcmp(mod_str, "Alt") == 0) { return Mod1Mask; }
+    if(strcmp(mod_str, "Mod2") == 0) { return Mod2Mask; }
+    if(strcmp(mod_str, "Mod3") == 0) { return Mod3Mask; }
+    if(strcmp(mod_str, "Mod4") == 0 || strcmp(mod_str, "Super") == 0) { return Mod4Mask; }
+    if(strcmp(mod_str, "Mod5") == 0) { return Mod5Mask; }
+    if(strcmp(mod_str, "Shift") == 0) { return ShiftMask; }
+    if(strcmp(mod_str, "Control") == 0 || strcmp(mod_str, "Ctrl") == 0) { return ControlMask; }
+    if(strcmp(mod_str, "Lock") == 0) { return LockMask; }
+ 
+    TraceLog("Unknown modifier: %s", mod_str);
+    return 0;
+}
+
+int parse_mods_arg(lua_State* lua, int idx) {
+    int mods = 0;
+ 
+    if(lua_type(lua, idx) == LUA_TSTRING) {
+        mods = parse_mod(luaL_checkstring(lua, idx));
+    }
+    else if(lua_type(lua, idx) == LUA_TTABLE) {
+        size_t n = lua_rawlen(lua, idx);
+        for(size_t i = 1; i <= n; i++) {
+            lua_rawgeti(lua, idx, (lua_Integer)i);
+            mods |= parse_mod(luaL_checkstring(lua, -1));
+            lua_pop(lua, 1);
+        }
+    }
+    else {
+        luaL_error(lua, "bind: arg %d must be a mod string or table of mod strings", idx);
+    }
+ 
+    return mods;
+}
+ 
+void parse_keys_arg(lua_State* lua, int idx, KeyBind* bind) {
+    const char* name = luaL_checkstring(lua, idx);
+    KeySym sym = XStringToKeysym(name);
+    if(sym == NoSymbol) {
+        TraceLog("Unknown key: %s", name);
+    }
+ 
+    bind->key = sym;
+}
+
 int l_set(lua_State* lua) {
     const char* key = luaL_checkstring(lua, 1);
 
@@ -115,63 +160,62 @@ int l_set(lua_State* lua) {
 }
 
 int l_bind(lua_State* lua) {
-	const char* key = luaL_checkstring(lua, 1);
-	(void)key;
-	luaL_checktype(lua, 2, LUA_TTABLE);
-
-	KeyBind bind = {0};
-
-	bind.actionsCount = lua_rawlen(lua, 2);
-	bind.actions = malloc(sizeof(*bind.actions) * bind.actionsCount);
-	if(!bind.actions) {
-    	TraceLog("malloc failed :(");
-		CleanUp();
-		exit(EXIT_FAILURE);
-	}
-
-	for(size_t i = 0; i < bind.actionsCount; i++) {
-		// YAY, queues
-		lua_rawgeti(lua, 2, i + 1);
-
-		luaL_checktype(lua, -1, LUA_TTABLE);
-
-		bind.actions[i].argc = lua_rawlen(lua, -1);
-		TraceLog("Bind %zu argc: %zu", i, bind.actions[i].argc);
-
-		bind.actions[i].argv = malloc(sizeof(char*) * (bind.actions[i].argc + 1));
-		bind.actions[i].terminalAction = true;
-
-		for(size_t j = 0; j < bind.actions[i].argc; j++) {
-			lua_rawgeti(lua, -1, j + 1);
-
-			bind.actions[i].argv[j] = strdup(luaL_checkstring(lua, -1));
-
-			lua_pop(lua, 1);
-		}
-
-		TraceLogFirstLast(true, false, "Bind %zu argv: ", bind.actions[i].argc);
-		for(size_t z = 0; z < bind.actions[i].argc; z++) {
-			if(z + 1 != bind.actions[i].argc) { TraceLogFirstLast(false, false, "%s ", bind.actions[i].argv[z]); }
-			else { TraceLogFirstLast(false, true, "%s", bind.actions[i].argv[z]); }
-		}
-
-		bind.actions[i].argv[bind.actions[i].argc] = NULL;
-
-		lua_pop(lua, 1);
-	}
-
-	KeyBind* tmp = realloc( DATA.Rooty.keybinds, sizeof(KeyBind) * (DATA.Rooty.keybindsCount + 1));
-	if(!tmp) {
-    	TraceLog("malloc failed :(");
-		CleanUp();
-		exit(EXIT_FAILURE);
-	}
-	DATA.Rooty.keybinds = tmp;
-
-	DATA.Rooty.keybinds[DATA.Rooty.keybindsCount] = bind;
-	DATA.Rooty.keybindsCount++;
-
-	return 0;
+    KeyBind bind = {0};
+ 
+    bind.mods = parse_mods_arg(lua, 1);
+ 
+    parse_keys_arg(lua, 2, &bind);
+ 
+    TraceLog("Bind mods=0x%x key: ", bind.mods, bind.key);
+ 
+    luaL_checktype(lua, 3, LUA_TTABLE);
+ 
+    bind.actionsCount = lua_rawlen(lua, 3);
+    bind.actions = malloc(sizeof(*bind.actions) * bind.actionsCount);
+    if(!bind.actions) {
+        TraceLog("malloc failed :(");
+        CleanUp();
+        exit(EXIT_FAILURE);
+    }
+ 
+    for(size_t i = 0; i < bind.actionsCount; i++) {
+        lua_rawgeti(lua, 3, (lua_Integer)(i + 1));
+        luaL_checktype(lua, -1, LUA_TTABLE);
+ 
+        bind.actions[i].argc = lua_rawlen(lua, -1);
+        TraceLog("Bind %zu argc: %zu", i, bind.actions[i].argc);
+ 
+        bind.actions[i].argv = malloc(sizeof(char*) * (bind.actions[i].argc + 1));
+ 
+        for(size_t j = 0; j < bind.actions[i].argc; j++) {
+            lua_rawgeti(lua, -1, (lua_Integer)(j + 1));
+            bind.actions[i].argv[j] = strdup(luaL_checkstring(lua, -1));
+            lua_pop(lua, 1);
+        }
+ 
+        TraceLogFirstLast(true, false, "Bind %zu argv: ", bind.actions[i].argc);
+        for(size_t z = 0; z < bind.actions[i].argc; z++) {
+            if(z + 1 != bind.actions[i].argc) { TraceLogFirstLast(false, false, "%s ", bind.actions[i].argv[z]); }
+            else                               { TraceLogFirstLast(false, true,  "%s", bind.actions[i].argv[z]); }
+        }
+ 
+        bind.actions[i].argv[bind.actions[i].argc] = NULL;
+ 
+        lua_pop(lua, 1);
+    }
+ 
+    KeyBind* tmp = realloc(DATA.Rooty.keybinds, sizeof(KeyBind) * (DATA.Rooty.keybindsCount + 1));
+    if(!tmp) {
+        TraceLog("realloc failed :(");
+        free(bind.actions);
+        CleanUp();
+        exit(EXIT_FAILURE);
+    }
+    DATA.Rooty.keybinds = tmp;
+    DATA.Rooty.keybinds[DATA.Rooty.keybindsCount] = bind;
+    DATA.Rooty.keybindsCount++;
+ 
+    return 0;
 }
 
 void LoadConfig(void) {

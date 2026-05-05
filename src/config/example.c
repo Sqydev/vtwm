@@ -34,15 +34,17 @@
 */
 
 char* GetExampleConfig(void) {
-    return 
-	"-- VTWM default config\n"
-    "\n"
-	"MainMod = \"Mod4\"\n"
+    return
+    "-- VTWM default config\n"
     "\n"
     "set(\"terminal.command\", \"alacritty\")\n"
     "set(\"scale.value\", 96)\n"
-	"\n"
-	"bind(MainMod, {\n"
-	"	{\"example\", \"example\"}\n"
-	"})";
+    "\n"
+    "bind(\"Super\", \"Return\", {\n"
+    "    {\"alacritty\"}\n"
+    "})\n"
+    "\n"
+    "bind({\"Super\", \"Alt\"}, \"m\", {\n"
+    "    {\"exit\"}\n"
+    "})\n";
 }

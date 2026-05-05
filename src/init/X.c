@@ -73,6 +73,14 @@ int X11ErrorHandler(Display *display, XErrorEvent *event) {
 	exit(EXIT_FAILURE);
 }
 
+void InitKeyBinds(void) {
+	//XGrabKey(DATA.Rooty.Display, XKeysymToKeycode(DATA.Rooty.Display, XStringToKeysym("m")), Mod4Mask | Mod1Mask, DATA.Rooty.Root, True, GrabModeAsync, GrabModeAsync);
+
+	for(size_t i = 0; i < DATA.Rooty.keybindsCount; i++) {
+		XGrabKey(DATA.Rooty.Display, XKeysymToKeycode(DATA.Rooty.Display, DATA.Rooty.keybinds[i].key), DATA.Rooty.keybinds[i].mods, DATA.Rooty.Root, true, GrabModeAsync, GrabModeAsync);
+	}
+}
+
 void InitX11(void) {
 	XSetErrorHandler(X11ErrorHandler);
 
@@ -87,4 +95,6 @@ void InitX11(void) {
 	DATA.Rooty.Root = DefaultRootWindow(DATA.Rooty.Display);
 
 	XSelectInput(DATA.Rooty.Display, DATA.Rooty.Root, SubstructureRedirectMask | SubstructureNotifyMask | EnterWindowMask | KeyPressMask);
+
+	InitKeyBinds();
 }

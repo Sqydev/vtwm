@@ -50,8 +50,6 @@ CoreData DATA;
 int main(void) {
 	Init();
 
-	XGrabKey(DATA.Rooty.Display, XKeysymToKeycode(DATA.Rooty.Display, XStringToKeysym("m")), Mod4Mask | Mod1Mask, DATA.Rooty.Root, True, GrabModeAsync, GrabModeAsync);
-
 	EventLoop();
 
 	return EXIT_SUCCESS;

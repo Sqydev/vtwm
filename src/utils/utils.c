@@ -47,6 +47,63 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+pid_t SpawnArrFree(char** command) {
+    pid_t pid = fork();
+
+    if(pid < 0) {
+		TraceLog("fork() failed");
+        return -1;
+    }
+
+    if(pid == 0) {
+		setsid();
+        execvp(command[0], command);
+		TraceLog("execvp() failed");
+		CleanUp();
+        exit(EXIT_FAILURE);
+    }
+
+	return pid;
+}
+
+pid_t SpawnFree(int argvCount, ...) {
+    va_list va;
+    va_start(va, argvCount);
+
+    char* argv[argvCount + 1];
+
+    int i = 0;
+
+    char* command = va_arg(va, char*);
+    argv[i++] = command;
+
+    for(int j = 1; j < argvCount; j++) {
+        argv[i++] = va_arg(va, char*);
+    }
+
+    argv[i] = NULL;
+
+    pid_t pid = fork();
+
+    if(pid < 0) {
+		TraceLog("fork() failed");
+        va_end(va);
+        return -1;
+    }
+
+    if(pid == 0) {
+		setsid();
+        execvp(command, argv);
+		TraceLog("execvp() failed");
+		CleanUp();
+        exit(EXIT_FAILURE);
+    }
+
+    va_end(va);
+
+	return pid;
+}
+
 pid_t SpawnArr(char** command) {
     pid_t pid = fork();
 

@@ -1,6 +1,10 @@
-Make option to configure mouse. becouse it's ugly now
+Add autostart option
 
-Cleanup your code
+Add more super keybinds(I mean exit)
+
+FIX logging
+
+Make option to configure mouse. becouse it's ugly now
 
 When you onfocus browser and focus it again the keyboard doesn't work:(
 

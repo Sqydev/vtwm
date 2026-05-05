@@ -60,7 +60,6 @@ void EventLoop(void) {
    				break;
 			}
 
-
 			case ConfigureRequest: {
 				DoConfigureRequest();
 			    break;
