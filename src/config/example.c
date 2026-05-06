@@ -41,18 +41,18 @@ char* GetExampleConfig(void) {
     "set(\"scale.value\", 96)\n"
     "\n"
     "bind({\"Super\", \"Alt\"}, \"m\", {\n"
-    "    {\"exit\"}\n"
+    "	{\"exit\"}\n"
     "})\n"
     "bind(\"Super\", \"Return\", {\n"
-    "    {\"alacritty\"}\n"
+    "	{\"alacritty\"}\n"
     "})\n"
     "bind(\"Super\", \"b\", {\n"
-    "    {\"librewolf\"}\n"
+    "	{\"librewolf\"}\n"
     "})\n"
 	"bind(\"Super\", \"q\", {\n"
 	"	{\"closefocused\"}\n"
-	")"
+	"})\n"
 	"bind({\"Super\", \"Alt\"}, \"q\", {\n"
 	"	{\"killfocused\"}\n"
-	")";
+	"})";
 }

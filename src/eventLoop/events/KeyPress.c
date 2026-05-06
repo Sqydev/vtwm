@@ -45,10 +45,9 @@
 
 void DoKeyPress(void) {
 	for(size_t i = 0; i < DATA.Rooty.keybindsCount; i++) {
-		if(DATA.events.xkey.state == DATA.Rooty.keybinds[i].mods && XLookupKeysym(&DATA.events.xkey, 0) == DATA.Rooty.keybinds[i].key) {
+		if((DATA.events.xkey.state & DATA.Rooty.keybinds[i].mods) == DATA.Rooty.keybinds[i].mods && XLookupKeysym(&DATA.events.xkey, 0) == DATA.Rooty.keybinds[i].key) {
 			if(DATA.Rooty.keybinds[i].actionsCount > 0 && DATA.Rooty.keybinds[i].actions && DATA.Rooty.keybinds[i].actions->argv) {
 				for(size_t j = 0; j < DATA.Rooty.keybinds[i].actionsCount; j++) {
-					// NOTE: Here add our lovley things
 					if(strcmp(DATA.Rooty.keybinds[i].actions[j].argv[0], "exit") == 0) {
 						CleanUp();
 						exit(0);
@@ -59,8 +58,9 @@ void DoKeyPress(void) {
 					else if(strcmp(DATA.Rooty.keybinds[i].actions[j].argv[0], "killfocused") == 0) {
 						KillFocused();
 					}
-
-					SpawnArrFree(DATA.Rooty.keybinds[i].actions[j].argv);
+					else {
+						SpawnArrFree(DATA.Rooty.keybinds[i].actions[j].argv);
+					}
 				}
 			}
 		}
