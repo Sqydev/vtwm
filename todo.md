@@ -1,3 +1,5 @@
+Make Spawn... not close the wm if command is incorrect like make it just do a warning
+
 Add autostart option
 
 Add more super keybinds(I mean exit)
