@@ -53,6 +53,12 @@ void DoKeyPress(void) {
 						CleanUp();
 						exit(0);
 					}
+					else if(strcmp(DATA.Rooty.keybinds[i].actions[j].argv[0], "closefocused") == 0) {
+						CloseFocused();
+					}
+					else if(strcmp(DATA.Rooty.keybinds[i].actions[j].argv[0], "killfocused") == 0) {
+						KillFocused();
+					}
 
 					SpawnArrFree(DATA.Rooty.keybinds[i].actions[j].argv);
 				}

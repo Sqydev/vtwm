@@ -47,6 +47,9 @@ pid_t SpawnArr(char** command);
 pid_t Spawn(int argvCount, ...);
 int mkdir_p(const char *path, mode_t mode);
 
+void CloseFocused(void);
+void KillFocused(void);
+
 pid_t GetWindowPid(Window window);
 
 #endif

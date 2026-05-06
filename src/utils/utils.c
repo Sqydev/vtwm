@@ -47,6 +47,53 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+void CloseFocused(void) {
+	Window focused;
+	int revert_to;
+	XGetInputFocus(DATA.Rooty.Display, &focused, &revert_to);
+
+    if(focused != None && focused != PointerRoot && focused != DATA.Rooty.Root) {
+       	Atom delete_atom = XInternAtom(DATA.Rooty.Display, "WM_DELETE_WINDOW", False);
+		Atom protocols_atom = XInternAtom(DATA.Rooty.Display, "WM_PROTOCOLS", False);
+        Atom* protocols = NULL;
+        int n = 0;
+        int supports_delete = 0;
+
+        if(XGetWMProtocols(DATA.Rooty.Display, focused, &protocols, &n)) {
+            while(n--) {
+                if(protocols[n] == delete_atom) {
+                    supports_delete = 1;
+                    break;
+                }
+            }
+            if(protocols) { XFree(protocols); }
+        }
+
+        if(supports_delete) {
+            XEvent ev;
+            ev.type = ClientMessage;
+            ev.xclient.window = focused;
+            ev.xclient.message_type = protocols_atom;
+            ev.xclient.format = 32;
+            ev.xclient.data.l[0] = delete_atom;
+            ev.xclient.data.l[1] = CurrentTime;
+            XSendEvent(DATA.Rooty.Display, focused, False, NoEventMask, &ev);
+        } else {
+			TraceLog("Couldn't close window with id: %lu", focused);
+        }
+    }
+}
+
+void KillFocused(void) {
+	Window focused;
+    int revert_to;
+    XGetInputFocus(DATA.Rooty.Display, &focused, &revert_to);
+
+    if(focused != None && focused != PointerRoot && focused != DATA.Rooty.Root) {
+        XKillClient(DATA.Rooty.Display, focused);
+    }
+}
+
 pid_t SpawnArrFree(char** command) {
     pid_t pid = fork();
 
