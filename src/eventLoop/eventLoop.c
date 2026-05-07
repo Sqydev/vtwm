@@ -38,6 +38,7 @@
 
 #include "../coredata.h"
 
+#include <X11/X.h>
 #include <X11/Xlib.h>
 
 #include <X11/Xlib.h>
@@ -67,6 +68,11 @@ void EventLoop(void) {
 
 			case EnterNotify: {
 				DoEnterNotify();
+				break;
+			}
+
+			case DestroyNotify: {
+				DoDestroyNotify();
 				break;
 			}
 		}

@@ -36,6 +36,7 @@
 #include "./coredata.h"
 #include "./init/init.h"
 #include "./eventLoop/eventLoop.h"
+#include "./cleanup/cleanup.h"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xinerama.h>
@@ -51,6 +52,8 @@ int main(void) {
 	Init();
 
 	EventLoop();
+
+	CleanUp();
 
 	return EXIT_SUCCESS;
 }

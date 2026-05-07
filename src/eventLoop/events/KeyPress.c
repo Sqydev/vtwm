@@ -58,6 +58,8 @@ void DoKeyPress(void) {
 					else if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "killfocused") == 0) {
 						KillFocused();
 					}
+					else if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "") == 0) {
+					}
 					else {
 						SpawnArrFree(DATA.Config.keybinds[i].actions[j].argv);
 					}

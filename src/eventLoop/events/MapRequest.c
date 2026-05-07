@@ -41,37 +41,45 @@
 #include <sys/types.h>
 
 void DoMapRequest(void) {
-    Window window = DATA.events.xmaprequest.window;
+	if(!DATA.Windows.tilingOn) {
+	    Window window = DATA.events.xmaprequest.window;
 
-	int assignedMonitor = -1;
-	pid_t windowPid = GetWindowPid(window);
+		int assignedMonitor = -1;
+		pid_t windowPid = GetWindowPid(window);
+		bool IsItBuildInTerm = false; // Or is it :) ?
 
-	if(windowPid > 0) {
-		for(int i = DATA.Monitors.Count - 1; i >= 0; i--) {
-			if(DATA.Monitors.mtermsPids[i] == windowPid) {
-				assignedMonitor = i;
-				DATA.Monitors.mtermsPids[i] = -1;
-				break;
+		if(windowPid > 0) {
+			for(int i = DATA.Monitors.Count - 1; i >= 0; i--) {
+				if(DATA.Monitors.mtermsPids[i] == windowPid) {
+					assignedMonitor = i;
+					DATA.Monitors.mtermsPids[i] = -1;
+					IsItBuildInTerm = true;
+					break;
+				}
 			}
 		}
+
+		if(!IsItBuildInTerm) {
+			DATA.Windows.Termode.windows[DATA.Windows.Termode.currentWorkspace[DATA.Monitors.Currrent]] = window;
+		}
+
+	    XineramaScreenInfo monitor = (assignedMonitor >= 0) ? DATA.Monitors.Thing[assignedMonitor] : DATA.Monitors.Thing[DATA.Monitors.Currrent];
+
+	    XWindowChanges changes;
+
+	    changes.x = monitor.x_org;
+	    changes.y = monitor.y_org;
+	    changes.width = monitor.width;
+	    changes.height = monitor.height;
+
+	    XConfigureWindow(DATA.Rooty.Display, window, CWX | CWY | CWWidth | CWHeight, &changes);
+	
+	    XMapWindow(DATA.Rooty.Display, window);
+
+		if(assignedMonitor <= 0) {
+	    	XSetInputFocus(DATA.Rooty.Display, window, RevertToPointerRoot, CurrentTime);
+		}
+
+	    XSelectInput(DATA.Rooty.Display, window, EnterWindowMask);
 	}
-
-    XineramaScreenInfo monitor = (assignedMonitor >= 0) ? DATA.Monitors.Thing[assignedMonitor] : DATA.Monitors.Thing[DATA.Monitors.Currrent];
-
-    XWindowChanges changes;
-
-    changes.x = monitor.x_org;
-    changes.y = monitor.y_org;
-    changes.width = monitor.width;
-    changes.height = monitor.height;
-
-    XConfigureWindow(DATA.Rooty.Display, window, CWX | CWY | CWWidth | CWHeight, &changes);
-
-    XMapWindow(DATA.Rooty.Display, window);
-
-	if(assignedMonitor <= 0) {
-    	XSetInputFocus(DATA.Rooty.Display, window, RevertToPointerRoot, CurrentTime);
-	}
-
-    XSelectInput(DATA.Rooty.Display, window, EnterWindowMask);
 }

@@ -40,5 +40,6 @@ void DoMapRequest(void);
 void DoKeyPress(void);
 void DoConfigureRequest(void);
 void DoEnterNotify(void);
+void DoDestroyNotify(void);
 
 #endif

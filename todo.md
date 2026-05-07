@@ -1,3 +1,7 @@
+Remamber when doing keybinds for workspaces, you first allocate the memory for DATA.Windows.Termode.Windows firstly for 10 workspaces and do more only if requested by user(if user tries to switch to the workspace) also make the first to alloc(thoes 10 workspaces) customisable(so there can be as many as the user wants :))
+
+Make nice hyprland workspaces logic(if a window is arleady on the workspace than like yk wim)
+
 Make Spawn... not close the wm if command is incorrect like make it just do a warning
 
 Add autostart option
