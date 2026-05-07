@@ -65,10 +65,11 @@ typedef struct {
 	} Rooty;
 
 	struct {
-		bool on;
+		bool tilingOn;
 
-		pid_t** windows;
-	} Tiling;
+		pid_t** windowsTiling;
+		pid_t* windowsTerminals;
+	} Windows;
 
 	struct {
 		int Count;
