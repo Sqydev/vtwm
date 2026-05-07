@@ -204,16 +204,16 @@ int l_bind(lua_State* lua) {
         lua_pop(lua, 1);
     }
  
-    KeyBind* tmp = realloc(DATA.Rooty.keybinds, sizeof(KeyBind) * (DATA.Rooty.keybindsCount + 1));
+    KeyBind* tmp = realloc(DATA.Config.keybinds, sizeof(KeyBind) * (DATA.Config.keybindsCount + 1));
     if(!tmp) {
         TraceLog("realloc failed :(");
         free(bind.actions);
         CleanUp();
         exit(EXIT_FAILURE);
     }
-    DATA.Rooty.keybinds = tmp;
-    DATA.Rooty.keybinds[DATA.Rooty.keybindsCount] = bind;
-    DATA.Rooty.keybindsCount++;
+    DATA.Config.keybinds = tmp;
+    DATA.Config.keybinds[DATA.Config.keybindsCount] = bind;
+    DATA.Config.keybindsCount++;
  
     return 0;
 }
@@ -231,7 +231,7 @@ void LoadConfig(void) {
     lua_pushnil(lua); lua_setglobal(lua, "loadfile");
 
     lua_register(lua, "set", l_set);
-	DATA.Rooty.keybindsCount = 0;
+	DATA.Config.keybindsCount = 0;
 	lua_register(lua, "bind", l_bind);
 
     if(access(DATA.Config.path, F_OK) != 0) {

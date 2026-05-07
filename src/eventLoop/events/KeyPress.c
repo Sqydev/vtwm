@@ -44,22 +44,22 @@
 #include <string.h>
 
 void DoKeyPress(void) {
-	for(size_t i = 0; i < DATA.Rooty.keybindsCount; i++) {
-		if((DATA.events.xkey.state & DATA.Rooty.keybinds[i].mods) == DATA.Rooty.keybinds[i].mods && XLookupKeysym(&DATA.events.xkey, 0) == DATA.Rooty.keybinds[i].key) {
-			if(DATA.Rooty.keybinds[i].actionsCount > 0 && DATA.Rooty.keybinds[i].actions && DATA.Rooty.keybinds[i].actions->argv) {
-				for(size_t j = 0; j < DATA.Rooty.keybinds[i].actionsCount; j++) {
-					if(strcmp(DATA.Rooty.keybinds[i].actions[j].argv[0], "exit") == 0) {
+	for(size_t i = 0; i < DATA.Config.keybindsCount; i++) {
+		if((DATA.events.xkey.state & DATA.Config.keybinds[i].mods) == DATA.Config.keybinds[i].mods && XLookupKeysym(&DATA.events.xkey, 0) == DATA.Config.keybinds[i].key) {
+			if(DATA.Config.keybinds[i].actionsCount > 0 && DATA.Config.keybinds[i].actions && DATA.Config.keybinds[i].actions->argv) {
+				for(size_t j = 0; j < DATA.Config.keybinds[i].actionsCount; j++) {
+					if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "exit") == 0) {
 						CleanUp();
 						exit(0);
 					}
-					else if(strcmp(DATA.Rooty.keybinds[i].actions[j].argv[0], "closefocused") == 0) {
+					else if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "closefocused") == 0) {
 						CloseFocused();
 					}
-					else if(strcmp(DATA.Rooty.keybinds[i].actions[j].argv[0], "killfocused") == 0) {
+					else if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "killfocused") == 0) {
 						KillFocused();
 					}
 					else {
-						SpawnArrFree(DATA.Rooty.keybinds[i].actions[j].argv);
+						SpawnArrFree(DATA.Config.keybinds[i].actions[j].argv);
 					}
 				}
 			}

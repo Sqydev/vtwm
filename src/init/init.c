@@ -37,6 +37,7 @@
 
 #include "../config/config.h"
 #include "../logging/logging.h"
+#include "../termode/termode.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -54,4 +55,6 @@ void Init(void) {
 	InitMonitors();
 
 	InitTerminals();
+
+	InitTermode();
 }

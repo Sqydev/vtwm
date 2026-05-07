@@ -59,16 +59,19 @@ typedef struct {
 	struct {
 		Display* Display;
 		Window Root;
-
-		KeyBind* keybinds;
-		size_t keybindsCount;
 	} Rooty;
 
 	struct {
 		bool tilingOn;
 
-		pid_t** windowsTiling;
-		pid_t* windowsTerminals;
+		struct {
+			Window* windows;
+			int* currentWorkspace;
+		} Termode;
+		struct {
+			Window** windows;
+			int* currentWorkspace;
+		} Tiling;
 	} Windows;
 
 	struct {
@@ -87,6 +90,9 @@ typedef struct {
 		char* termCommand;
 		size_t termCommandArrCount;
 		char** termCommandArr;
+
+		KeyBind* keybinds;
+		size_t keybindsCount;
 	} Config;
 
 	struct {

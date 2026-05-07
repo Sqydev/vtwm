@@ -75,8 +75,8 @@ void InitConfig(void) {
 }
 
 void CleanUpConfig(void) {
-    for(size_t i = 0; i < DATA.Rooty.keybindsCount; i++) {
-        KeyBind* bind = &DATA.Rooty.keybinds[i];
+    for(size_t i = 0; i < DATA.Config.keybindsCount; i++) {
+        KeyBind* bind = &DATA.Config.keybinds[i];
  
         for(size_t j = 0; j < bind->actionsCount; j++) {
             for(size_t k = 0; k < bind->actions[j].argc; k++) {
@@ -88,9 +88,9 @@ void CleanUpConfig(void) {
         free(bind->actions);
     }
  
-    free(DATA.Rooty.keybinds);
-    DATA.Rooty.keybinds      = NULL;
-    DATA.Rooty.keybindsCount = 0;
+    free(DATA.Config.keybinds);
+    DATA.Config.keybinds = NULL;
+    DATA.Config.keybindsCount = 0;
  
     free(DATA.Config.path);
     free(DATA.Config.dir);

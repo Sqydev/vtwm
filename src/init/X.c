@@ -76,8 +76,8 @@ int X11ErrorHandler(Display *display, XErrorEvent *event) {
 void InitKeyBinds(void) {
 	//XGrabKey(DATA.Rooty.Display, XKeysymToKeycode(DATA.Rooty.Display, XStringToKeysym("m")), Mod4Mask | Mod1Mask, DATA.Rooty.Root, True, GrabModeAsync, GrabModeAsync);
 
-	for(size_t i = 0; i < DATA.Rooty.keybindsCount; i++) {
-		XGrabKey(DATA.Rooty.Display, XKeysymToKeycode(DATA.Rooty.Display, DATA.Rooty.keybinds[i].key), DATA.Rooty.keybinds[i].mods, DATA.Rooty.Root, true, GrabModeAsync, GrabModeAsync);
+	for(size_t i = 0; i < DATA.Config.keybindsCount; i++) {
+		XGrabKey(DATA.Rooty.Display, XKeysymToKeycode(DATA.Rooty.Display, DATA.Config.keybinds[i].key), DATA.Config.keybinds[i].mods, DATA.Rooty.Root, true, GrabModeAsync, GrabModeAsync);
 	}
 }
 

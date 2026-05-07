@@ -37,12 +37,15 @@
 #include "../cleanup/cleanup.h"
 #include "../logging/logging.h"
 #include "../config/config.h"
+#include "../termode/termode.h"
 
 #include <X11/Xlib.h>
 
 #include <stdlib.h>
 
 void CleanUp(void) {
+	CleanTermode();
+
 	if(DATA.Monitors.Thing) {
 		XFree(DATA.Monitors.Thing);
 	}
