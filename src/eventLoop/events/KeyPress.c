@@ -36,7 +36,9 @@
 #include "../../coredata.h"
 #include "../../cleanup/cleanup.h"
 #include "../../utils/utils.h"
+#include "../../termode/termode.h"
 
+#include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 
@@ -58,7 +60,12 @@ void DoKeyPress(void) {
 					else if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "killfocused") == 0) {
 						KillFocused();
 					}
-					else if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "") == 0) {
+					else if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "workspace") == 0 && DATA.Config.keybinds[i].actions[j].argv[1]) {
+						int workspace = atoi(DATA.Config.keybinds[i].actions[j].argv[1]);
+
+						if(!DATA.Windows.tilingOn) {
+							SwitchToTermodeWorkspace(workspace);
+						}
 					}
 					else {
 						SpawnArrFree(DATA.Config.keybinds[i].actions[j].argv);

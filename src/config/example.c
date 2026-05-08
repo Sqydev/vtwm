@@ -39,6 +39,7 @@ char* GetExampleConfig(void) {
     "\n"
     "set(\"terminal.command\", \"alacritty\")\n"
     "set(\"scale.value\", 96)\n"
+ 	"set(\"workspaces.minimum\", 10)\n"
     "\n"
     "bind({\"Super\", \"Alt\"}, \"m\", {\n"
     "	{\"exit\"}\n"

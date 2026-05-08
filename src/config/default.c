@@ -45,6 +45,7 @@ void SetUpDefaultConfig(void) {
 
 	DATA.Config.termCommand = strdup("alacritty");
 	DATA.Config.termCommandArr = NULL;
+	DATA.Windows.minWorkspaces = 10;
 
 	// NOTE: Set scale
 	// If there isn't config there set to fallback 96

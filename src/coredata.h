@@ -63,6 +63,7 @@ typedef struct {
 
 	struct {
 		bool tilingOn;
+		int minWorkspaces;
 
 		struct {
 			Window* windows;
