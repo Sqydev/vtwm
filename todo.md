@@ -1,3 +1,5 @@
+Ok so to make workspaces work you need to make DATA.Management.windows ** instead of *. Becouse you need to make the hiding operation also on our lovley root terminals. So just make it ** and make [0] in the array privliaged
+
 Make it so you can only open one app in termode per workspace
 
 Make it so you can't close the root terminals

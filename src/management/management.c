@@ -48,6 +48,8 @@ void InitManagement(void) {
 
 	for(int i = 0; i < DATA.Monitors.Count; i++) {
 		DATA.Management.Termode.windows[i] = None;
+	}
+	for(int i = 0; i < DATA.Monitors.Count; i++) {
 		DATA.Management.Termode.currentWorkspace[i] = i;
 	}
 }
@@ -61,9 +63,12 @@ void SwitchToWorkspace(int workspace) {
 		XUnmapWindow(DATA.Rooty.Display, DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]]);
 	}
 
-	if(workspace > DATA.Management.workspacesCount) {
-		DATA.Management.workspacesCount = workspace;
-		DATA.Management.Termode.windows = realloc(DATA.Management.Termode.windows, DATA.Management.workspacesCount * sizeof(Window));
+	if(workspace >= DATA.Management.workspacesCount) {
+		DATA.Management.Termode.windows = realloc(DATA.Management.Termode.windows, workspace * sizeof(Window));
+		for(int i = DATA.Management.workspacesCount; i <= workspace; i++) {
+		    DATA.Management.Termode.windows[i] = None;
+		}
+		DATA.Management.workspacesCount = workspace + 1;
 	}
 	DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent] = workspace;
 
