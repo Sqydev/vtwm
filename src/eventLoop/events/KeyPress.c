@@ -60,7 +60,7 @@ void DoKeyPress(void) {
 					else if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "killfocused") == 0) {
 						KillFocused();
 					}
-					else if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "workspace") == 0) {
+					else if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "workspace") == 0 && DATA.Config.keybinds[i].actions[j].argv[1]) {
 						int workspace = atoi(DATA.Config.keybinds[i].actions[j].argv[1]);
 
 						if(!DATA.Management.tilingOn) {
