@@ -41,7 +41,9 @@
 #include <stdlib.h>
 
 void InitTermode(void) {
-	DATA.Windows.Termode.windows = malloc(DATA.Monitors.Count * sizeof(Window));
+	DATA.Windows.workspacesCount = 10;
+
+	DATA.Windows.Termode.windows = malloc(DATA.Windows.minWorkspaces * sizeof(Window));
 	DATA.Windows.Termode.currentWorkspace = malloc(DATA.Monitors.Count * sizeof(int));
 
 	for(int i = 0; i < DATA.Monitors.Count; i++) {
@@ -51,11 +53,18 @@ void InitTermode(void) {
 }
 
 // NOTE: MUAHAHAHAHAH, BIG ASS ARRAY IF STATMENT >:)
-void SwitchToTermodeWorkspace(int workspace) {
+void SwitchToTermodeWorkspace(unsigned int workspace) {
+	if(workspace == 0) { workspace++; }
+	workspace--;
+
 	if(DATA.Windows.Termode.windows[DATA.Windows.Termode.currentWorkspace[DATA.Monitors.Currrent]] != None) {
 		XUnmapWindow(DATA.Rooty.Display, DATA.Windows.Termode.windows[DATA.Windows.Termode.currentWorkspace[DATA.Monitors.Currrent]]);
 	}
 
+	if(workspace > DATA.Windows.workspacesCount) {
+		DATA.Windows.workspacesCount = workspace;
+		DATA.Windows.Termode.windows = realloc(DATA.Windows.Termode.windows, DATA.Windows.workspacesCount * sizeof(Window));
+	}
 	DATA.Windows.Termode.currentWorkspace[DATA.Monitors.Currrent] = workspace;
 
 	if(DATA.Windows.Termode.windows[DATA.Windows.Termode.currentWorkspace[DATA.Monitors.Currrent]] != None) {

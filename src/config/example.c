@@ -55,5 +55,15 @@ char* GetExampleConfig(void) {
 	"})\n"
 	"bind({\"Super\", \"Alt\"}, \"q\", {\n"
 	"	{\"killfocused\"}\n"
-	"})";
+	"})"
+	"\n"
+    "bind(\"Super\", \"1\", { {\"workspace\"}, {\"1\"} })\n"
+    "bind(\"Super\", \"2\", { {\"workspace\"}, {\"2\"} })\n"
+    "bind(\"Super\", \"3\", { {\"workspace\"}, {\"3\"} })\n"
+    "bind(\"Super\", \"4\", { {\"workspace\"}, {\"4\"} })\n"
+    "bind(\"Super\", \"5\", { {\"workspace\"}, {\"5\"} })\n"
+    "bind(\"Super\", \"6\", { {\"workspace\"}, {\"6\"} })\n"
+    "bind(\"Super\", \"7\", { {\"workspace\"}, {\"7\"} })\n"
+    "bind(\"Super\", \"8\", { {\"workspace\"}, {\"8\"} })\n"
+    "bind(\"Super\", \"9\", { {\"workspace\"}, {\"9\"} })\n";
 }

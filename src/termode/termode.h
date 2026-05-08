@@ -39,6 +39,6 @@
 void InitTermode(void);
 void CleanTermode(void);
 
-void SwitchToTermodeWorkspace(int workspace);
+void SwitchToTermodeWorkspace(unsigned int workspace);
 
 #endif
