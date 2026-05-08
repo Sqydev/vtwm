@@ -36,7 +36,7 @@
 #include "../../coredata.h"
 #include "../../cleanup/cleanup.h"
 #include "../../utils/utils.h"
-#include "../../termode/termode.h"
+#include "../../management/management.h"
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -63,8 +63,8 @@ void DoKeyPress(void) {
 					else if(strcmp(DATA.Config.keybinds[i].actions[j].argv[0], "workspace") == 0 && DATA.Config.keybinds[i].actions[j].argv[1]) {
 						int workspace = atoi(DATA.Config.keybinds[i].actions[j].argv[1]);
 
-						if(!DATA.Windows.tilingOn) {
-							SwitchToTermodeWorkspace(workspace);
+						if(!DATA.Management.tilingOn) {
+							SwitchToWorkspace(workspace);
 						}
 					}
 					else {

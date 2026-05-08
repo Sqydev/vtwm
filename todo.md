@@ -4,8 +4,6 @@ Make it so you can't close the root terminals
 
 Make holding keybinds not spawn a bilion proceses.
 
-Merge termode.c and tiling.c into one
-
 Make nice hyprland workspaces logic(if a window is arleady on the workspace than like yk wim)
 
 Make Spawn... not close the wm if command is incorrect like make it just do a warning

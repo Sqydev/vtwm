@@ -41,7 +41,7 @@
 #include <sys/types.h>
 
 void DoMapRequest(void) {
-	if(!DATA.Windows.tilingOn) {
+	if(!DATA.Management.tilingOn) {
 	    Window window = DATA.events.xmaprequest.window;
 
 		int assignedMonitor = -1;
@@ -60,7 +60,7 @@ void DoMapRequest(void) {
 		}
 
 		if(!IsItBuildInTerm) {
-			DATA.Windows.Termode.windows[DATA.Windows.Termode.currentWorkspace[DATA.Monitors.Currrent]] = window;
+			DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]] = window;
 		}
 
 	    XineramaScreenInfo monitor = (assignedMonitor >= 0) ? DATA.Monitors.Thing[assignedMonitor] : DATA.Monitors.Thing[DATA.Monitors.Currrent];

@@ -32,3 +32,13 @@
 * 5. Notice Retention: This license notice may not be removed or altered from any 
 *    source or binary distribution.
 */
+
+#ifndef VTWM_MANAGEMENT_H
+#define VTWM_MANAGEMENT_H
+
+void InitManagement(void);
+void CleanManagement(void);
+
+void SwitchToWorkspace(int workspace);
+
+#endif

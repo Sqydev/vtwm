@@ -33,46 +33,46 @@
 *    source or binary distribution.
 */
 
-#include "./termode.h"
+#include "./management.h"
 
 #include "../coredata.h"
 
 #include <X11/X.h>
 #include <stdlib.h>
 
-void InitTermode(void) {
-	DATA.Windows.workspacesCount = 10;
+void InitManagement(void) {
+	DATA.Management.workspacesCount = 10;
 
-	DATA.Windows.Termode.windows = malloc(DATA.Windows.minWorkspaces * sizeof(Window));
-	DATA.Windows.Termode.currentWorkspace = malloc(DATA.Monitors.Count * sizeof(int));
+	DATA.Management.Termode.windows = malloc(DATA.Management.minWorkspaces * sizeof(Window));
+	DATA.Management.Termode.currentWorkspace = malloc(DATA.Monitors.Count * sizeof(int));
 
 	for(int i = 0; i < DATA.Monitors.Count; i++) {
-		DATA.Windows.Termode.windows[i] = None;
-		DATA.Windows.Termode.currentWorkspace[i] = i;
+		DATA.Management.Termode.windows[i] = None;
+		DATA.Management.Termode.currentWorkspace[i] = i;
 	}
 }
 
 // NOTE: MUAHAHAHAHAH, BIG ASS ARRAY IF STATMENT >:)
-void SwitchToTermodeWorkspace(unsigned int workspace) {
+void SwitchToWorkspace(int workspace) {
 	if(workspace == 0) { workspace++; }
 	workspace--;
 
-	if(DATA.Windows.Termode.windows[DATA.Windows.Termode.currentWorkspace[DATA.Monitors.Currrent]] != None) {
-		XUnmapWindow(DATA.Rooty.Display, DATA.Windows.Termode.windows[DATA.Windows.Termode.currentWorkspace[DATA.Monitors.Currrent]]);
+	if(DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]] != None) {
+		XUnmapWindow(DATA.Rooty.Display, DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]]);
 	}
 
-	if(workspace > DATA.Windows.workspacesCount) {
-		DATA.Windows.workspacesCount = workspace;
-		DATA.Windows.Termode.windows = realloc(DATA.Windows.Termode.windows, DATA.Windows.workspacesCount * sizeof(Window));
+	if(workspace > DATA.Management.workspacesCount) {
+		DATA.Management.workspacesCount = workspace;
+		DATA.Management.Termode.windows = realloc(DATA.Management.Termode.windows, DATA.Management.workspacesCount * sizeof(Window));
 	}
-	DATA.Windows.Termode.currentWorkspace[DATA.Monitors.Currrent] = workspace;
+	DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent] = workspace;
 
-	if(DATA.Windows.Termode.windows[DATA.Windows.Termode.currentWorkspace[DATA.Monitors.Currrent]] != None) {
-		XMapWindow(DATA.Rooty.Display, DATA.Windows.Termode.windows[DATA.Windows.Termode.currentWorkspace[DATA.Monitors.Currrent]]);
+	if(DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]] != None) {
+		XMapWindow(DATA.Rooty.Display, DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]]);
 	}
 }
 
-void CleanTermode(void) {
-	if(DATA.Windows.Termode.windows) { free(DATA.Windows.Termode.windows); }
-	if(DATA.Windows.Termode.currentWorkspace) { free(DATA.Windows.Termode.currentWorkspace); }
+void CleanManagement(void) {
+	if(DATA.Management.Termode.windows) { free(DATA.Management.Termode.windows); }
+	if(DATA.Management.Termode.currentWorkspace) { free(DATA.Management.Termode.currentWorkspace); }
 }

@@ -40,8 +40,8 @@
 void DoDestroyNotify(void) {
 	Window window = DATA.events.xdestroywindow.window;
 	for(int i = 0; i < DATA.Monitors.Count; i++) {
-		if(DATA.Windows.Termode.windows[i] == window) {
-			DATA.Windows.Termode.windows[i] = None;
+		if(DATA.Management.Termode.windows[i] == window) {
+			DATA.Management.Termode.windows[i] = None;
 			break;
 		}
 	}

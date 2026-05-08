@@ -74,7 +74,7 @@ typedef struct {
 			Window** windows;
 			int* currentWorkspace;
 		} Tiling;
-	} Windows;
+	} Management;
 
 	struct {
 		int Count;

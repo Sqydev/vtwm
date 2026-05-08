@@ -156,7 +156,7 @@ int l_set(lua_State* lua) {
 		TraceLog("Set env: %s to %s", env, val);
     }
     else if(strcmp(key, "workspaces.minimum") == 0) {
-		DATA.Windows.minWorkspaces = luaL_checkinteger(lua, 2);
+		DATA.Management.minWorkspaces = luaL_checkinteger(lua, 2);
 	}
 
     return 0;
