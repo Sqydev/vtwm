@@ -34,15 +34,20 @@
 */
 
 #include "../../coredata.h"
+#include "../../management/management.h"
 
 #include <X11/X.h>
 
 void DoDestroyNotify(void) {
 	Window window = DATA.events.xdestroywindow.window;
-	for(int i = 0; i < DATA.Monitors.Count; i++) {
-		if(DATA.Management.Termode.windows[i] == window) {
-			DATA.Management.Termode.windows[i] = None;
-			break;
+ 
+	for(int i = 0; i < DATA.Management.Termode.workspacesCount; i++) {
+		for(int j = 0; j < DATA.Management.Termode.windowsCount[i]; j++) {
+			if(DATA.Management.Termode.windows[i][j] == window) {
+				RemoveWindowFromWorkspace(i, window);
+				return;
+			}
 		}
 	}
 }
+

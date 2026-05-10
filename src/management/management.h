@@ -36,9 +36,14 @@
 #ifndef VTWM_MANAGEMENT_H
 #define VTWM_MANAGEMENT_H
 
+#include <X11/X.h>
+
 void InitManagement(void);
 void CleanManagement(void);
 
-void SwitchToWorkspace(int workspace);
+void DoSwitchToWorkspaceStuff(int workspace);
+
+void AddWindowToWorkspace(int workspace, Window window);
+void RemoveWindowFromWorkspace(int workspace, Window window);
 
 #endif

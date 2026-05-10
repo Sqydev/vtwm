@@ -64,7 +64,7 @@ void DoKeyPress(void) {
 						int workspace = atoi(DATA.Config.keybinds[i].actions[j].argv[1]);
 
 						if(!DATA.Management.tilingOn) {
-							SwitchToWorkspace(workspace);
+							DoSwitchToWorkspaceStuff(workspace);
 						}
 					}
 					else {

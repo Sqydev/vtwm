@@ -1,12 +1,10 @@
-Ok so to make workspaces work you need to make DATA.Management.windows ** instead of *. Becouse you need to make the hiding operation also on our lovley root terminals. So just make it ** and make [0] in the array privliaged
+Make DoSwitchToWorkspaceStuff(); be remambering the last workspace and if so be doing the operation on the monitor that had that workspace as last. and do exepctions. like in hyprland but less annoying
 
 Make it so you can only open one app in termode per workspace
 
 Make it so you can't close the root terminals
 
 Make holding keybinds not spawn a bilion proceses.
-
-Make nice hyprland workspaces logic(if a window is arleady on the workspace than like yk wim)
 
 Make Spawn... not close the wm if command is incorrect like make it just do a warning
 

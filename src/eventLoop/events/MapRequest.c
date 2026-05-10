@@ -35,6 +35,7 @@
 
 #include "../../coredata.h"
 #include "../../utils/utils.h"
+#include "../../management/management.h"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xinerama.h>
@@ -43,43 +44,41 @@
 void DoMapRequest(void) {
 	if(!DATA.Management.tilingOn) {
 	    Window window = DATA.events.xmaprequest.window;
-
+ 
 		int assignedMonitor = -1;
 		pid_t windowPid = GetWindowPid(window);
-		bool IsItBuildInTerm = false; // Or is it :) ?
-
+ 
 		if(windowPid > 0) {
 			for(int i = DATA.Monitors.Count - 1; i >= 0; i--) {
 				if(DATA.Monitors.mtermsPids[i] == windowPid) {
 					assignedMonitor = i;
 					DATA.Monitors.mtermsPids[i] = -1;
-					IsItBuildInTerm = true;
 					break;
 				}
 			}
 		}
-
-		if(!IsItBuildInTerm) {
-			DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]] = window;
-		}
-
-	    XineramaScreenInfo monitor = (assignedMonitor >= 0) ? DATA.Monitors.Thing[assignedMonitor] : DATA.Monitors.Thing[DATA.Monitors.Currrent];
-
+ 
+		int targetMonitor = (assignedMonitor >= 0) ? assignedMonitor : DATA.Monitors.Currrent;
+		int targetWorkspace = DATA.Management.Termode.currentWorkspace[targetMonitor];
+ 
+		AddWindowToWorkspace(targetWorkspace, window);
+ 
+	    XineramaScreenInfo monitor = DATA.Monitors.Thing[targetMonitor];
+ 
 	    XWindowChanges changes;
-
 	    changes.x = monitor.x_org;
 	    changes.y = monitor.y_org;
-	    changes.width = monitor.width;
+	    changes.width  = monitor.width;
 	    changes.height = monitor.height;
-
+ 
 	    XConfigureWindow(DATA.Rooty.Display, window, CWX | CWY | CWWidth | CWHeight, &changes);
-	
 	    XMapWindow(DATA.Rooty.Display, window);
-
+ 
 		if(assignedMonitor <= 0) {
 	    	XSetInputFocus(DATA.Rooty.Display, window, RevertToPointerRoot, CurrentTime);
 		}
-
+ 
 	    XSelectInput(DATA.Rooty.Display, window, EnterWindowMask);
 	}
 }
+

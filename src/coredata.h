@@ -63,16 +63,19 @@ typedef struct {
 
 	struct {
 		bool tilingOn;
-		int workspacesCount;
 		int minWorkspaces;
 
 		struct {
-			Window* windows;
+			Window** windows;
+			int* windowsCount;
 			int* currentWorkspace;
+			int workspacesCount;
 		} Termode;
 		struct {
 			Window** windows;
+			int* windowsCount;
 			int* currentWorkspace;
+			int workspacesCount;
 		} Tiling;
 	} Management;
 

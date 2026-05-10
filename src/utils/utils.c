@@ -47,6 +47,30 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+Window GetWindowUnderCursor(void) {
+    Window root_return;
+    Window child_return;
+
+    int root_x, root_y;
+    int win_x, win_y;
+
+    unsigned int mask;
+
+    XQueryPointer(
+        DATA.Rooty.Display,
+        DATA.Rooty.Root,
+        &root_return,
+        &child_return,
+        &root_x,
+        &root_y,
+        &win_x,
+        &win_y,
+        &mask
+    );
+
+    return child_return;
+}
+
 void CloseFocused(void) {
 	Window focused;
 	int revert_to;

@@ -41,6 +41,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+Window GetWindowUnderCursor(void);
+
 pid_t SpawnArrFree(char** command);
 pid_t SpawnFree(int argvCount, ...); 
 pid_t SpawnArr(char** command);

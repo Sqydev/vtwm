@@ -35,49 +35,103 @@
 
 #include "./management.h"
 
+#include "../utils/utils.h"
 #include "../coredata.h"
 
 #include <X11/X.h>
+#include <X11/Xlib.h>
 #include <stdlib.h>
 
 void InitManagement(void) {
-	DATA.Management.workspacesCount = 10;
+	DATA.Management.Termode.workspacesCount = DATA.Management.minWorkspaces;
 
-	DATA.Management.Termode.windows = malloc(DATA.Management.minWorkspaces * sizeof(Window));
+	DATA.Management.Termode.windows = malloc(DATA.Management.minWorkspaces * sizeof(Window*));
+	DATA.Management.Termode.windowsCount = malloc(DATA.Management.minWorkspaces * sizeof(int));
 	DATA.Management.Termode.currentWorkspace = malloc(DATA.Monitors.Count * sizeof(int));
 
-	for(int i = 0; i < DATA.Monitors.Count; i++) {
+	for(int i = 0; i < DATA.Management.minWorkspaces; i++) {
 		DATA.Management.Termode.windows[i] = None;
+		DATA.Management.Termode.windowsCount[i] = 0;
 	}
 	for(int i = 0; i < DATA.Monitors.Count; i++) {
 		DATA.Management.Termode.currentWorkspace[i] = i;
 	}
 }
 
+void AddWindowToWorkspace(int workspace, Window window) {
+	DATA.Management.Termode.windows[workspace] = realloc(DATA.Management.Termode.windows[workspace], (DATA.Management.Termode.windowsCount[workspace] + 1) * sizeof(Window));
+	DATA.Management.Termode.windows[workspace][DATA.Management.Termode.windowsCount[workspace]] = window;
+	DATA.Management.Termode.windowsCount[workspace]++;
+}
+
+void RemoveWindowFromWorkspace(int workspace, Window window) {
+	for(int i = 0; i < DATA.Management.Termode.windowsCount[workspace]; i++) {
+		if(DATA.Management.Termode.windows[workspace][i] == window) {
+			for(int j = i; j < DATA.Management.Termode.windowsCount[workspace] - 1; j++) {
+				DATA.Management.Termode.windows[workspace][j] = DATA.Management.Termode.windows[workspace][j + 1];
+			}
+			DATA.Management.Termode.windowsCount[workspace]--;
+			return;
+		}
+	}
+}
+
 // NOTE: MUAHAHAHAHAH, BIG ASS ARRAY IF STATMENT >:)
-void SwitchToWorkspace(int workspace) {
+void DoSwitchToWorkspaceStuff(int workspace) {
 	if(workspace == 0) { workspace++; }
 	workspace--;
 
-	if(DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]] != None) {
-		XUnmapWindow(DATA.Rooty.Display, DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]]);
-	}
+	if(DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent] == workspace) { return; }
 
-	if(workspace >= DATA.Management.workspacesCount) {
-		DATA.Management.Termode.windows = realloc(DATA.Management.Termode.windows, workspace * sizeof(Window));
-		for(int i = DATA.Management.workspacesCount; i <= workspace; i++) {
-		    DATA.Management.Termode.windows[i] = None;
+	for(int i = 0; i < DATA.Monitors.Count; i++) {
+		if(DATA.Management.Termode.currentWorkspace[i] == workspace) {
+			XWarpPointer(DATA.Rooty.Display, None, DefaultRootWindow(DATA.Rooty.Display), 0, 0, 0, 0, DATA.Monitors.Thing[i].x_org + (DATA.Monitors.Thing[i].width / 2), DATA.Monitors.Thing[i].y_org + (DATA.Monitors.Thing[i].height / 2));
+			XSetInputFocus(DATA.Rooty.Display, GetWindowUnderCursor(), RevertToPointerRoot, CurrentTime);
 		}
-		DATA.Management.workspacesCount = workspace + 1;
 	}
-	DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent] = workspace;
+ 
+	for(int i = 0; i < DATA.Management.Termode.windowsCount[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]]; i++) {
+		Window w = DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]][i];
+		if(w != None) {
+			XUnmapWindow(DATA.Rooty.Display, w);
+		}
+	}
+ 
+	if(workspace >= DATA.Management.Termode.workspacesCount) {
+		DATA.Management.Termode.windows = realloc(DATA.Management.Termode.windows, (workspace + 1) * sizeof(Window*));
+		DATA.Management.Termode.windowsCount = realloc(DATA.Management.Termode.windowsCount, (workspace + 1) * sizeof(int));
+ 
+		for(int i = DATA.Management.Termode.workspacesCount; i < workspace + 1; i++) {
+			DATA.Management.Termode.windows[i] = None;
+			DATA.Management.Termode.windowsCount[i] = 0;
+		}
+		DATA.Management.Termode.workspacesCount = workspace + 1;
 
-	if(DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]] != None) {
-		XMapWindow(DATA.Rooty.Display, DATA.Management.Termode.windows[DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent]]);
+        if(DATA.Config.termCommandArr) {
+			SpawnArr(DATA.Config.termCommandArr);
+		} else {
+			Spawn(1, DATA.Config.termCommand);
+		}
+	}
+ 
+	DATA.Management.Termode.currentWorkspace[DATA.Monitors.Currrent] = workspace;
+ 
+	for(int i = 0; i < DATA.Management.Termode.windowsCount[workspace]; i++) {
+		Window w = DATA.Management.Termode.windows[workspace][i];
+		if(w != None) {
+			XMapWindow(DATA.Rooty.Display, w);
+		}
 	}
 }
 
 void CleanManagement(void) {
-	if(DATA.Management.Termode.windows) { free(DATA.Management.Termode.windows); }
-	if(DATA.Management.Termode.currentWorkspace) { free(DATA.Management.Termode.currentWorkspace); }
+	if(DATA.Management.Termode.windows) {
+		for(int i = 0; i < DATA.Management.Termode.workspacesCount; i++) {
+			free(DATA.Management.Termode.windows[i]);
+		}
+		free(DATA.Management.Termode.windows);
+	}
+	free(DATA.Management.Termode.windowsCount);
+	free(DATA.Management.Termode.currentWorkspace);
 }
+
