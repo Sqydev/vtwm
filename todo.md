@@ -1,3 +1,5 @@
+Make switching workspaces not flicker
+
 Make DoSwitchToWorkspaceStuff(); be remambering the last workspace and if so be doing the operation on the monitor that had that workspace as last. and do exepctions. like in hyprland but less annoying
 
 Make it so you can only open one app in termode per workspace

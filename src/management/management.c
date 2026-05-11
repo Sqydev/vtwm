@@ -87,6 +87,7 @@ void DoSwitchToWorkspaceStuff(int workspace) {
 		if(DATA.Management.Termode.currentWorkspace[i] == workspace) {
 			XWarpPointer(DATA.Rooty.Display, None, DefaultRootWindow(DATA.Rooty.Display), 0, 0, 0, 0, DATA.Monitors.Thing[i].x_org + (DATA.Monitors.Thing[i].width / 2), DATA.Monitors.Thing[i].y_org + (DATA.Monitors.Thing[i].height / 2));
 			XSetInputFocus(DATA.Rooty.Display, GetWindowUnderCursor(), RevertToPointerRoot, CurrentTime);
+			return;
 		}
 	}
  
@@ -119,7 +120,16 @@ void DoSwitchToWorkspaceStuff(int workspace) {
 	for(int i = 0; i < DATA.Management.Termode.windowsCount[workspace]; i++) {
 		Window w = DATA.Management.Termode.windows[workspace][i];
 		if(w != None) {
-			XMapWindow(DATA.Rooty.Display, w);
+	    	XineramaScreenInfo monitor = DATA.Monitors.Thing[DATA.Monitors.Currrent];
+
+	    	XWindowChanges changes;
+		    changes.x = monitor.x_org;
+		    changes.y = monitor.y_org;
+		    changes.width  = monitor.width;
+		    changes.height = monitor.height;
+ 
+		    XConfigureWindow(DATA.Rooty.Display, w, CWX | CWY | CWWidth | CWHeight, &changes);
+		    XMapWindow(DATA.Rooty.Display, w);
 		}
 	}
 }
