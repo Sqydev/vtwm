@@ -1,0 +1,154 @@
+{
+	"version": 6,
+
+	"configurePresets": [
+
+		{
+			"name": "base",
+			"hidden": true,
+			"generator": "Unix Makefiles"
+		},
+
+
+		{
+			"name": "release",
+			"hidden": true,
+			"inherits": "base",
+
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"VTWM_DEBUG": "OFF"
+			}
+		},
+
+
+		{
+			"name": "local",
+			"inherits": "release",
+
+			"binaryDir":
+				"${sourceDir}/.cmake/release/local",
+
+			"cacheVariables": {
+				"VTWM_OUTPUT_DIR":
+					"${sourceDir}/compiled/local"
+			}
+		},
+
+
+		{
+			"name": "bleeding",
+			"inherits": "release",
+
+			"binaryDir":
+				"${sourceDir}/.cmake/release/bleeding",
+
+			"cacheVariables": {
+				"VTWM_OUTPUT_DIR":
+					"${sourceDir}/compiled/bleeding"
+			}
+		},
+
+
+		{
+			"name": "normal",
+			"inherits": "release",
+
+			"binaryDir":
+				"${sourceDir}/.cmake/release/normal",
+
+			"cacheVariables": {
+				"VTWM_OUTPUT_DIR":
+					"${sourceDir}/compiled/normal"
+			}
+		},
+
+
+		{
+			"name": "stable",
+			"inherits": "release",
+
+			"binaryDir":
+				"${sourceDir}/.cmake/release/stable",
+
+			"cacheVariables": {
+				"VTWM_OUTPUT_DIR":
+					"${sourceDir}/compiled/stable"
+			}
+		},
+
+
+		{
+			"name": "musl",
+			"inherits": "release",
+
+			"binaryDir":
+				"${sourceDir}/.cmake/release/musl",
+
+			"cacheVariables": {
+				"VTWM_OUTPUT_DIR":
+					"${sourceDir}/compiled/musl"
+			}
+		},
+
+
+		{
+			"name": "debug-base",
+			"hidden": true,
+			"inherits": "base",
+
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"VTWM_DEBUG": "ON"
+			}
+		},
+
+
+		{
+			"name": "debug",
+			"inherits": "debug-base",
+
+			"binaryDir":
+				"${sourceDir}/.cmake/debug",
+
+			"cacheVariables": {
+				"VTWM_OUTPUT_DIR":
+					"${sourceDir}/compiled/debug"
+			}
+		}
+	],
+
+
+	"buildPresets": [
+
+		{
+			"name": "local",
+			"configurePreset": "local"
+		},
+
+		{
+			"name": "bleeding",
+			"configurePreset": "bleeding"
+		},
+
+		{
+			"name": "normal",
+			"configurePreset": "normal"
+		},
+
+		{
+			"name": "stable",
+			"configurePreset": "stable"
+		},
+
+		{
+			"name": "musl",
+			"configurePreset": "musl"
+		},
+
+		{
+			"name": "debug",
+			"configurePreset": "debug"
+		}
+	]
+}
