@@ -1,0 +1,56 @@
+services:
+  bleeding:
+    build:
+      context: .
+      dockerfile: docker/bleeding/Dockerfile
+    volumes:
+      - .:/src
+    working_dir: /src
+    command: >
+      sh -c "
+        cmake --preset bleeding &&
+        cmake --build --preset bleeding &&
+        chown -R $(stat -c '%u:%g' CMakeLists.txt) .cmake compiled
+      "
+
+  normal:
+    build:
+      context: .
+      dockerfile: docker/normal/Dockerfile
+    volumes:
+      - .:/src
+    working_dir: /src
+    command: >
+      sh -c "
+        cmake --preset normal &&
+        cmake --build --preset normal &&
+        chown -R $(stat -c '%u:%g' CMakeLists.txt) .cmake compiled
+      "
+
+  stable:
+    build:
+      context: .
+      dockerfile: docker/stable/Dockerfile
+    volumes:
+      - .:/src
+    working_dir: /src
+    command: >
+      sh -c "
+        cmake --preset stable &&
+        cmake --build --preset stable &&
+        chown -R $(stat -c '%u:%g' CMakeLists.txt) .cmake compiled
+      "
+
+  musl:
+    build:
+      context: .
+      dockerfile: docker/musl/Dockerfile
+    volumes:
+      - .:/src
+    working_dir: /src
+    command: >
+      sh -c "
+        cmake --preset musl &&
+        cmake --build --preset musl &&
+        chown -R $(stat -c '%u:%g' CMakeLists.txt) .cmake compiled
+      "
