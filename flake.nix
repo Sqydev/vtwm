@@ -15,7 +15,18 @@
 		in
 		{
 			devShells = forAllSystems (system:
-				let pkgs = pkgsFor system;
+				let
+					pkgs = pkgsFor system;
+
+					wlrootsInclude = "${pkgs.wlroots}/include/wlroots-${pkgs.lib.concatStringsSep "." (pkgs.lib.take 2 (pkgs.lib.splitString "." pkgs.wlroots.version))}";
+
+					envIncludes = builtins.concatStringsSep ":" [
+						"${pkgs.wayland.dev}/include"
+						wlrootsInclude
+						"${pkgs.libxkbcommon.dev}/include"
+						"${pkgs.pixman}/include/pixman-1"
+						"${pkgs.libinput.dev}/include"
+					];
 				in
 				{
 					default = pkgs.mkShell {
@@ -27,12 +38,16 @@
 							gnumake
 							pkg-config
 							wayland
-wayland-protocols
-						wlroots
-						libxkbcommon
-						pixman
-						libinput
+							wayland-protocols
+							wlroots
+							libxkbcommon
+							pixman
+							libinput
 						];
+
+						C_INCLUDE_PATH = envIncludes;
+						CPLUS_INCLUDE_PATH = envIncludes;
+						CPATH = envIncludes;
 					};
 				});
 		};

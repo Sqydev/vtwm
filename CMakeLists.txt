@@ -5,7 +5,7 @@ project(vtwm
 	LANGUAGES C
 )
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
@@ -121,6 +121,11 @@ if(NOT WIN32)
 			_POSIX_C_SOURCE=200809L
 	)
 endif()
+
+target_compile_definitions(vtwm
+	PRIVATE
+		WLR_USE_UNSTABLE
+)
 
 
 if(NOT VTWM_DEBUG)

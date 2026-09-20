@@ -1,0 +1,2 @@
+CompileFlags:
+  Add: [-xc, -DWLR_USE_UNSTABLE]

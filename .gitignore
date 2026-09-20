@@ -1,4 +1,6 @@
 .cmake/
 
+compile_commands.json
+
 compiled/
 obj/

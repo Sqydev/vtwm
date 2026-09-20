@@ -3,12 +3,18 @@
 
 #include <wayland-server-core.h>
 
-typedef struct compositor {
-	struct wl_display* display;
-} compositor;
+#include <wlr/backend.h>
+#include <wlr/render/allocator.h>
 
-int InitCompositor(compositor* Compositor);
-int RunCompositor(compositor* Compositor);
-void FreeCompositor(compositor* Compositor);
+typedef struct Compositor {
+	struct wl_display* display;
+	struct wlr_backend* backend;
+	struct wlr_renderer* renderer;
+	struct wlr_allocator* allocator;
+} Compositor;
+
+int InitCompositor(Compositor* compositor);
+int RunCompositor(Compositor* compositor);
+void FreeCompositor(Compositor* compositor);
 
 #endif
