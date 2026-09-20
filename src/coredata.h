@@ -1,19 +1,11 @@
-#ifndef COREDATA_VTWM_H
-#define COREDATA_VTWM_H
+#ifndef VTWM_COREDATA_H
+#define VTWM_COREDATA_H
 
 #include <wlr/types/wlr_output.h>
 #include <wlr/render/allocator.h>
 
 #include "./compositor/compositor.h"
 #include "./events/events.h"
-
-typedef struct {
-	struct wlr_output* output;
-	struct wlr_renderer* renderer;
-	struct wlr_allocator* allocator;
-
-	struct wl_listener frame;
-} Output;
 
 typedef struct CoreData {
 	Compositor compositor;

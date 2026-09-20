@@ -1,9 +1,10 @@
 #include "../coredata.h"
+#include "../types.h"
 
-#include <stdlib.h>
 #include <wlr/types/wlr_output.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 void NewOutput(struct wl_listener* listener, void* data) {
 	(void)listener;
