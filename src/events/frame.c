@@ -1,4 +1,5 @@
 #include "../coredata.h"
+#include "../types.h"
 
 #include <wlr/render/wlr_renderer.h>
 #include <wlr/render/pass.h>
@@ -31,9 +32,9 @@ void Frame(struct wl_listener* listener, void* data) {
 			.height = vtwmOutput->output->height
 		},
 		.color = {
-			.r = 128.0f,
+			.r = 0.0f,
 			.g = 0.0f,
-			.b = 1.0f,
+			.b = 0.0f,
 			.a = 1.0f
 		}
 	};

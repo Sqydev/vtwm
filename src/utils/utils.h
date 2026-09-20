@@ -1,5 +1,5 @@
-#ifndef UTILS_VTWM_H
-#define UTILS_VTWM_H
+#ifndef VTWM_UTILS_H
+#define VTWM_UTILS_H
 
 void Panic(int exitCode, const char* msg, ...)
 	__attribute__((format(printf, 2, 3)));
