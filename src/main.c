@@ -1,18 +1,17 @@
+#include "./coredata.h"
 #include "./compositor/compositor.h"
+#include "./utils/utils.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
+CoreData DATA;
+
 int main(void) {
-	compositor Compositor = {0};
+	if(InitCompositor(&DATA.compositor) != 0) { Panic(NULL, EXIT_FAILURE); }
 
-	if(InitCompositor(&Compositor) != 0) { return EXIT_FAILURE; }
+	RunCompositor(&DATA.compositor);
 
-	printf("Compositor started\n");
-
-	RunCompositor(&Compositor);
-
-	FreeCompositor(&Compositor);
+	FreeCompositor(&DATA.compositor);
 
 	return EXIT_SUCCESS;
 }
