@@ -7,7 +7,6 @@
 #include "./compositor/compositor.h"
 #include "./events/events.h"
 
-
 typedef struct {
 	struct wlr_output* output;
 	struct wlr_renderer* renderer;
