@@ -31,9 +31,9 @@ void Frame(struct wl_listener* listener, void* data) {
 			.height = vtwmOutput->output->height
 		},
 		.color = {
-			.r = 0.0f,
+			.r = 128.0f,
 			.g = 0.0f,
-			.b = 0.0f,
+			.b = 1.0f,
 			.a = 1.0f
 		}
 	};

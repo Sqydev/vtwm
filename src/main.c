@@ -7,7 +7,9 @@
 CoreData DATA;
 
 int main(void) {
-	if(InitCompositor(&DATA.compositor) != 0) { Panic(NULL, EXIT_FAILURE); }
+	srand((unsigned)time(NULL));
+
+	if(InitCompositor(&DATA.compositor) != 0) { Panic(EXIT_FAILURE, NULL); }
 
 	RunCompositor(&DATA.compositor);
 
