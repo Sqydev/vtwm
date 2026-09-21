@@ -1,1 +1,1 @@
-
+Make PanicWrite it's own util
