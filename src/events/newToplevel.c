@@ -1,5 +1,6 @@
 #include "./events.h"
 
+#include "../coredata.h"
 #include "../types.h"
 
 #include <stdio.h>
@@ -17,6 +18,10 @@ void NewToplevel(struct wl_listener* listener, void* data) {
 	}
 
 	window->toplevel = toplevel;
+
+	struct wlr_scene_tree* tree = wlr_scene_xdg_surface_create(&DATA.compositor.scene->tree, toplevel->base);
+	window->sceneNode = &tree->node;
+	wlr_scene_node_set_position(window->sceneNode, 0, 0);
 
 	window->map.notify = MapWindow;
 	wl_signal_add(&toplevel->base->surface->events.map, &window->map);

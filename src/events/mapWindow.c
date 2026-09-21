@@ -1,12 +1,14 @@
 #include "./events.h"
-#include "../types.h"
 
-#include <stdio.h>
+#include "../coredata.h"
+#include "../types.h"
 
 void MapWindow(struct wl_listener* listener, void* data) {
 	(void)data;
 
 	Window* window = wl_container_of(listener, window, map);
 
-	printf("Window mapped: %s\n", window->toplevel->title ? window->toplevel->title : "(no title)");
+	DATA.TEMPFULLSCREENWINDOWTESTVAR = window;
+
+	wlr_xdg_toplevel_set_size(window->toplevel, DATA.compositor.output->output->width, DATA.compositor.output->output->height);
 }

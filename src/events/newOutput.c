@@ -1,4 +1,5 @@
 #include "../coredata.h"
+
 #include "../types.h"
 
 #include <wlr/types/wlr_output.h>
@@ -21,9 +22,19 @@ void NewOutput(struct wl_listener* listener, void* data) {
 		return;
 	}
 
+	DATA.compositor.output = vtwmOutput;
+
 	vtwmOutput->output = output;
 	vtwmOutput->renderer = DATA.compositor.renderer;
 	vtwmOutput->allocator = DATA.compositor.allocator;
+
+	vtwmOutput->sceneOutput = wlr_scene_output_create(DATA.compositor.scene, output);
+	if(!vtwmOutput->sceneOutput) {
+		fprintf(stderr, "Failed to create scene output\n");
+		free(vtwmOutput);
+		return;
+	}
+	wlr_scene_rect_create(&DATA.compositor.scene->tree, output->width, output->height, (float[]){0.0f, 0.0f, 0.0f, 1.0f});
 
 	if(!wlr_output_init_render(vtwmOutput->output, vtwmOutput->allocator, vtwmOutput->renderer)) {
 		fprintf(stderr, "Failed to initialize output rendering\n");

@@ -7,5 +7,9 @@ void DestroyWindow(struct wl_listener* listener, void* data) {
 
 	Window* window = wl_container_of(listener, window, destroy);
 
+	wl_list_remove(&window->destroy.link);
+	wl_list_remove(&window->map.link);
+	wl_list_remove(&window->unmap.link);
+
 	free(window);
 }
