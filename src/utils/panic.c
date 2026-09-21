@@ -9,7 +9,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 
 #include <signal.h>
 #include <unistd.h>
@@ -117,18 +116,18 @@ void InitPanicScreen(void) {
 }
 
 void PanicSignalHandler(int sig) {
+	struct sigaction sa = {0};
+	sa.sa_handler = SIG_DFL;
+	sigemptyset(&sa.sa_mask);
+
+	sigaction(sig, &sa, NULL);
+
 	panicFromSig = sig;
 
 	if(panicScreen && panicScreenSize) {
 		int n = write(STDERR_FILENO, panicScreen, panicScreenSize);
 		(void)n;
 	}
-
-	struct sigaction sa = {0};
-	sa.sa_handler = SIG_DFL;
-	sigemptyset(&sa.sa_mask);
-
-	sigaction(sig, &sa, NULL);
 
 	raise(sig);
 }
