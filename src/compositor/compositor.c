@@ -47,6 +47,14 @@ int InitCompositor(Compositor* compositor) {
 		return -1;
 	}
 
+	compositor->scene = wlr_scene_create();
+	if(!compositor->scene) {
+		fprintf(stderr, "Failed to create scene\n");
+		FreeCompositor(compositor);
+	
+		return -1;
+	}
+
 	compositor->subcompositor = wlr_subcompositor_create(compositor->display);
 	if(!compositor->subcompositor) {
 		fprintf(stderr, "Failed to create wl_subcompositor\n");
