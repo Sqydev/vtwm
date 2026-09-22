@@ -25,4 +25,9 @@ typedef struct Window {
 	struct wlr_scene_node* sceneNode;
 } Window;
 
+typedef struct Workspace {
+	Window** windows;
+	size_t windowsCount;
+} Workspace;
+
 #endif
