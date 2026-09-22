@@ -8,6 +8,20 @@
 
 #include <wayland-server-core.h>
 
+#include <wlr/backend.h>
+#include <wlr/render/allocator.h>
+#include <wlr/types/wlr_compositor.h>
+#include <wlr/types/wlr_linux_dmabuf_v1.h>
+#include <wlr/types/wlr_output_layout.h>
+#include <wlr/types/wlr_scene.h>
+#include <wlr/types/wlr_shm.h>
+#include <wlr/types/wlr_subcompositor.h>
+#include <wlr/types/wlr_data_device.h>
+#include <wlr/types/wlr_fractional_scale_v1.h>
+#include <wlr/types/wlr_presentation_time.h>
+#include <wlr/types/wlr_viewporter.h>
+#include <wlr/types/wlr_xdg_output_v1.h>
+
 int InitCompositor(Compositor* compositor) {
 	compositor->display = wl_display_create();
 	if(!compositor->display) {
@@ -26,6 +40,13 @@ int InitCompositor(Compositor* compositor) {
 	compositor->renderer = wlr_renderer_autocreate(compositor->backend);
 	if(!compositor->renderer) {
 		fprintf(stderr, "Failed to create wlroots renderer\n");
+		FreeCompositor(compositor);
+
+		return -1;
+	}
+
+	if(!wlr_renderer_init_wl_display(compositor->renderer, compositor->display)) {
+		fprintf(stderr, "Failed to initialize wl_display rendering\n");
 		FreeCompositor(compositor);
 
 		return -1;
@@ -55,6 +76,22 @@ int InitCompositor(Compositor* compositor) {
 		return -1;
 	}
 
+	compositor->outputLayout = wlr_output_layout_create(compositor->display);
+	if(!compositor->outputLayout) {
+		fprintf(stderr, "Failed to create output layout\n");
+		FreeCompositor(compositor);
+
+		return -1;
+	}
+
+	compositor->sceneLayout = wlr_scene_attach_output_layout(compositor->scene, compositor->outputLayout);
+	if(!compositor->sceneLayout) {
+		fprintf(stderr, "Failed to attach output layout to scene\n");
+		FreeCompositor(compositor);
+
+		return -1;
+	}
+
 	compositor->subcompositor = wlr_subcompositor_create(compositor->display);
 	if(!compositor->subcompositor) {
 		fprintf(stderr, "Failed to create wl_subcompositor\n");
@@ -79,6 +116,19 @@ int InitCompositor(Compositor* compositor) {
 		return -1;
 	}
 
+	if(compositor->renderer->render_buffer_caps & WLR_BUFFER_CAP_DMABUF) {
+		compositor->linuxDmaBuf = wlr_linux_dmabuf_v1_create_with_renderer(compositor->display, 4, compositor->renderer);
+	}
+
+	if(!compositor->linuxDmaBuf) {
+		fprintf(stderr, "Warning: linux-dmabuf-v1 disabled (no importable DMA-BUF path)\n");
+	}
+		
+	wlr_viewporter_create(compositor->display);
+	wlr_presentation_create(compositor->display, compositor->backend, 2);
+	wlr_fractional_scale_manager_v1_create(compositor->display, 1);
+	wlr_xdg_output_manager_v1_create(compositor->display, compositor->outputLayout);
+
 	compositor->dataDeviceManager = wlr_data_device_manager_create(compositor->display);
 
 	if(!compositor->dataDeviceManager) {
@@ -99,6 +149,9 @@ int InitCompositor(Compositor* compositor) {
 	}
 
 	printf("Wayland socket: %s\n", compositor->socket);
+	
+	// CHildren will have good socket autopmaticly
+	setenv("WAYLAND_DISPLAY", compositor->socket, true);
 
 	return 0;
 }
@@ -116,6 +169,11 @@ int RunCompositor(Compositor* compositor) {
 }
 
 void FreeCompositor(Compositor* compositor) {
+	if(compositor->outputLayout) {
+		wlr_output_layout_destroy(compositor->outputLayout);
+		compositor->outputLayout = NULL;
+	}
+
 	if(compositor->allocator) {
 		wlr_allocator_destroy(compositor->allocator);
 		compositor->allocator = NULL;

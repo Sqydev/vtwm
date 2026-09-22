@@ -3,6 +3,7 @@
 #include "../types.h"
 
 #include <wlr/types/wlr_output.h>
+#include <wlr/types/wlr_output_layout.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +35,15 @@ void NewOutput(struct wl_listener* listener, void* data) {
 		free(vtwmOutput);
 		return;
 	}
+
+	struct wlr_output_layout_output* layoutOutput = wlr_output_layout_add_auto(DATA.compositor.outputLayout, output);
+	if(!layoutOutput) {
+		fprintf(stderr, "Failed to add output to layout\n");
+		free(vtwmOutput);
+		return;
+	}
+	wlr_scene_output_layout_add_output(DATA.compositor.sceneLayout, layoutOutput, vtwmOutput->sceneOutput);
+
 	wlr_scene_rect_create(&DATA.compositor.scene->tree, output->width, output->height, (float[]){0.0f, 0.0f, 0.0f, 1.0f});
 
 	if(!wlr_output_init_render(vtwmOutput->output, vtwmOutput->allocator, vtwmOutput->renderer)) {

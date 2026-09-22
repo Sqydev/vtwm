@@ -24,12 +24,17 @@ typedef struct Compositor {
 	const char* socket;
 
 	struct wlr_scene* scene;
-	Output* output;
+	struct wlr_scene_output_layout* sceneLayout;
+	struct wlr_output_layout* outputLayout;
+
+	struct wlr_linux_dmabuf_v1* linuxDmaBuf;
 
 	struct wl_display* display;
 	struct wlr_backend* backend;
 	struct wlr_renderer* renderer;
 	struct wlr_allocator* allocator;
+
+	Output* output;
 
 	// *Clipboard*
 	struct wlr_data_device_manager* dataDeviceManager;
