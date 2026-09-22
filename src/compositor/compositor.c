@@ -2,6 +2,7 @@
 
 #include "./compositor.h"
 #include "../events/events.h"
+#include "types.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,6 +153,28 @@ int InitCompositor(Compositor* compositor) {
 	
 	// CHildren will have good socket autopmaticly
 	setenv("WAYLAND_DISPLAY", compositor->socket, true);
+
+	// Make also it configurable. Like. The inicial value
+	DATA.workspaceManager.wdirsCount = 1;
+	DATA.workspaceManager.currentWdirIdx = 0;
+	DATA.workspaceManager.wdir = malloc(DATA.workspaceManager.wdirsCount * sizeof(WorkspaceDir));
+	if(!DATA.workspaceManager.wdir) {
+		fprintf(stderr, "Malloc fuking faled for DATA.workspaceManager.wdir :)\n");
+		FreeCompositor(compositor);
+
+		return -1;
+	}
+
+	WorkspaceDir dirar = DATA.workspaceManager.wdir[DATA.workspaceManager.currentWdirIdx];
+	dirar.workspacesCount = 1;
+	dirar.currentWorkspaceIdx = 0;
+	dirar.workspaces = malloc(dirar.workspacesCount * sizeof(Workspace));
+	if(!DATA.workspaceManager.wdir) {
+		fprintf(stderr, "Malloc fuking faled for dirar.workspaces :)\n");
+		FreeCompositor(compositor);
+
+		return -1;
+	}
 
 	return 0;
 }
