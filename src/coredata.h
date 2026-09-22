@@ -6,14 +6,14 @@
 
 #include "./compositor/compositor.h"
 #include "./events/events.h"
-#include "types.h"
+#include "./types.h"
 
 typedef struct CoreData {
 	Compositor compositor;
 
 	Events events;
 
-	Window* TEMPFULLSCREENWINDOWTESTVAR;
+	WorkspaceManager workspaceManager;
 } CoreData;
 
 extern CoreData DATA;
