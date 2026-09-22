@@ -115,27 +115,6 @@ void InitPanicScreen(void) {
 	panicScreenSize = pos;
 }
 
-void PanicWrite(const char* buffer, size_t size) {
-	size_t written = 0;
-
-	while(written < size) {
-		ssize_t n = write(STDERR_FILENO, buffer + written, size - written);
-
-		if(n > 0) {
-			written += (size_t)n;
-		}
-		else if(n == -1) {
-			if(errno == EINTR) {
-				continue;
-			}
-			break;
-		}
-		else {
-			break;
-		}
-	}
-}
-
 void PanicSignalHandler(int sig) {
 	struct sigaction sa = {0};
 	sa.sa_handler = SIG_DFL;
@@ -146,7 +125,7 @@ void PanicSignalHandler(int sig) {
 	panicFromSig = sig;
 
 	if(panicScreen && panicScreenSize) {
-		PanicWrite(panicScreen, panicScreenSize);
+		FullWrite(STDERR_FILENO, panicScreen, panicScreenSize);
 	}
 
 	raise(sig);
