@@ -115,6 +115,27 @@ void InitPanicScreen(void) {
 	panicScreenSize = pos;
 }
 
+void PanicWrite(const char* buffer, size_t size) {
+	size_t written = 0;
+
+	while(written < size) {
+		ssize_t n = write(STDERR_FILENO, buffer + written, size - written);
+
+		if(n > 0) {
+			written += (size_t)n;
+		}
+		else if(n == -1) {
+			if(errno == EINTR) {
+				continue;
+			}
+			break;
+		}
+		else {
+			break;
+		}
+	}
+}
+
 void PanicSignalHandler(int sig) {
 	struct sigaction sa = {0};
 	sa.sa_handler = SIG_DFL;
@@ -125,8 +146,7 @@ void PanicSignalHandler(int sig) {
 	panicFromSig = sig;
 
 	if(panicScreen && panicScreenSize) {
-		int n = write(STDERR_FILENO, panicScreen, panicScreenSize);
-		(void)n;
+		PanicWrite(panicScreen, panicScreenSize);
 	}
 
 	raise(sig);
@@ -139,7 +159,7 @@ void InitPanic(void) {
 
 	sa.sa_handler = PanicSignalHandler;
 	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_NODEFER;
+	sa.sa_flags = 0;
 
 	sigaction(SIGSEGV, &sa, NULL);
 	sigaction(SIGABRT, &sa, NULL);
