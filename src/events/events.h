@@ -21,5 +21,6 @@ void DestroyWindow(struct wl_listener* listener, void* data);
 
 void MapWindow(struct wl_listener* listener, void* data);
 void UnmapWindow(struct wl_listener* listener, void* data);
+void CommitWindow(struct wl_listener* listener, void* data);
 
 #endif

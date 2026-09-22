@@ -43,7 +43,10 @@
 							libxkbcommon
 							pixman
 							libinput
+							fish
 						];
+
+						shellHook = "exec fish";
 
 						C_INCLUDE_PATH = envIncludes;
 						CPLUS_INCLUDE_PATH = envIncludes;

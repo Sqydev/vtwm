@@ -29,6 +29,9 @@ void NewToplevel(struct wl_listener* listener, void* data) {
 	window->unmap.notify = UnmapWindow;
 	wl_signal_add(&toplevel->base->surface->events.unmap, &window->unmap);
 
+	window->commit.notify = CommitWindow;
+	wl_signal_add(&toplevel->base->surface->events.commit, &window->commit);
+
 	window->destroy.notify = DestroyWindow;
 	wl_signal_add(&toplevel->events.destroy, &window->destroy);
 
