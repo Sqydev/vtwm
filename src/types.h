@@ -14,7 +14,19 @@ typedef struct Output {
 	struct wlr_scene_output* sceneOutput;
 } Output;
 
+typedef enum {
+	LAYER_TTY = 0,
+	LAYER_NORMAL = 1,
+	LAYER_SUPER = 2
+} LayerName;
+
 typedef struct Window {
+	size_t ID;
+	size_t index;
+	LayerName layer;
+	size_t workspaceIdx;
+	size_t wdirIdx;
+
 	struct wlr_xdg_toplevel* toplevel;
 
 	struct wl_listener map;
@@ -25,14 +37,8 @@ typedef struct Window {
 	struct wlr_scene_node* sceneNode;
 } Window;
 
-typedef enum {
-	LAYER_TTY = 0,
-	LAYER_NORMAL = 1,
-	LAYER_SUPER = 2
-} LayerName;
-
 typedef struct Workspace {
-	Window* windows;
+	Window** windows;
 	size_t windowsCount;
 } Workspace;
 
@@ -47,6 +53,8 @@ typedef struct {
 	LayerName currLayer;
 
 	WorkspaceDir* wdir;
+
+	size_t lastWindowID;
 
 	size_t wdirsCount;
 	size_t currentWdirIdx;
