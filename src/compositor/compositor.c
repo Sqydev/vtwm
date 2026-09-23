@@ -158,6 +158,7 @@ int InitCompositor(Compositor* compositor) {
 	DATA.workspaceManager.wdirsCount = 1;
 	DATA.workspaceManager.currentWdirIdx = 0;
 	DATA.workspaceManager.currLayer = LAYER_NORMAL;
+	DATA.workspaceManager.lastWindowID = 0;
 	DATA.workspaceManager.wdir = malloc(DATA.workspaceManager.wdirsCount * sizeof(WorkspaceDir));
 	if(!DATA.workspaceManager.wdir) {
 		fprintf(stderr, "Malloc exploded on workspace dirs :)\n");
@@ -196,41 +197,6 @@ int RunCompositor(Compositor* compositor) {
 }
 
 void FreeCompositor(Compositor* compositor) {
-	WorkspaceDir* direr = &DATA.workspaceManager.wdir[DATA.workspaceManager.currentWdirIdx];
-
-	direr->workspaces[LAYER_TTY]->windowsCount = 0;
-	direr->workspaces[LAYER_NORMAL]->windowsCount = 0;
-	direr->workspaces[LAYER_SUPER]->windowsCount = 0;
-
-	if(direr->workspaces[LAYER_TTY]->windows) {
-		direr->workspaces[LAYER_TTY]->windows = NULL;
-	}
-	if(direr->workspaces[LAYER_NORMAL]->windows) {
-		direr->workspaces[LAYER_NORMAL]->windows = NULL;
-	}
-	if(direr->workspaces[LAYER_SUPER]->windows) {
-		direr->workspaces[LAYER_SUPER]->windows = NULL;
-	}
-
-	direr->workspacesCount = 0;
-	direr->currentWorkspaceIdx = 0;
-	if(direr->workspaces[LAYER_TTY]) {
-		free(direr->workspaces[LAYER_TTY]);
-	}
-	if(direr->workspaces[LAYER_NORMAL]) {
-		free(direr->workspaces[LAYER_NORMAL]);
-	}
-	if(direr->workspaces[LAYER_SUPER]) {
-		free(direr->workspaces[LAYER_SUPER]);
-	}
-
-	DATA.workspaceManager.wdirsCount = 0;
-	DATA.workspaceManager.currentWdirIdx = 0;
-	DATA.workspaceManager.currLayer = LAYER_NORMAL;
-	if(DATA.workspaceManager.wdir) {
-		free(DATA.workspaceManager.wdir);
-	}
-	
 	if(compositor->outputLayout) {
 		wlr_output_layout_destroy(compositor->outputLayout);
 		compositor->outputLayout = NULL;
@@ -256,5 +222,44 @@ void FreeCompositor(Compositor* compositor) {
 		wl_display_destroy(compositor->display);
 
 		compositor->display = NULL;
+	}
+
+	WorkspaceDir* direr = &DATA.workspaceManager.wdir[DATA.workspaceManager.currentWdirIdx];
+
+	direr->workspaces[LAYER_TTY]->windowsCount = 0;
+	direr->workspaces[LAYER_NORMAL]->windowsCount = 0;
+	direr->workspaces[LAYER_SUPER]->windowsCount = 0;
+
+	if(direr->workspaces[LAYER_TTY]->windows) {
+		free(direr->workspaces[LAYER_TTY]->windows);
+		direr->workspaces[LAYER_TTY]->windows = NULL;
+	}
+	if(direr->workspaces[LAYER_NORMAL]->windows) {
+		free(direr->workspaces[LAYER_NORMAL]->windows);
+		direr->workspaces[LAYER_NORMAL]->windows = NULL;
+	}
+	if(direr->workspaces[LAYER_SUPER]->windows) {
+		free(direr->workspaces[LAYER_SUPER]->windows);
+		direr->workspaces[LAYER_SUPER]->windows = NULL;
+	}
+
+	direr->workspacesCount = 0;
+	direr->currentWorkspaceIdx = 0;
+	if(direr->workspaces[LAYER_TTY]) {
+		free(direr->workspaces[LAYER_TTY]);
+	}
+	if(direr->workspaces[LAYER_NORMAL]) {
+		free(direr->workspaces[LAYER_NORMAL]);
+	}
+	if(direr->workspaces[LAYER_SUPER]) {
+		free(direr->workspaces[LAYER_SUPER]);
+	}
+
+	DATA.workspaceManager.wdirsCount = 0;
+	DATA.workspaceManager.currentWdirIdx = 0;
+	DATA.workspaceManager.currLayer = LAYER_NORMAL;
+	DATA.workspaceManager.lastWindowID = 0;
+	if(DATA.workspaceManager.wdir) {
+		free(DATA.workspaceManager.wdir);
 	}
 }
