@@ -2,7 +2,7 @@
 
 #include "./compositor.h"
 #include "../events/events.h"
-#include "types.h"
+#include "../types.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -157,24 +157,28 @@ int InitCompositor(Compositor* compositor) {
 	// Make also it configurable. Like. The inicial value
 	DATA.workspaceManager.wdirsCount = 1;
 	DATA.workspaceManager.currentWdirIdx = 0;
+	DATA.workspaceManager.currLayer = LAYER_NORMAL;
 	DATA.workspaceManager.wdir = malloc(DATA.workspaceManager.wdirsCount * sizeof(WorkspaceDir));
 	if(!DATA.workspaceManager.wdir) {
-		fprintf(stderr, "Malloc fuking faled for DATA.workspaceManager.wdir :)\n");
+		fprintf(stderr, "Malloc exploded on workspace dirs :)\n");
 		FreeCompositor(compositor);
 
 		return -1;
 	}
+	
+	WorkspaceDir* direr = &DATA.workspaceManager.wdir[DATA.workspaceManager.currentWdirIdx];
+	direr->workspacesCount = 1;
+	direr->currentWorkspaceIdx = 0;
+	direr->workspaces[LAYER_TTY] = malloc(direr->workspacesCount * sizeof(Workspace));
+	direr->workspaces[LAYER_NORMAL] = malloc(direr->workspacesCount * sizeof(Workspace));
+	direr->workspaces[LAYER_SUPER] = malloc(direr->workspacesCount * sizeof(Workspace));
 
-	WorkspaceDir dirar = DATA.workspaceManager.wdir[DATA.workspaceManager.currentWdirIdx];
-	dirar.workspacesCount = 1;
-	dirar.currentWorkspaceIdx = 0;
-	dirar.workspaces = malloc(dirar.workspacesCount * sizeof(Workspace));
-	if(!DATA.workspaceManager.wdir) {
-		fprintf(stderr, "Malloc fuking faled for dirar.workspaces :)\n");
-		FreeCompositor(compositor);
-
-		return -1;
-	}
+	direr->workspaces[LAYER_TTY]->windowsCount = 0;
+	direr->workspaces[LAYER_TTY]->windows = NULL;
+	direr->workspaces[LAYER_NORMAL]->windowsCount = 0;
+	direr->workspaces[LAYER_NORMAL]->windows = NULL;
+	direr->workspaces[LAYER_SUPER]->windowsCount = 0;
+	direr->workspaces[LAYER_SUPER]->windows = NULL;
 
 	return 0;
 }
@@ -192,6 +196,41 @@ int RunCompositor(Compositor* compositor) {
 }
 
 void FreeCompositor(Compositor* compositor) {
+	WorkspaceDir* direr = &DATA.workspaceManager.wdir[DATA.workspaceManager.currentWdirIdx];
+
+	direr->workspaces[LAYER_TTY]->windowsCount = 0;
+	direr->workspaces[LAYER_NORMAL]->windowsCount = 0;
+	direr->workspaces[LAYER_SUPER]->windowsCount = 0;
+
+	if(direr->workspaces[LAYER_TTY]->windows) {
+		direr->workspaces[LAYER_TTY]->windows = NULL;
+	}
+	if(direr->workspaces[LAYER_NORMAL]->windows) {
+		direr->workspaces[LAYER_NORMAL]->windows = NULL;
+	}
+	if(direr->workspaces[LAYER_SUPER]->windows) {
+		direr->workspaces[LAYER_SUPER]->windows = NULL;
+	}
+
+	direr->workspacesCount = 0;
+	direr->currentWorkspaceIdx = 0;
+	if(direr->workspaces[LAYER_TTY]) {
+		free(direr->workspaces[LAYER_TTY]);
+	}
+	if(direr->workspaces[LAYER_NORMAL]) {
+		free(direr->workspaces[LAYER_NORMAL]);
+	}
+	if(direr->workspaces[LAYER_SUPER]) {
+		free(direr->workspaces[LAYER_SUPER]);
+	}
+
+	DATA.workspaceManager.wdirsCount = 0;
+	DATA.workspaceManager.currentWdirIdx = 0;
+	DATA.workspaceManager.currLayer = LAYER_NORMAL;
+	if(DATA.workspaceManager.wdir) {
+		free(DATA.workspaceManager.wdir);
+	}
+	
 	if(compositor->outputLayout) {
 		wlr_output_layout_destroy(compositor->outputLayout);
 		compositor->outputLayout = NULL;
