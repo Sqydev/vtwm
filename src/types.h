@@ -25,29 +25,29 @@ typedef struct Window {
 	struct wlr_scene_node* sceneNode;
 } Window;
 
-typedef struct Layer {
-	Window** windows;
-	size_t windowsCount;
-} Layer;
-
 typedef enum {
-	LAYER_TTY,
-	LAYER_NORMAL,
-	LAYER_SUPER
+	LAYER_TTY = 0,
+	LAYER_NORMAL = 1,
+	LAYER_SUPER = 2
 } LayerName;
 
 typedef struct Workspace {
-	Layer layers[3];
+	Window* windows;
+	size_t windowsCount;
 } Workspace;
 
 typedef struct WorkspaceDir {
-	Workspace* workspaces;
+	Workspace* workspaces[3];
+
 	size_t workspacesCount;
 	size_t currentWorkspaceIdx;
 } WorkspaceDir;
 
 typedef struct {
+	LayerName currLayer;
+
 	WorkspaceDir* wdir;
+
 	size_t wdirsCount;
 	size_t currentWdirIdx;
 } WorkspaceManager;

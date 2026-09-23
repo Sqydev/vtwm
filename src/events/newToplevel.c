@@ -11,11 +11,15 @@ void NewToplevel(struct wl_listener* listener, void* data) {
 
 	struct wlr_xdg_toplevel* toplevel = data;
 
-	Window* window = calloc(1, sizeof(Window));
+	WorkspaceDir* direr = &DATA.workspaceManager.wdir[DATA.workspaceManager.currentWdirIdx];
+	Workspace* workerer = &direr->workspaces[DATA.workspaceManager.currLayer][direr->currentWorkspaceIdx];
+	Window* window = &workerer->windows[workerer->windowsCount + 1];
+	window = calloc((workerer->windowsCount + 1), sizeof(Window));
 	if(!window) {
 		fprintf(stderr, "Failed to allocate Window\n");
 		return;
 	}
+	workerer->windowsCount++;
 
 	window->toplevel = toplevel;
 
