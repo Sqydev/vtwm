@@ -141,6 +141,15 @@ int InitCompositor(Compositor* compositor) {
 	
 	InitEvents(&DATA.compositor, &DATA.events);
 
+	compositor->seat = wlr_seat_create(compositor->display, "seat0");
+	if(!compositor->seat) {
+		fprintf(stderr, "Failed to create seat\n");
+		FreeCompositor(compositor);
+
+		return -1;
+	}
+	wlr_seat_set_capabilities(compositor->seat, WL_SEAT_CAPABILITY_KEYBOARD);
+
 	compositor->socket = wl_display_add_socket_auto(compositor->display);
 	if(!compositor->socket) {
 		fprintf(stderr, "Failed to create Wayland socket\n");
@@ -197,6 +206,16 @@ int RunCompositor(Compositor* compositor) {
 }
 
 void FreeCompositor(Compositor* compositor) {
+	RemoveEvents(&DATA.events);
+
+	if(compositor->output) {
+		if(compositor->output->frame.link.prev != NULL) {
+			wl_list_remove(&compositor->output->frame.link);
+		}
+		free(compositor->output);
+		compositor->output = NULL;
+	}
+
 	if(compositor->outputLayout) {
 		wlr_output_layout_destroy(compositor->outputLayout);
 		compositor->outputLayout = NULL;

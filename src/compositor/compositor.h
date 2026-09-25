@@ -13,6 +13,9 @@
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_scene.h>
+#include <wlr/types/wlr_input_device.h>
+#include <wlr/types/wlr_keyboard.h>
+#include <wlr/types/wlr_seat.h>
 
 typedef struct Compositor {
 	struct wlr_compositor* compositor;
@@ -22,6 +25,9 @@ typedef struct Compositor {
 	// Shared memory interface
 	struct wlr_shm* shm;
 	const char* socket;
+
+	struct wlr_seat* seat;
+	struct wlr_keyboard* keyboard;
 
 	struct wlr_scene* scene;
 	struct wlr_scene_output_layout* sceneLayout;
