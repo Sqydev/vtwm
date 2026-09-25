@@ -15,7 +15,5 @@ int main(void) {
 
 	RunCompositor(&DATA.compositor);
 
-	FreeCompositor(&DATA.compositor);
-
-	return EXIT_SUCCESS;
+	return Finish();
 }

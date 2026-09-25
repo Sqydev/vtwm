@@ -3,6 +3,9 @@
 
 #include <stddef.h>
 
+void Close(int exitCode);
+int Finish(void);
+
 void FullWrite(int fd, const char* buffer, size_t size);
 
 void InitPanic(void);
