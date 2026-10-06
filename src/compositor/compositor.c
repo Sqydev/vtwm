@@ -93,6 +93,24 @@ int InitCompositor(Compositor* compositor) {
 		return -1;
 	}
 
+	compositor->cursor = wlr_cursor_create();
+	if(!compositor->cursor) {
+		fprintf(stderr, "Failed to create cursor\n");
+		FreeCompositor(compositor);
+
+		return -1;
+	}
+	wlr_cursor_attach_output_layout(compositor->cursor, compositor->outputLayout);
+
+	compositor->cursorManager = wlr_xcursor_manager_create(NULL, 24);
+	if(!compositor->cursorManager) {
+		fprintf(stderr, "Failed to create xcursor manager\n");
+		FreeCompositor(compositor);
+
+		return -1;
+	}
+	wlr_cursor_set_xcursor(compositor->cursor, compositor->cursorManager, "default");
+
 	compositor->subcompositor = wlr_subcompositor_create(compositor->display);
 	if(!compositor->subcompositor) {
 		fprintf(stderr, "Failed to create wl_subcompositor\n");
@@ -139,8 +157,6 @@ int InitCompositor(Compositor* compositor) {
 		return -1;
 	}
 	
-	InitEvents(&DATA.compositor, &DATA.events);
-
 	compositor->seat = wlr_seat_create(compositor->display, "seat0");
 	if(!compositor->seat) {
 		fprintf(stderr, "Failed to create seat\n");
@@ -148,7 +164,9 @@ int InitCompositor(Compositor* compositor) {
 
 		return -1;
 	}
-	wlr_seat_set_capabilities(compositor->seat, WL_SEAT_CAPABILITY_KEYBOARD);
+	wlr_seat_set_capabilities(compositor->seat, WL_SEAT_CAPABILITY_KEYBOARD | WL_SEAT_CAPABILITY_POINTER);
+
+	InitEvents(&DATA.compositor, &DATA.events);
 
 	compositor->socket = wl_display_add_socket_auto(compositor->display);
 	if(!compositor->socket) {
@@ -207,6 +225,15 @@ int RunCompositor(Compositor* compositor) {
 
 void FreeCompositor(Compositor* compositor) {
 	RemoveEvents(&DATA.events);
+
+	if(compositor->cursorManager) {
+		wlr_xcursor_manager_destroy(compositor->cursorManager);
+		compositor->cursorManager = NULL;
+	}
+	if(compositor->cursor) {
+		wlr_cursor_destroy(compositor->cursor);
+		compositor->cursor = NULL;
+	}
 
 	if(compositor->output) {
 		if(compositor->output->frame.link.prev != NULL) {

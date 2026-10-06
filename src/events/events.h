@@ -13,6 +13,15 @@ typedef struct Events {
 	struct wl_listener keyboardKey;
 	struct wl_listener keyboardModifiers;
 	struct wl_listener keyboardDestroy;
+
+	struct wl_listener pointerMotion;
+	struct wl_listener pointerMotionAbsolute;
+	struct wl_listener pointerButton;
+	struct wl_listener pointerAxis;
+	struct wl_listener pointerFrame;
+
+	struct wl_listener requestSetCursor;
+	struct wl_listener pointerFocusChange;
 } Events;
 
 void InitEvents(Compositor* compositor, Events* events);
@@ -33,5 +42,15 @@ void NewInput(struct wl_listener* listener, void* data);
 void KeyboardKey(struct wl_listener* listener, void* data);
 void KeyboardModifiers(struct wl_listener* listener, void* data);
 void KeyboardDestroy(struct wl_listener* listener, void* data);
+
+void PointerMotion(struct wl_listener* listener, void* data);
+void PointerMotionAbsolute(struct wl_listener* listener, void* data);
+void PointerButton(struct wl_listener* listener, void* data);
+void PointerAxis(struct wl_listener* listener, void* data);
+void PointerFrame(struct wl_listener* listener, void* data);
+void RequestSetCursor(struct wl_listener* listener, void* data);
+void PointerFocusChange(struct wl_listener* listener, void* data);
+
+void ProcessCursorMotion(uint32_t time);
 
 #endif

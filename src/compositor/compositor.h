@@ -16,6 +16,8 @@
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_seat.h>
+#include <wlr/types/wlr_cursor.h>
+#include <wlr/types/wlr_xcursor_manager.h>
 
 typedef struct Compositor {
 	struct wlr_compositor* compositor;
@@ -28,6 +30,9 @@ typedef struct Compositor {
 
 	struct wlr_seat* seat;
 	struct wlr_keyboard* keyboard;
+
+	struct wlr_cursor* cursor;
+	struct wlr_xcursor_manager* cursorManager;
 
 	struct wlr_scene* scene;
 	struct wlr_scene_output_layout* sceneLayout;
