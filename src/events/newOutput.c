@@ -29,26 +29,10 @@ void NewOutput(struct wl_listener* listener, void* data) {
 	vtwmOutput->renderer = DATA.compositor.renderer;
 	vtwmOutput->allocator = DATA.compositor.allocator;
 
-	vtwmOutput->sceneOutput = wlr_scene_output_create(DATA.compositor.scene, output);
-	if(!vtwmOutput->sceneOutput) {
-		fprintf(stderr, "Failed to create scene output\n");
-		free(vtwmOutput);
-		return;
-	}
-
-	struct wlr_output_layout_output* layoutOutput = wlr_output_layout_add_auto(DATA.compositor.outputLayout, output);
-	if(!layoutOutput) {
-		fprintf(stderr, "Failed to add output to layout\n");
-		free(vtwmOutput);
-		return;
-	}
-	wlr_scene_output_layout_add_output(DATA.compositor.sceneLayout, layoutOutput, vtwmOutput->sceneOutput);
-
-	wlr_scene_rect_create(&DATA.compositor.scene->tree, output->width, output->height, (float[]){0.0f, 0.0f, 0.0f, 1.0f});
-
 	if(!wlr_output_init_render(vtwmOutput->output, vtwmOutput->allocator, vtwmOutput->renderer)) {
 		fprintf(stderr, "Failed to initialize output rendering\n");
 
+		DATA.compositor.output = NULL;
 		free(vtwmOutput);
 
 		return;
@@ -64,6 +48,25 @@ void NewOutput(struct wl_listener* listener, void* data) {
 	wlr_output_state_set_enabled(&state, true);
 	wlr_output_commit_state(output, &state);
 	wlr_output_state_finish(&state);
+
+	vtwmOutput->sceneOutput = wlr_scene_output_create(DATA.compositor.scene, output);
+	if(!vtwmOutput->sceneOutput) {
+		fprintf(stderr, "Failed to create scene output\n");
+		DATA.compositor.output = NULL;
+		free(vtwmOutput);
+		return;
+	}
+
+	struct wlr_output_layout_output* layoutOutput = wlr_output_layout_add_auto(DATA.compositor.outputLayout, output);
+	if(!layoutOutput) {
+		fprintf(stderr, "Failed to add output to layout\n");
+		DATA.compositor.output = NULL;
+		free(vtwmOutput);
+		return;
+	}
+	wlr_scene_output_layout_add_output(DATA.compositor.sceneLayout, layoutOutput, vtwmOutput->sceneOutput);
+
+	wlr_scene_rect_create(&DATA.compositor.scene->tree, output->width, output->height, (float[]){0.0f, 0.0f, 0.0f, 1.0f});
 
 	vtwmOutput->frame.notify = Frame;
 
