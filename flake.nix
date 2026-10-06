@@ -26,6 +26,8 @@
 						"${pkgs.libxkbcommon.dev}/include"
 						"${pkgs.pixman}/include/pixman-1"
 						"${pkgs.libinput.dev}/include"
+						"${pkgs.glibc.dev}/include"
+    					"${pkgs.wayland-protocols}/include"
 					];
 				in
 				{
