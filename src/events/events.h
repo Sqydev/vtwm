@@ -5,14 +5,20 @@
 
 #include <wayland-server-core.h>
 
+typedef struct KeyboardHandler {
+	struct wl_list link;
+	struct wlr_keyboard* keyboard;
+	struct wl_listener key;
+	struct wl_listener modifiers;
+	struct wl_listener destroy;
+} KeyboardHandler;
+
 typedef struct Events {
 	struct wl_listener newOutput;
 	struct wl_listener newToplevel;
 
 	struct wl_listener newInput;
-	struct wl_listener keyboardKey;
-	struct wl_listener keyboardModifiers;
-	struct wl_listener keyboardDestroy;
+	struct wl_list keyboardHandlers;
 
 	struct wl_listener pointerMotion;
 	struct wl_listener pointerMotionAbsolute;

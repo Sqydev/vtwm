@@ -11,6 +11,8 @@ typedef struct Output {
 
 	struct wl_listener frame;
 
+	struct wl_listener destroy;
+
 	struct wlr_scene_output* sceneOutput;
 } Output;
 

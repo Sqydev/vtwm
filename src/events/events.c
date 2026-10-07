@@ -2,9 +2,11 @@
 
 #include "../compositor/compositor.h"
 
+#include <stdlib.h>
 #include <wlr/types/wlr_output.h>
 
 void InitEvents(Compositor* compositor, Events* events) {
+	wl_list_init(&events->keyboardHandlers);
 	events->newOutput.notify = NewOutput;
 
 	wl_signal_add(
@@ -48,6 +50,18 @@ void InitEvents(Compositor* compositor, Events* events) {
 }
 
 void RemoveEvents(Events* events) {
+	if(events->keyboardHandlers.prev != NULL) {
+		KeyboardHandler* handler;
+		KeyboardHandler* tmp;
+		wl_list_for_each_safe(handler, tmp, &events->keyboardHandlers, link) {
+			wl_list_remove(&handler->key.link);
+			wl_list_remove(&handler->modifiers.link);
+			wl_list_remove(&handler->destroy.link);
+			wl_list_remove(&handler->link);
+			free(handler);
+		}
+	}
+
 	if(events->newInput.notify && events->newInput.link.prev != NULL) {
 		wl_list_remove(&events->newInput.link);
 	}

@@ -5,9 +5,7 @@
 #include <wlr/types/wlr_keyboard.h>
 
 void KeyboardModifiers(struct wl_listener* listener, void* data) {
-	(void)listener;
 	(void)data;
-
-	struct wlr_keyboard* keyboard = DATA.compositor.keyboard;
-	wlr_seat_keyboard_notify_modifiers(DATA.compositor.seat, &keyboard->modifiers);
+	KeyboardHandler* handler = wl_container_of(listener, handler, modifiers);
+	wlr_seat_keyboard_notify_modifiers(DATA.compositor.seat, &handler->keyboard->modifiers);
 }

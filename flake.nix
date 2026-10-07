@@ -18,16 +18,26 @@
 				let
 					pkgs = pkgsFor system;
 
-					wlrootsInclude = "${pkgs.wlroots}/include/wlroots-${pkgs.lib.concatStringsSep "." (pkgs.lib.take 2 (pkgs.lib.splitString "." pkgs.wlroots.version))}";
+					libinputZ = pkgs.libinput.override {
+						udev = pkgs.libudev-zero;
+						wacomSupport = false;
+					};
+
+					wlrootsZ = pkgs.wlroots.override {
+						libinput = libinputZ;
+					};
+
+					wlrootsInclude = "${wlrootsZ}/include/wlroots-${pkgs.lib.concatStringsSep "." (pkgs.lib.take 2 (pkgs.lib.splitString "." wlrootsZ.version))}";
 
 					envIncludes = builtins.concatStringsSep ":" [
 						"${pkgs.wayland.dev}/include"
 						wlrootsInclude
 						"${pkgs.libxkbcommon.dev}/include"
 						"${pkgs.pixman}/include/pixman-1"
-						"${pkgs.libinput.dev}/include"
+						"${libinputZ.dev}/include"
 						"${pkgs.glibc.dev}/include"
-    					"${pkgs.wayland-protocols}/include"
+						"${pkgs.wayland-protocols}/include"
+						"${pkgs.libudev-zero}/include"
 					];
 				in
 				{
@@ -41,11 +51,12 @@
 							pkg-config
 							wayland
 							wayland-protocols
-							wlroots
+							wlrootsZ
 							libxkbcommon
 							pixman
-							libinput
+							libinputZ
 							fish
+							libudev-zero
 						];
 
 						shellHook = "exec fish";
