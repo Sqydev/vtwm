@@ -8,7 +8,7 @@ void MapWindow(struct wl_listener* listener, void* data) {
 
 	Window* window = wl_container_of(listener, window, map);
 
-	struct wlr_keyboard* keyboard = DATA.compositor.keyboard;
+	struct wlr_keyboard* keyboard = wlr_seat_get_keyboard(DATA.compositor.seat);
 	if(keyboard) {
 		wlr_seat_keyboard_notify_enter(DATA.compositor.seat, window->toplevel->base->surface, keyboard->keycodes, keyboard->num_keycodes, &keyboard->modifiers);
 	}

@@ -3,6 +3,7 @@
 #include "./compositor.h"
 #include "../events/events.h"
 #include "../types.h"
+#include "./evdevInput.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +29,10 @@ int InitCompositor(Compositor* compositor) {
 	if(!compositor->display) {
 		fprintf(stderr, "Failed to create Wayland display\n");
 		return -1;
+	}
+
+	if(!getenv("WAYLAND_DISPLAY") && !getenv("_WAYLAND_DISPLAY")) {
+		setenv("WLR_BACKENDS", "drm", 1);
 	}
 
 	compositor->backend = wlr_backend_autocreate(wl_display_get_event_loop(compositor->display), NULL);
@@ -168,6 +173,13 @@ int InitCompositor(Compositor* compositor) {
 
 	InitEvents(&DATA.compositor, &DATA.events);
 
+	if(InitEvdevInput(compositor) != 0) {
+		fprintf(stderr, "Failed to init evdev input\n");
+		FreeCompositor(compositor);
+
+		return -1;
+	}
+
 	compositor->socket = wl_display_add_socket_auto(compositor->display);
 	if(!compositor->socket) {
 		fprintf(stderr, "Failed to create Wayland socket\n");
@@ -224,6 +236,8 @@ int RunCompositor(Compositor* compositor) {
 }
 
 void FreeCompositor(Compositor* compositor) {
+	DestroyEvdevInput();
+
 	RemoveEvents(&DATA.events);
 
 	if(compositor->cursorManager) {
@@ -236,6 +250,9 @@ void FreeCompositor(Compositor* compositor) {
 	}
 
 	if(compositor->output) {
+		if(compositor->output->destroy.link.prev != NULL) {
+			wl_list_remove(&compositor->output->destroy.link);
+		}
 		if(compositor->output->frame.link.prev != NULL) {
 			wl_list_remove(&compositor->output->frame.link);
 		}

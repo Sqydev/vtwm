@@ -8,6 +8,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void OutputDestroy(struct wl_listener* listener, void* data) {
+	(void)data;
+	Output* vtwmOutput = wl_container_of(listener, vtwmOutput, destroy);
+
+	wl_list_remove(&vtwmOutput->frame.link);
+	wl_list_remove(&vtwmOutput->destroy.link);
+	if(DATA.compositor.output == vtwmOutput) {
+		DATA.compositor.output = NULL;
+	}
+	free(vtwmOutput);
+}
+
 void NewOutput(struct wl_listener* listener, void* data) {
 	(void)listener;
 
@@ -71,4 +83,7 @@ void NewOutput(struct wl_listener* listener, void* data) {
 	vtwmOutput->frame.notify = Frame;
 
 	wl_signal_add(&vtwmOutput->output->events.frame, &vtwmOutput->frame);
+
+	vtwmOutput->destroy.notify = OutputDestroy;
+	wl_signal_add(&vtwmOutput->output->events.destroy, &vtwmOutput->destroy);
 }
