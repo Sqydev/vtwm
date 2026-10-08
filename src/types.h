@@ -4,6 +4,12 @@
 #include <wlr/types/wlr_output.h>
 #include <wlr/render/allocator.h>
 
+typedef enum SessionType {
+	SESSION_NESTED_WAYLAND,
+	SESSION_NESTED_X11,
+	SESSION_TTY
+} SessionType;
+
 typedef struct Output {
 	struct wlr_output* output;
 	struct wlr_renderer* renderer;

@@ -1,4 +1,4 @@
-#ifndef VTWM_COREDATA_H
+eifndef VTWM_COREDATA_H
 #define VTWM_COREDATA_H
 
 #include <wlr/types/wlr_output.h>
@@ -14,6 +14,8 @@ typedef struct CoreData {
 	Events events;
 
 	WorkspaceManager workspaceManager;
+
+	SessionType sessionType;
 } CoreData;
 
 extern CoreData DATA;
