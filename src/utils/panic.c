@@ -152,6 +152,7 @@ void Panic(int exitCode, const char* msg, ...) {
 	va_start(va, msg);
 
 	if(msg) {
+		fflush(stderr);
 		vfprintf(stderr, msg, va);
 		putc('\n', stderr);
 	}
