@@ -9,11 +9,11 @@ CoreData DATA;
 int main(void) {
 	srand((unsigned)time(NULL));
 
-	if(getenv("WAYLAND_DISPLAY") {
+	if(getenv("WAYLAND_DISPLAY")) {
 		DATA.sessionType = SESSION_NESTED_WAYLAND;
 	}
-	else if(getenv("DISPLAY") {
-		DATA.sessionType = SESSION_NESTED_WAYLAND;
+	else if(getenv("DISPLAY")) {
+		DATA.sessionType = SESSION_NESTED_X11;
 	}
 	else {
 		DATA.sessionType = SESSION_TTY;
