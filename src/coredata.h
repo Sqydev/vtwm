@@ -1,4 +1,4 @@
-eifndef VTWM_COREDATA_H
+#ifndef VTWM_COREDATA_H
 #define VTWM_COREDATA_H
 
 #include <wlr/types/wlr_output.h>
