@@ -40,5 +40,8 @@ void InitCompositor(void) {
 }
 
 void FreeCompositor(void) {
-
+	if(COMP.allocator) { wlr_allocator_destroy(COMP.allocator); COMP.allocator = NULL; }
+	if(COMP.renderer) { wlr_renderer_destroy(COMP.renderer); COMP.renderer = NULL; }
+	if(COMP.backend) { wlr_backend_destroy(COMP.backend); COMP.backend = NULL; }
+	if(COMP.display) { wl_display_destroy(COMP.display); COMP.display = NULL; }
 }
