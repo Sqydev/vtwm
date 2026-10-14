@@ -1,7 +1,18 @@
+#include "./coredata.h"
+
 #include "./utils/utils.h"
+#include "compositor/compositor.h"
 
 #include <stddef.h>
 
+Coredata DATA;
+
 int main(void) {
-	Panic(0, NULL);
+	InitPanic();
+
+	InitCompositor();
+
+	FreeCompositor();
+
+	return Finish();
 }

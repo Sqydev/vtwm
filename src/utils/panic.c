@@ -1,7 +1,5 @@
 #include "./utils.h"
 
-#include "../compositor/compositor.h"
-#include "../coredata.h"
 #include "../defines.h"
 
 #include "../linclude/stb_image.h"
@@ -151,17 +149,13 @@ void Panic(int exitCode, const char* msg, ...) {
 	va_list va;
 	va_start(va, msg);
 
+	fflush(stderr);
 	if(msg) {
-		fflush(stderr);
 		vfprintf(stderr, msg, va);
 		putc('\n', stderr);
 	}
 
 	va_end(va);
-
-	if(!panicFromSig) {
-		FreeCompositor(&DATA.compositor);
-	}
 
 	if(panicScreen && panicScreenSize) {
 		fwrite(panicScreen, 1, panicScreenSize, stderr);

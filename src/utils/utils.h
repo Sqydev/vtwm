@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#include "./errors.c"
+
 void Close(int exitCode);
 int Finish(void);
 
