@@ -8,3 +8,5 @@ And the defoult layer, workspace, etc.
 Make better logging and make it so there are logs like files and yk.
 
 Make Panic() generate 8 color pallete in ttys
+
+Make good definitions on compile
