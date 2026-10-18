@@ -2,8 +2,16 @@
 
 #include "../coredata.h"
 #include "../utils/utils.h"
+#include <wlr/util/log.h>
 
 void InitCompositor(void) {
+	if(DATA.debug) {
+		wlr_log_init(WLR_DEBUG, NULL);
+	}
+	else {
+		wlr_log_init(WLR_INFO, NULL);
+	}
+
 	/* The Wayland display is managed by libwayland. It handles accepting
 	 * clients from the Unix socket, manging Wayland globals, and so on. */
 	COMP.display = IFNULLPANIC(wl_display_create(), 1, "Failed to create wl_display\n");	
@@ -37,6 +45,14 @@ void InitCompositor(void) {
 	wlr_compositor_create(COMP.display, 5, COMP.renderer);
 	wlr_subcompositor_create(COMP.display);
 	wlr_data_device_manager_create(COMP.display);
+
+	/* Creates an output layout, which a wlroots utility for working with an
+	 * arrangement of screens in a physical layout. */
+  	COMP.output_layout = wlr_output_layout_create(COMP.display);
+
+	/* Configure a listener to be notified when new outputs are available on the
+	 * backend. */
+  	wl_list_init(&COMP.outputs);
 }
 
 void FreeCompositor(void) {

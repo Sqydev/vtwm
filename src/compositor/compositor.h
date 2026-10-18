@@ -29,6 +29,9 @@ typedef struct Compositor {
 	struct wlr_xdg_shell* xdg_shell;
 	struct wl_listener new_xdg_surface;
 	struct wl_list views;
+
+	struct wlr_output_layout *output_layout;
+	struct wl_list outputs;
 } Compositor; 
 
 void InitCompositor(void);
