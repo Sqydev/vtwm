@@ -6,6 +6,8 @@
 #define COMP DATA.Compositor
 
 typedef struct Coredata {
+	bool debug;
+
 	Compositor Compositor;
 } Coredata;
 

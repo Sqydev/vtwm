@@ -38,6 +38,7 @@ static void HandleOpts(int* argc, char*** argv) {
 				exit(EXIT_SUCCESS);
 			}
 			case 'd': {
+				DATA.debug = true;
 				break;
 			}
 			default: {
@@ -49,6 +50,8 @@ static void HandleOpts(int* argc, char*** argv) {
 
 int main(int argc, char** argv) {
 	InitPanic();
+
+	DATA.debug = false;
 
 	HandleOpts(&argc, &argv);
 
