@@ -57,6 +57,9 @@ int main(int argc, char** argv) {
 
 	InitCompositor();
 
+	wlr_log(WLR_INFO, "Running Wayland compositor on WAYLAND_DISPLAY=%s", DATA.Compositor.socket);
+  	wl_display_run(COMP.display);
+
 	FreeCompositor();
 
 	return Finish();

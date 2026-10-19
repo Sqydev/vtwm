@@ -17,3 +17,12 @@ inline void IFNULLPANICALONE(void* value, int exitCode, const char* msg) {
 inline void IFFALSEPANICALONE(bool value, int exitCode, const char* msg) {
 	if(value == false) { Panic(exitCode, "%s", msg); }
 }
+
+inline const void* IFNULLPANICCONST(const void* value, int exitCode, const char* msg) {
+	if(value == NULL) { Panic(exitCode, "%s", msg); }
+	return value;
+}
+
+inline void IFNULLPANICALONECONST(const void* value, int exitCode, const char* msg) {
+	if(value == NULL) { Panic(exitCode, "%s", msg); }
+}

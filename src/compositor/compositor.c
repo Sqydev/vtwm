@@ -48,14 +48,25 @@ void InitCompositor(void) {
 
 	/* Creates an output layout, which a wlroots utility for working with an
 	 * arrangement of screens in a physical layout. */
-  	COMP.output_layout = wlr_output_layout_create(COMP.display);
+  	COMP.output_layout = IFNULLPANIC(wlr_output_layout_create(COMP.display), 1, "Failed to create output layout\n");
+	wl_list_init(&COMP.outputs);
 
-	/* Configure a listener to be notified when new outputs are available on the
-	 * backend. */
-  	wl_list_init(&COMP.outputs);
+	/* Set up the xdg-shell. The xdg-shell is a Wayland protocol which is used
+    * for application windows. For more detail on shells, refer to my article:
+    *
+    * https://drewdevault.com/2018/07/29/Wayland-shells.html
+    */
+	wl_list_init(&COMP.views);
+	COMP.xdg_shell = IFNULLPANIC(wlr_xdg_shell_create(COMP.display, 3), 1, "Failed to create xdg_shell\n");
+
+	/* Add a Unix socket to the Wayland display. */
+  	COMP.socket = IFNULLPANICCONST(wl_display_add_socket_auto(COMP.display), 1, "Failed to create socket\n");
 }
 
 void FreeCompositor(void) {
+	wl_display_destroy_clients(COMP.display);
+  	wl_display_destroy(COMP.display);
+
 	if(COMP.allocator) { wlr_allocator_destroy(COMP.allocator); COMP.allocator = NULL; }
 	if(COMP.renderer) { wlr_renderer_destroy(COMP.renderer); COMP.renderer = NULL; }
 	if(COMP.backend) { wlr_backend_destroy(COMP.backend); COMP.backend = NULL; }

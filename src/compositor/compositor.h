@@ -20,6 +20,8 @@
 #include <wlr/types/wlr_xdg_shell.h>
 
 typedef struct Compositor {
+	const char* socket;
+
 	struct wl_display* display;
 	struct wlr_backend* backend;
 	struct wlr_renderer* renderer;
@@ -30,7 +32,7 @@ typedef struct Compositor {
 	struct wl_listener new_xdg_surface;
 	struct wl_list views;
 
-	struct wlr_output_layout *output_layout;
+	struct wlr_output_layout* output_layout;
 	struct wl_list outputs;
 } Compositor; 
 
