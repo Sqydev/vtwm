@@ -26,7 +26,9 @@ typedef struct Compositor {
 	struct wlr_backend* backend;
 	struct wlr_renderer* renderer;
 	struct wlr_allocator* allocator;
+
 	struct wlr_scene* scene;
+	struct wlr_scene_output_layout* scene_output_layout;
 
 	struct wlr_xdg_shell* xdg_shell;
 	struct wl_listener new_xdg_surface;
