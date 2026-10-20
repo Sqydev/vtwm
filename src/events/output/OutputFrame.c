@@ -1,6 +1,6 @@
 #include "./output.h"
 
-#include "./compositor/compositor.h"
+#include "../../compositor/compositor.h"
 
 #include <time.h>
 
