@@ -11,8 +11,6 @@
 
 void NewOutput(struct wl_listener* listener, void* data) {
 	OutputEvents* output_event = wl_container_of(listener, output_event, new_output);
-	(void)output_event;
-
 	struct wlr_output* wlr_output = data;
 
 	wlr_output_init_render(wlr_output, COMP.allocator, COMP.renderer);
