@@ -3,8 +3,8 @@
 #include "../coredata.h"
 #include "../utils/utils.h"
 
-#include "./events/output/output.h"
-#include "./events/xdg/xdg.h"
+#include "../events/output/output.h"
+#include "../events/xdg/xdg.h"
 
 #include <stdlib.h>
 #include <wayland-server-core.h>
@@ -85,6 +85,20 @@ void InitCompositor(void) {
 	
     // Set the WAYLAND_DISPLAY environment variable, so that clients know how to connect to our server
 	setenv("WAYLAND_DISPLAY", COMP.socket, true);
+}
+
+void StartCompositor(void) {
+	wlr_log(WLR_INFO, "Running Wayland compositor on WAYLAND_DISPLAY=%s", DATA.Compositor.socket);
+
+	// Start the backend. This will enumerate outputs and inputs, become the DRM
+	// master, etc
+	IFFALSEPANICALONE(wlr_backend_start(COMP.backend), 1, "Failed to start wl_backend");
+
+	// Run the Wayland event loop. This does not return until you exit the
+	// compositor. Starting the backend rigged up all of the necessary event
+	// loop configuration to listen to libinput events, DRM events, generate
+	// frame events at the refresh rate, and so on.
+  	wl_display_run(COMP.display);
 }
 
 void FreeCompositor(void) {

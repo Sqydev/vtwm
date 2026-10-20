@@ -1,8 +1,8 @@
 #ifndef VTWM_EVENTS_H
 #define VTWM_EVENTS_H
 
-#include "./events/output/output.h"
-#include "./events/xdg/xdg.h"
+#include "./output/output.h"
+#include "./xdg/xdg.h"
 
 typedef struct Events {
 	OutputEvents Output;

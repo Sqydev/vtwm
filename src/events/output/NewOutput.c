@@ -8,12 +8,16 @@
 
 #include <wayland-util.h>
 #include <wlr/util/log.h>
+#include <wlr/backend/headless.h>
 
 void NewOutput(struct wl_listener* listener, void* data) {
 	OutputEvents* output_event = wl_container_of(listener, output_event, new_output);
 	struct wlr_output* wlr_output = data;
 
-	wlr_output_init_render(wlr_output, COMP.allocator, COMP.renderer);
+	if(!wlr_output_init_render(wlr_output, COMP.allocator, COMP.renderer)) {
+		wlr_log(WLR_ERROR, "Failed to initialize output rendering");
+    	return;
+	}
 
 	struct wlr_output_state state;
 	wlr_output_state_init(&state);
@@ -24,9 +28,12 @@ void NewOutput(struct wl_listener* listener, void* data) {
 	if(mode != NULL) {
 		wlr_output_state_set_mode(&state, mode);
 	}
-	else {
-		wlr_log(WLR_INFO, "No output mode, using custom 1920x1080");
+	else if(wlr_output_is_headless(wlr_output)) {
+		wlr_log(WLR_INFO, "Headless output. Setting mode with 1920x1080");
 		wlr_output_state_set_custom_mode(&state, 1920, 1080, 0);
+	}
+	else {
+		wlr_log(WLR_INFO, "No preferred output mode");
 	}
 
 	if(!wlr_output_commit_state(wlr_output, &state)) {

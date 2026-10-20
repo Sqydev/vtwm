@@ -38,6 +38,7 @@ typedef struct Compositor {
 } Compositor; 
 
 void InitCompositor(void);
+void StartCompositor(void);
 void FreeCompositor(void);
 
 #endif
