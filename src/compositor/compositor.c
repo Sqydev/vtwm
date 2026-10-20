@@ -21,7 +21,6 @@ void InitCompositor(void) {
 	// The Wayland display is managed by libwayland. It handles accepting
 	// clients from the Unix socket, manging Wayland globals, and so on.
 	COMP.display = IFNULLPANIC(wl_display_create(), 1, "Failed to create wl_display\n");	
-
 	// The backend is a wlroots feature which abstracts the underlying input and
 	// output hardware. The autocreate option will choose the most suitable
 	// backend based on the current environment, such as opening an X11 window
@@ -77,8 +76,10 @@ void InitCompositor(void) {
 	//
 	wl_list_init(&COMP.views);
 	COMP.xdg_shell = IFNULLPANIC(wlr_xdg_shell_create(COMP.display, 3), 1, "Failed to create xdg_shell\n");
-	EVENTS.Xdg.new_xdg_surface.notify = NewXdgSurface;
-	wl_signal_add(&COMP.xdg_shell->events.new_surface, &EVENTS.Xdg.new_xdg_surface);
+	EVENTS.Xdg.new_toplevel.notify = NewToplevel;
+	wl_signal_add(&COMP.xdg_shell->events.new_toplevel, &EVENTS.Xdg.new_toplevel);
+	EVENTS.Xdg.new_popup.notify = NewPopup;
+	wl_signal_add(&COMP.xdg_shell->events.new_popup, &EVENTS.Xdg.new_popup);
 
 	// Add a Unix socket to the Wayland display.
 	COMP.socket = IFNULLPANICCONST(wl_display_add_socket_auto(COMP.display), 1, "Failed to create socket\n");
@@ -92,7 +93,7 @@ void StartCompositor(void) {
 
 	// Start the backend. This will enumerate outputs and inputs, become the DRM
 	// master, etc
-	IFFALSEPANICALONE(wlr_backend_start(COMP.backend), 1, "Failed to start wl_backend");
+	IFFALSEPANICALONE(wlr_backend_start(COMP.backend), 1, "Failed to start wl_backend\n");
 
 	// Run the Wayland event loop. This does not return until you exit the
 	// compositor. Starting the backend rigged up all of the necessary event
@@ -103,10 +104,11 @@ void StartCompositor(void) {
 
 void FreeCompositor(void) {
 	wl_display_destroy_clients(COMP.display);
-	wl_display_destroy(COMP.display);
 
+	if(COMP.scene) { wlr_scene_node_destroy(&COMP.scene->tree.node); COMP.scene = NULL; }
 	if(COMP.allocator) { wlr_allocator_destroy(COMP.allocator); COMP.allocator = NULL; }
 	if(COMP.renderer) { wlr_renderer_destroy(COMP.renderer); COMP.renderer = NULL; }
 	if(COMP.backend) { wlr_backend_destroy(COMP.backend); COMP.backend = NULL; }
-	if(COMP.display) { wl_display_destroy(COMP.display); COMP.display = NULL; }
+	wl_display_destroy(COMP.display);
+	COMP.display = NULL;
 }

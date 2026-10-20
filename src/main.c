@@ -7,6 +7,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #include <wlr/util/log.h>
 
@@ -18,7 +19,7 @@ static void HandleOpts(int* argc, char*** argv) {
 		{"debug", no_argument, NULL, 'd'},
 	};
 
-	char opt = 0;
+	int opt = 0;
 	while((opt = getopt_long(*argc, *argv, "hd", long_options, NULL)) != -1) {
 		switch(opt) {
 			case 'h': {
@@ -33,8 +34,8 @@ static void HandleOpts(int* argc, char*** argv) {
 					"  -d --debug\n"
 					"      Runs vtwm in debug mode\n";
 
-				char n = write(STDOUT_FILENO, help, strlen(help));
-				(void) n;
+				ssize_t n = write(STDOUT_FILENO, help, strlen(help));
+				(void)n;
 				exit(EXIT_SUCCESS);
 			}
 			case 'd': {
@@ -58,8 +59,6 @@ int main(int argc, char** argv) {
 	InitCompositor();
 
 	StartCompositor();
-
-	FreeCompositor();
 
 	return Finish();
 }
