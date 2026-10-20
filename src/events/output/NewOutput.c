@@ -10,7 +10,7 @@
 #include <wlr/util/log.h>
 
 void NewOutput(struct wl_listener* listener, void* data) {
-	OutputEvent* output_event = wl_container_of(listener, output_event, new_output);
+	OutputEvents* output_event = wl_container_of(listener, output_event, new_output);
 	(void)output_event;
 
 	struct wlr_output* wlr_output = data;
@@ -48,6 +48,7 @@ void NewOutput(struct wl_listener* listener, void* data) {
 	output->destroy.notify = DestroyOutput;
 	wl_signal_add(&wlr_output->events.destroy, &output->destroy);
 
+	wlr_log(WLR_INFO, "Adding new output of size %dx%d", output->wlr_output->width, output->wlr_output->height);
 	wl_list_insert(&COMP.outputs, &output->link);
 
 	struct wlr_output_layout_output* layout_output = wlr_output_layout_add_auto(COMP.output_layout, wlr_output);
