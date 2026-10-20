@@ -9,8 +9,10 @@ typedef struct OutputEvents {
 
 typedef struct VtwmOutput {
 	struct wl_list link;
+
 	struct wlr_output* wlr_output;
 	struct wlr_scene_output* scene_output;
+
 	struct wl_listener frame;
 	struct wl_listener destroy;
 } VtwmOutput;
