@@ -3,9 +3,9 @@
 
 #include <wlr/types/wlr_output.h>
 
-typedef struct OutputEvent {
+typedef struct OutputEvents {
 	struct wl_listener new_output;
-} OutputEvent;
+} OutputEvents;
 
 typedef struct VtwmOutput {
 	struct wl_list link;

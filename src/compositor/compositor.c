@@ -2,7 +2,12 @@
 
 #include "../coredata.h"
 #include "../utils/utils.h"
-#include "events/output/output.h"
+
+#include "./events/output/output.h"
+#include "./events/xdg/xdg.h"
+
+#include <stdlib.h>
+#include <wayland-server-core.h>
 #include <wlr/util/log.h>
 
 void InitCompositor(void) {
@@ -72,9 +77,14 @@ void InitCompositor(void) {
 	//
 	wl_list_init(&COMP.views);
 	COMP.xdg_shell = IFNULLPANIC(wlr_xdg_shell_create(COMP.display, 3), 1, "Failed to create xdg_shell\n");
+	EVENTS.Xdg.new_xdg_surface.notify = NewXdgSurface;
+	wl_signal_add(&COMP.xdg_shell->events.new_surface, &EVENTS.Xdg.new_xdg_surface);
 
 	// Add a Unix socket to the Wayland display.
 	COMP.socket = IFNULLPANICCONST(wl_display_add_socket_auto(COMP.display), 1, "Failed to create socket\n");
+	
+    // Set the WAYLAND_DISPLAY environment variable, so that clients know how to connect to our server
+	setenv("WAYLAND_DISPLAY", COMP.socket, true);
 }
 
 void FreeCompositor(void) {
