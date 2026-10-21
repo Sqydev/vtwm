@@ -2,6 +2,7 @@
 #define VTWM_COMPOSITOR_H
 
 #include <wayland-server-core.h>
+#include <wayland-util.h>
 #include <wlr/backend.h>
 #include <wlr/render/allocator.h>
 #include <wlr/render/wlr_renderer.h>
