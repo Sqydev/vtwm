@@ -39,6 +39,7 @@
 #include "./compositor/compositor.h"
 #include "./events/events.h"
 #include "./input/input.h"
+#include "./config/config.h"
 
 #define COMP DATA.Compositor
 #define EVENTS DATA.Events
@@ -52,6 +53,8 @@ typedef struct Coredata {
 	Events Events;
 
 	InputManager Input;
+
+	Config Config;
 } Coredata;
 
 extern Coredata DATA;
