@@ -27,3 +27,9 @@ all:
 
 clean:
 	rm -rf .cmake/ compile_commands.json compiled/
+
+license-check:
+	bash scripts/check_license.sh
+
+license-fix:
+	bash scripts/fix_license.sh

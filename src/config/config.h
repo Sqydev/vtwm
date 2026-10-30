@@ -50,10 +50,12 @@ typedef struct Config {
 } Config;
 
 void InitConfig(const char* overridePath);
-void OpenConfig(void);
+
 bool ReloadConfig(void);
 bool CheckConfigChanged(void);
+
 void ApplyConfig(void);
+
 void CloseConfig(void);
 
 bool ConfigHandleKey(uint32_t modifiers, xkb_keysym_t sym);
