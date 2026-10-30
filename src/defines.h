@@ -39,6 +39,9 @@
 #ifndef VTWM_ASSETS_DIR
 	#define VTWM_ASSETS_DIR "./assets/"
 #endif
+#ifndef VTWM_DEFAULT_CONFIG_PATH
+	#define VTWM_DEFAULT_CONFIG_PATH VTWM_ASSETS_DIR "config/config.vtwm"
+#endif
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 	#define STB_IMAGE_IMPLEMENTATION

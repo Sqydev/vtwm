@@ -44,6 +44,7 @@
 #define COMP DATA.Compositor
 #define EVENTS DATA.Events
 #define INPUT DATA.Input
+#define CONFIG DATA.Config
 
 typedef struct Coredata {
 	bool debug;

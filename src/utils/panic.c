@@ -180,17 +180,16 @@ void InitPanic(void) {
 	sigaction(SIGFPE,  &sa, NULL);
 }
 
-void Panic(int exitCode, const char* msg, ...) {
-	va_list va;
-	va_start(va, msg);
-
+void vaPanic(int exitCode, const char* msg, va_list args) {
 	fflush(stderr);
+
 	if(msg) {
-		vfprintf(stderr, msg, va);
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+		vfprintf(stderr, msg, args);
+		#pragma GCC diagnostic pop
 		putc('\n', stderr);
 	}
-
-	va_end(va);
 
 	if(panicScreen && panicScreenSize) {
 		fwrite(panicScreen, 1, panicScreenSize, stderr);
@@ -200,4 +199,13 @@ void Panic(int exitCode, const char* msg, ...) {
 	if(!panicFromSig) {
 		exit(exitCode);
 	}
+}
+
+void Panic(int exitCode, const char* msg, ...) {
+	va_list args;
+	va_start(args, msg);
+
+	vaPanic(exitCode, msg, args);
+
+	va_end(args);
 }

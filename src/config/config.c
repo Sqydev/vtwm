@@ -33,10 +33,128 @@
 *    source or binary distribution.
 */
 
-void OpenConfig(void) {
-	
+#include "./config.h"
+
+#include "../coredata.h"
+#include "../defines.h"
+#include "../utils/utils.h"
+
+#include <errno.h>
+#include <string.h>
+
+#define CONFIG_FILE_NAME "config.vtwm"
+
+static char* GetUserConfigDir(void) {
+	const char* xdg = getenv("XDG_CONFIG_HOME");
+	if(xdg && xdg[0] == '/') {
+		return JoinStrings(xdg, "/vtwm");
+	}
+
+	const char* home = getenv("HOME");
+	if(!home) { return NULL; }
+
+	return JoinStrings(home, "/.config/vtwm");
+}
+
+static void OpenConfigPath(const char* path) {
+	FILE* file = IFNULLPANIC(fopen(path, "r"), EXIT_FAILURE, "Failed to open config in %s: %s\n", path, strerror(errno));
+
+	char* pathCopy = strdup(path);
+	if(!pathCopy) {
+		fclose(file);
+		Panic(EXIT_FAILURE, "Failed to open config in %s: %s\n", path, strerror(errno));
+	}
+
+	free(CONFIG.configPath);
+
+	CONFIG.configPath = pathCopy;
+	CONFIG.configFile = file;
+}
+
+void InitConfig(const char* overridePath) {
+	CONFIG.configFile = NULL;
+	CONFIG.configPath = NULL;
+	CONFIG.configChainged = false;
+
+	if(overridePath && *overridePath) {
+		char* path = ExpandPath(overridePath);
+		if(!path) {
+			Panic(1, "Connot expand path: %s", overridePath);
+		}
+		OpenConfigPath(path);
+		free(path);
+		return;
+	}
+
+	const char* envPath = getenv("VTWM_CONFIG_PATH");
+	if(envPath && *envPath) {
+		char* path = ExpandPath(envPath);
+		if(!path) {
+			Panic(1, "Cannot expand path: %s", envPath);
+		}
+		OpenConfigPath(path);
+		free(path);
+		return;
+	}
+
+	char* userDir = GetUserConfigDir();
+	char* userPath = userDir ? JoinStrings(userDir, "/" CONFIG_FILE_NAME) : NULL;
+
+	if(userPath && PathExists(userPath)) {
+		OpenConfigPath(userPath);
+		free(userDir);
+		free(userPath);
+		return;
+	}
+
+	const char* defaultPath = VTWM_DEFAULT_CONFIG_PATH;
+
+	if(!PathExists(defaultPath)) {
+		Panic(1,
+			"No config found.\n"
+			"Tried:\n"
+			"  %s\n"
+			"  %s\n"
+			"Create one or pass --config <path>.",
+			userPath ? userPath : "(no user config dir)",
+			defaultPath);
+	}
+
+	if(!userDir || !userPath) {
+		OpenConfigPath(defaultPath);
+		free(userDir);
+		free(userPath);
+		return;
+	}
+
+	if(!MakeDirP(userDir) || !CopyFile(defaultPath, userPath)) {
+		Panic(1, "Cannot create %s: %s", userPath, strerror(errno));
+	}
+
+	OpenConfigPath(userPath);
+
+	free(userDir);
+	free(userPath);
+}
+
+bool ReloadConfig(void) {
+	if(!CONFIG.configPath) { return false; }
+
+	FILE* file = fopen(CONFIG.configPath, "r");
+	if(!file) { return false; }
+
+	if(CONFIG.configFile) { fclose(CONFIG.configFile); }
+	CONFIG.configFile = file;
+
+	return true;
 }
 
 void CloseConfig(void) {
-	
+	if(CONFIG.configFile) {
+		fclose(CONFIG.configFile);
+		CONFIG.configFile = NULL;
+	}
+
+	free(CONFIG.configPath);
+	CONFIG.configPath = NULL;
 }

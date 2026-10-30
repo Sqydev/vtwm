@@ -48,15 +48,18 @@
 
 Coredata DATA;
 
-static void HandleOpts(int* argc, char*** argv) {
+static const char* HandleOpts(int* argc, char*** argv) {
+	const char* configPath = NULL;
+
 	struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
 		{"debug", no_argument, NULL, 'd'},
+		{"config", required_argument, NULL, 'c'},
 		{ NULL, 0, NULL, 0 },
 	};
 
 	int opt = 0;
-	while((opt = getopt_long(*argc, *argv, "hd", long_options, NULL)) != -1) {
+	while((opt = getopt_long(*argc, *argv, "hdc:", long_options, NULL)) != -1) {
 		switch(opt) {
 			case 'h': {
 				const char *help =
@@ -68,7 +71,10 @@ static void HandleOpts(int* argc, char*** argv) {
 					"      Shows this help message and exit.\n\n"
 
 					"  -d --debug\n"
-					"      Runs vtwm in debug mode\n";
+					"      Runs vtwm in debug mode\n\n"
+
+					"  -c, --config <path>\n"
+					"      Use a specific config file\n";
 
 				ssize_t n = write(STDOUT_FILENO, help, strlen(help));
 				(void)n;
@@ -78,11 +84,17 @@ static void HandleOpts(int* argc, char*** argv) {
 				DATA.debug = true;
 				break;
 			}
+			case 'c': {
+				configPath = optarg;
+				break;
+			}
 			default: {
 				break;
 			}
 		}
 	}
+
+	return configPath;
 }
 
 int main(int argc, char** argv) {
@@ -90,7 +102,9 @@ int main(int argc, char** argv) {
 
 	DATA.debug = false;
 
-	HandleOpts(&argc, &argv);
+	const char* configPath = HandleOpts(&argc, &argv);
+
+	InitConfig(configPath);
 
 	InitCompositor();
 
