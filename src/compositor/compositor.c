@@ -165,35 +165,48 @@ void StartCompositor(void) {
   	wl_display_run(COMP.display);
 }
 
+static void DestroyOutputs(void) {
+	VtwmOutput* output = NULL;
+	VtwmOutput* output_tmp = NULL;
+	wl_list_for_each_safe(output, output_tmp, &COMP.outputs, link) {
+		wl_list_remove(&output->frame.link);
+		wl_list_remove(&output->request_state.link);
+		wl_list_remove(&output->destroy.link);
+		wl_list_remove(&output->link);
+
+		if(output->scene_output) {
+			wlr_scene_output_destroy(output->scene_output);
+			output->scene_output = NULL;
+		}
+
+		free(output);
+	}
+}
+
 void FreeCompositor(void) {
-	// the backend asserts that nobody listens to it anymore when it goes,
-	// so the global listeners leave before the teardown starts
 	wl_list_remove(&EVENTS.Input.new_input.link);
 	wl_list_remove(&EVENTS.Output.new_output.link);
 	wl_list_remove(&EVENTS.Xdg.new_toplevel.link);
 	wl_list_remove(&EVENTS.Xdg.new_popup.link);
 
-	// the input goes first, because the seats hold the devices
 	DestroyInput();
 
-	// every seat has to die before the display, they are listening on it
 	VtwmSeat* seat = NULL;
 	VtwmSeat* seat_tmp = NULL;
 	wl_list_for_each_safe(seat, seat_tmp, &INPUT.seats, link) {
 		DestroySeat(seat);
 	}
 
-	// the shared cursor holds listeners and points at the output layout,
-	// so it has to go before the layout
 	DestroyCursor();
 
-	// the cursor images belong to the manager, so it goes with it
 	if(INPUT.cursor_manager) {
 		wlr_xcursor_manager_destroy(INPUT.cursor_manager);
 		INPUT.cursor_manager = NULL;
 	}
 
 	wl_display_destroy_clients(COMP.display);
+
+	DestroyOutputs();
 
 	if(COMP.output_layout) { wlr_output_layout_destroy(COMP.output_layout); COMP.output_layout = NULL; }
 	if(COMP.scene_output_layout) { COMP.scene_output_layout = NULL; }

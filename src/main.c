@@ -38,6 +38,7 @@
 #include "./utils/utils.h"
 #include "./compositor/compositor.h"
 
+#include <config/config.h>
 #include <stddef.h>
 #include <getopt.h>
 #include <stdlib.h>
@@ -48,9 +49,7 @@
 
 Coredata DATA;
 
-static const char* HandleOpts(int* argc, char*** argv) {
-	const char* configPath = NULL;
-
+static void HandleOpts(int* argc, char*** argv) {
 	struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
 		{"debug", no_argument, NULL, 'd'},
@@ -85,7 +84,11 @@ static const char* HandleOpts(int* argc, char*** argv) {
 				break;
 			}
 			case 'c': {
-				configPath = optarg;
+				if(CONFIG.configPath) { free(CONFIG.configPath); }
+				CONFIG.configPath = strdup(optarg);
+				if(!CONFIG.configPath) {
+					Panic(EXIT_FAILURE, "Failed to strdup config path: %s", optarg);
+				}
 				break;
 			}
 			default: {
@@ -93,8 +96,6 @@ static const char* HandleOpts(int* argc, char*** argv) {
 			}
 		}
 	}
-
-	return configPath;
 }
 
 int main(int argc, char** argv) {
@@ -102,9 +103,10 @@ int main(int argc, char** argv) {
 
 	DATA.debug = false;
 
-	const char* configPath = HandleOpts(&argc, &argv);
+	HandleOpts(&argc, &argv);
 
-	InitConfig(configPath);
+	InitConfig();
+	ReloadConfig();
 
 	InitCompositor();
 
