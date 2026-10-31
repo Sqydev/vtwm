@@ -40,6 +40,7 @@
 	#define VTWM_ASSETS_DIR "./assets/"
 #endif
 #ifndef VTWM_DEFAULT_CONFIG_PATH
+	// Default as to not default path but path to default config
 	#define VTWM_DEFAULT_CONFIG_PATH VTWM_ASSETS_DIR "config/config.vtwm"
 #endif
 
