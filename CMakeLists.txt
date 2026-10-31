@@ -144,12 +144,13 @@ else()
 			-Og
 			-g3
 			-fno-omit-frame-pointer
-			-fsanitize=address,undefined
+			-fsanitize=undefined,leak
+			-fno-sanitize-recover=all
 	)
 
 	target_link_options(vtwm
 		PRIVATE
-			-fsanitize=address,undefined
+			-fsanitize=undefined,leak
 			-rdynamic
 	)
 endif()
