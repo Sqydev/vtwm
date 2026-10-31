@@ -37,7 +37,6 @@
 #define VTWM_CONFIG_H
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 
 #include <xkbcommon/xkbcommon.h>
@@ -45,19 +44,10 @@
 typedef struct Config {
 	FILE* configFile;
 	char* configPath;
-
-	bool configChainged;
 } Config;
 
-void InitConfig(const char* overridePath);
+void InitConfig(void);
 
-bool ReloadConfig(void);
-bool CheckConfigChanged(void);
-
-void ApplyConfig(void);
-
-void CloseConfig(void);
-
-bool ConfigHandleKey(uint32_t modifiers, xkb_keysym_t sym);
+void ReloadConfig(void);
 
 #endif

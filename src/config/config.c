@@ -40,6 +40,8 @@
 #include "../utils/utils.h"
 
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define CONFIG_FILE_NAME "config.vtwm"
@@ -56,34 +58,34 @@ static char* GetUserConfigDir(void) {
 	return JoinStrings(home, "/.config/vtwm");
 }
 
-static void OpenConfigPath(const char* path) {
-	FILE* file = IFNULLPANIC(fopen(path, "r"), EXIT_FAILURE, "Failed to open config in %s: %s\n", path, strerror(errno));
-
+static void SetConfigPath(const char* path) {
 	char* pathCopy = strdup(path);
 	if(!pathCopy) {
-		fclose(file);
-		Panic(EXIT_FAILURE, "Failed to open config in %s: %s\n", path, strerror(errno));
+		Panic(EXIT_FAILURE, "Failed to set config path %s: %s\n", path, strerror(errno));
 	}
 
 	free(CONFIG.configPath);
 
 	CONFIG.configPath = pathCopy;
-	CONFIG.configFile = file;
+	CONFIG.configFile = NULL;
 }
 
-void InitConfig(const char* overridePath) {
+void InitConfig(void) {
+	if(CONFIG.configFile) { fclose(CONFIG.configFile); }
 	CONFIG.configFile = NULL;
-	CONFIG.configPath = NULL;
-	CONFIG.configChainged = false;
 
-	if(overridePath && *overridePath) {
-		char* path = ExpandPath(overridePath);
+	if(CONFIG.configPath) {
+		char* path = ExpandPath(CONFIG.configPath);
 		if(!path) {
-			Panic(1, "Connot expand path: %s", overridePath);
+			Panic(1, "Cannot expand path: %s", CONFIG.configPath);
 		}
-		OpenConfigPath(path);
-		free(path);
-		return;
+		free(CONFIG.configPath);
+		CONFIG.configPath = path;
+
+		if(PathExists(CONFIG.configPath)) { return; }
+
+		free(CONFIG.configPath);
+		CONFIG.configPath = NULL;
 	}
 
 	const char* envPath = getenv("VTWM_CONFIG_PATH");
@@ -92,16 +94,19 @@ void InitConfig(const char* overridePath) {
 		if(!path) {
 			Panic(1, "Cannot expand path: %s", envPath);
 		}
-		OpenConfigPath(path);
+		if(PathExists(path)) {
+			SetConfigPath(path);
+			free(path);
+			return;
+		}
 		free(path);
-		return;
 	}
 
 	char* userDir = GetUserConfigDir();
 	char* userPath = userDir ? JoinStrings(userDir, "/" CONFIG_FILE_NAME) : NULL;
 
 	if(userPath && PathExists(userPath)) {
-		OpenConfigPath(userPath);
+		SetConfigPath(userPath);
 		free(userDir);
 		free(userPath);
 		return;
@@ -121,7 +126,7 @@ void InitConfig(const char* overridePath) {
 	}
 
 	if(!userDir || !userPath) {
-		OpenConfigPath(defaultPath);
+		SetConfigPath(defaultPath);
 		free(userDir);
 		free(userPath);
 		return;
@@ -131,30 +136,12 @@ void InitConfig(const char* overridePath) {
 		Panic(1, "Cannot create %s: %s", userPath, strerror(errno));
 	}
 
-	OpenConfigPath(userPath);
+	SetConfigPath(userPath);
 
 	free(userDir);
 	free(userPath);
 }
 
-bool ReloadConfig(void) {
-	if(!CONFIG.configPath) { return false; }
+void ReloadConfig(void) {
 
-	FILE* file = fopen(CONFIG.configPath, "r");
-	if(!file) { return false; }
-
-	if(CONFIG.configFile) { fclose(CONFIG.configFile); }
-	CONFIG.configFile = file;
-
-	return true;
-}
-
-void CloseConfig(void) {
-	if(CONFIG.configFile) {
-		fclose(CONFIG.configFile);
-		CONFIG.configFile = NULL;
-	}
-
-	free(CONFIG.configPath);
-	CONFIG.configPath = NULL;
 }
