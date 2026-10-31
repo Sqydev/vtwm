@@ -1,29 +1,114 @@
+/* 
+* Copyright (c) 2025-present Wojciech Kaptur ( _Sqyd_ / Sqydev )
+* Github: https://github.com/Sqydev
+* GPG Fingerprint: 6DC2516B0DFDA9C59661650722F7B8A777F33B56
+*
+* This software is provided "as-is", without any express or implied warranty. In no event
+* will the authors be held liable for any damages arising from the use of this software.
+*
+* Permission is granted to anyone to use this software for any purpose, including commercial
+* applications, and to alter it and redistribute it freely, subject to the following restrictions:
+*
+* 1. Non-Misrepresentation: The origin of this software must not be misrepresented; 
+*    you must not claim that you wrote the original software. An acknowledgment in 
+*    product documentation is appreciated but not required.
+*
+* 2. Source-Level Copyleft: Any altered versions (forks) of this software's source code, 
+*    or files containing significant portions of this code, must be distributed under 
+*    these same license terms. Such modified source code must be made publicly available 
+*    to any recipient, even if used over a network (SaaS).
+* 
+* 3. Proprietary Integration: This software may be integrated into, linked with, or 
+*    used as a component of proprietary and closed-source products. In such cases, 
+*    the surrounding proprietary application code does not need to be disclosed, 
+*    provided that the original or modified source code of THIS software remains 
+*    available under the terms of Section 2.
+*
+* 4. Persistent Metadata: All original credits, including those in the source code headers 
+*    and binary metadata (e.g., ELF .comment section, PE StringFileInfo, or equivalent), 
+*    must not be removed. You may add your own credits to forks, provided the original 
+*    authorship remains clearly identified.
+* 
+* 5. Notice Retention: This license notice may not be removed or altered from any 
+*    source or binary distribution.
+*/
+
 #include "./coredata.h"
-#include "./compositor/compositor.h"
+
 #include "./utils/utils.h"
+#include "./compositor/compositor.h"
 
+#include <stddef.h>
+#include <getopt.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
-CoreData DATA;
+#include <wlr/util/log.h>
 
-int main(void) {
-	srand((unsigned)time(NULL));
+Coredata DATA;
 
-	if(getenv("WAYLAND_DISPLAY")) {
-		DATA.sessionType = SESSION_NESTED_WAYLAND;
+static const char* HandleOpts(int* argc, char*** argv) {
+	const char* configPath = NULL;
+
+	struct option long_options[] = {
+		{"help", no_argument, NULL, 'h'},
+		{"debug", no_argument, NULL, 'd'},
+		{"config", required_argument, NULL, 'c'},
+		{ NULL, 0, NULL, 0 },
+	};
+
+	int opt = 0;
+	while((opt = getopt_long(*argc, *argv, "hdc:", long_options, NULL)) != -1) {
+		switch(opt) {
+			case 'h': {
+				const char *help =
+					"Usage:\n"
+					"  vtwm [options]\n\n"
+
+					"Options:\n"
+					"  -h, --help\n"
+					"      Shows this help message and exit.\n\n"
+
+					"  -d --debug\n"
+					"      Runs vtwm in debug mode\n\n"
+
+					"  -c, --config <path>\n"
+					"      Use a specific config file\n";
+
+				ssize_t n = write(STDOUT_FILENO, help, strlen(help));
+				(void)n;
+				exit(EXIT_SUCCESS);
+			}
+			case 'd': {
+				DATA.debug = true;
+				break;
+			}
+			case 'c': {
+				configPath = optarg;
+				break;
+			}
+			default: {
+				break;
+			}
+		}
 	}
-	else if(getenv("DISPLAY")) {
-		DATA.sessionType = SESSION_NESTED_X11;
-	}
-	else {
-		DATA.sessionType = SESSION_TTY;
-	}
 
+	return configPath;
+}
+
+int main(int argc, char** argv) {
 	InitPanic();
 
-	if(InitCompositor(&DATA.compositor) != 0) { Panic(EXIT_FAILURE, NULL); }
+	DATA.debug = false;
 
-	RunCompositor(&DATA.compositor);
+	const char* configPath = HandleOpts(&argc, &argv);
+
+	InitConfig(configPath);
+
+	InitCompositor();
+
+	StartCompositor();
 
 	return Finish();
 }

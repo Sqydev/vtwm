@@ -1,0 +1,38 @@
+name: License headers
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: license-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  license:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Auto-fix headers
+        if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
+        run: bash scripts/fix_license.sh
+
+      - name: Commit and push fixes
+        if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src
+          git commit -m "chore: add license headers"
+          git push
+
+      - name: Check license headers
+        run: bash scripts/check_license.sh

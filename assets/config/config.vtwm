@@ -1,0 +1,46 @@
+Terminal {
+	command = "alacritty";
+};
+
+Looks -> (NORMAL || SUPER) {
+	Margin {
+		top = 0;
+		bottom = 0;
+		left = 0;
+		right = 0;
+	};
+	Border {
+		focusedColor = #FFFFFF;
+		unFocusedColor = #000000;
+		radius = 4;
+	};
+};
+
+Cursor {
+	icon = default; // icon = any; or icon = "name";
+};
+
+Input {
+	layout = "pl";
+	repeatRate = 25;
+	repeatDelay = 600;
+};
+
+StartUp {
+	spawn("pipewire");
+	spawn("steam");
+};
+
+Keybinds {
+	SUPER && Q -> closeFocused();
+
+	SUPER && (1, ..., 9) -> gotoWorkspace(argv[1] - 1);
+	SUPER && CTRL && (1...9) -> gotoWorkspaceDir(argv[2] - 1);
+
+	SUPER && Escape -> quit();
+	SUPER && Return -> spawn(Terminal.command);
+};
+
+Config {
+	autoReload = true;
+};

@@ -1,62 +1,49 @@
-#ifndef VTWM_EVENTS_H
-#define VTWM_EVENTS_H
+/* 
+* Copyright (c) 2025-present Wojciech Kaptur ( _Sqyd_ / Sqydev )
+* Github: https://github.com/Sqydev
+* GPG Fingerprint: 6DC2516B0DFDA9C59661650722F7B8A777F33B56
+*
+* This software is provided "as-is", without any express or implied warranty. In no event
+* will the authors be held liable for any damages arising from the use of this software.
+*
+* Permission is granted to anyone to use this software for any purpose, including commercial
+* applications, and to alter it and redistribute it freely, subject to the following restrictions:
+*
+* 1. Non-Misrepresentation: The origin of this software must not be misrepresented; 
+*    you must not claim that you wrote the original software. An acknowledgment in 
+*    product documentation is appreciated but not required.
+*
+* 2. Source-Level Copyleft: Any altered versions (forks) of this software's source code, 
+*    or files containing significant portions of this code, must be distributed under 
+*    these same license terms. Such modified source code must be made publicly available 
+*    to any recipient, even if used over a network (SaaS).
+* 
+* 3. Proprietary Integration: This software may be integrated into, linked with, or 
+*    used as a component of proprietary and closed-source products. In such cases, 
+*    the surrounding proprietary application code does not need to be disclosed, 
+*    provided that the original or modified source code of THIS software remains 
+*    available under the terms of Section 2.
+*
+* 4. Persistent Metadata: All original credits, including those in the source code headers 
+*    and binary metadata (e.g., ELF .comment section, PE StringFileInfo, or equivalent), 
+*    must not be removed. You may add your own credits to forks, provided the original 
+*    authorship remains clearly identified.
+* 
+* 5. Notice Retention: This license notice may not be removed or altered from any 
+*    source or binary distribution.
+*/
 
-#include "../compositor/compositor.h"
+#ifndef VTWM_EVENTS_EVENTS_H
+#define VTWM_EVENTS_EVENTS_H
 
-#include <wayland-server-core.h>
-
-typedef struct KeyboardHandler {
-	struct wl_list link;
-	struct wlr_keyboard* keyboard;
-	struct wl_listener key;
-	struct wl_listener modifiers;
-	struct wl_listener destroy;
-} KeyboardHandler;
+#include "./output/output.h"
+#include "./xdg/xdg.h"
+#include "./input/input.h"
 
 typedef struct Events {
-	struct wl_listener newOutput;
-	struct wl_listener newToplevel;
-
-	struct wl_listener newInput;
-	struct wl_list keyboardHandlers;
-
-	struct wl_listener pointerMotion;
-	struct wl_listener pointerMotionAbsolute;
-	struct wl_listener pointerButton;
-	struct wl_listener pointerAxis;
-	struct wl_listener pointerFrame;
-
-	struct wl_listener requestSetCursor;
-	struct wl_listener pointerFocusChange;
+	OutputEvents Output;
+	XdgEvents Xdg;
+	InputEvents Input;
 } Events;
-
-void InitEvents(Compositor* compositor, Events* events);
-void RemoveEvents(Events* events);
-
-void NewOutput(struct wl_listener* listener, void* data);
-void Frame(struct wl_listener* listener, void* data);
-
-// When new window
-void NewToplevel(struct wl_listener* listener, void* data);
-void DestroyWindow(struct wl_listener* listener, void* data);
-
-void MapWindow(struct wl_listener* listener, void* data);
-void UnmapWindow(struct wl_listener* listener, void* data);
-void CommitWindow(struct wl_listener* listener, void* data);
-
-void NewInput(struct wl_listener* listener, void* data);
-void KeyboardKey(struct wl_listener* listener, void* data);
-void KeyboardModifiers(struct wl_listener* listener, void* data);
-void KeyboardDestroy(struct wl_listener* listener, void* data);
-
-void PointerMotion(struct wl_listener* listener, void* data);
-void PointerMotionAbsolute(struct wl_listener* listener, void* data);
-void PointerButton(struct wl_listener* listener, void* data);
-void PointerAxis(struct wl_listener* listener, void* data);
-void PointerFrame(struct wl_listener* listener, void* data);
-void RequestSetCursor(struct wl_listener* listener, void* data);
-void PointerFocusChange(struct wl_listener* listener, void* data);
-
-void ProcessCursorMotion(uint32_t time);
 
 #endif
