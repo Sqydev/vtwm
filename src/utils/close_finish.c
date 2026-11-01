@@ -52,5 +52,6 @@ void Close(int exitCode) {
 
 int Finish(void) {
 	FreeCompositor();
+	UnloadConfig();
 	return closeExitCode;
 }

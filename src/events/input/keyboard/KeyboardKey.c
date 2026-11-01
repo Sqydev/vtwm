@@ -74,7 +74,7 @@ void KeyboardKey(struct wl_listener* listener, void* data) {
 			pid_t pid = fork();
 
 			if(pid == 0) {
-				execlp("alacritty", "alacritty", NULL);
+				execvp(CONFIG.terminalCommandSliced[0], CONFIG.terminalCommandSliced);
 				_exit(1);
 			}
 		}
