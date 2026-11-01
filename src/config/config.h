@@ -37,17 +37,14 @@
 #define VTWM_CONFIG_H
 
 #include <stdbool.h>
-#include <stdio.h>
 
 #include <xkbcommon/xkbcommon.h>
 
 typedef struct Config {
-	FILE* configFile;
 	char* configPath;
 } Config;
 
-void InitConfig(void);
-
-void ReloadConfig(void);
+void LoadConfig(void);
+void ParseConfig(const char* data, size_t size);
 
 #endif

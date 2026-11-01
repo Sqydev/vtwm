@@ -105,8 +105,7 @@ int main(int argc, char** argv) {
 
 	HandleOpts(&argc, &argv);
 
-	InitConfig();
-	ReloadConfig();
+	LoadConfig();
 
 	InitCompositor();
 
