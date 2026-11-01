@@ -10,27 +10,27 @@
 * applications, and to alter it and redistribute it freely, subject to the following restrictions:
 *
 * 1. Non-Misrepresentation: The origin of this software must not be misrepresented; 
-*	you must not claim that you wrote the original software. An acknowledgment in 
-*	product documentation is appreciated but not required.
+*    you must not claim that you wrote the original software. An acknowledgment in 
+*    product documentation is appreciated but not required.
 *
 * 2. Source-Level Copyleft: Any altered versions (forks) of this software's source code, 
-*	or files containing significant portions of this code, must be distributed under 
-*	these same license terms. Such modified source code must be made publicly available 
-*	to any recipient, even if used over a network (SaaS).
+*    or files containing significant portions of this code, must be distributed under 
+*    these same license terms. Such modified source code must be made publicly available 
+*    to any recipient, even if used over a network (SaaS).
 * 
 * 3. Proprietary Integration: This software may be integrated into, linked with, or 
-*	used as a component of proprietary and closed-source products. In such cases, 
-*	the surrounding proprietary application code does not need to be disclosed, 
-*	provided that the original or modified source code of THIS software remains 
-*	available under the terms of Section 2.
+*    used as a component of proprietary and closed-source products. In such cases, 
+*    the surrounding proprietary application code does not need to be disclosed, 
+*    provided that the original or modified source code of THIS software remains 
+*    available under the terms of Section 2.
 *
 * 4. Persistent Metadata: All original credits, including those in the source code headers 
-*	and binary metadata (e.g., ELF .comment section, PE StringFileInfo, or equivalent), 
-*	must not be removed. You may add your own credits to forks, provided the original 
-*	authorship remains clearly identified.
+*    and binary metadata (e.g., ELF .comment section, PE StringFileInfo, or equivalent), 
+*    must not be removed. You may add your own credits to forks, provided the original 
+*    authorship remains clearly identified.
 * 
 * 5. Notice Retention: This license notice may not be removed or altered from any 
-*	source or binary distribution.
+*    source or binary distribution.
 */
 
 #include "./config.h"
@@ -39,7 +39,6 @@
 #include "../defines.h"
 #include "../utils/utils.h"
 
-#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -165,35 +164,88 @@ loadConfig: ;
 	if(configFile) { fclose(configFile); }
 }
 
+// This will become in WM message.
+static void ConfigWarning(size_t line, const char* message) {
+	fprintf(stderr, "Config warning at line %zu: %s\n", line, message);
+}
+
 void ParseConfig(const char* data, size_t size) {
-	for(size_t idx = 0; idx < size;) {
-		while(idx < size && isspace(data[idx])) { idx++; }
+	size_t idx = 0;
+	size_t line = 1;
 
-		if(idx >= size) { break; }
+	Token token;
 
-		size_t start;
-		size_t end;
+	while((token = NextToken(data, size, &idx, &line)).data != NULL) {
+		if(TokenEquals(token, "Terminal")) {
+			Token next = NextToken(data, size, &idx, &line);
 
-		if(data[idx] == '"') {
-			start = ++idx;
+			if(!TokenEquals(next, "{")) {
+				ConfigWarning(token.line, "Expected '{' after Terminal");
+				continue;
+			}
 
-			while(idx < size && data[idx] != '"') { idx++; }
+			Token key = NextToken(data, size, &idx, &line);
+			Token equal = NextToken(data, size, &idx, &line);
+			Token value = NextToken(data, size, &idx, &line);
 
-			end = idx;
+			if(!TokenEquals(key, "command") || !TokenEquals(equal, "=")) {
+				ConfigWarning(key.data ? key.line : token.line, "Invalid Terminal configuration");
+				continue;
+			}
 
-			if(idx < size) { idx++; }
+			if(!value.data || value.length == 0) {
+				ConfigWarning(key.line, "Invalid Terminal.command value");
+				continue;
+			}
+
+			if(CONFIG.terminalCommand) {
+				ConfigWarning(key.line, "Terminal.command already defined, ignoring duplicate");
+				continue;
+			}
+
+			CONFIG.terminalCommand = strndup(value.data, value.length);
+
+			if(!CONFIG.terminalCommand) {
+				Panic(EXIT_FAILURE, "Failed to allocate Terminal.command\n");
+			}
+
+			CONFIG.terminalCommandSliced = SplitString(CONFIG.terminalCommand);
+
+			if(!CONFIG.terminalCommandSliced) {
+				Panic(EXIT_FAILURE, "Failed to split Terminal.command\n");
+			}
+		}
+		else if(TokenEquals(token, "#")) {
+			Token comment;
+
+			do {
+				comment = NextToken(data, size, &idx, &line);
+			} while(comment.data && comment.line == token.line);
 		}
 		else {
-			start = idx;
+			ConfigWarning(token.line, "Unexpected token(ignoring)");
+		}
+	}
 
-			while(idx < size && !isspace(data[idx])) { idx++; }
+	if(!CONFIG.terminalCommand) {
+		Panic(EXIT_FAILURE, "Missing required configuration: Terminal.command\n");
+	}
+}
 
-			end = idx;
+void UnloadConfig(void) {
+	if(CONFIG.configPath) {
+		free(CONFIG.configPath);
+	}
+
+	if(CONFIG.terminalCommand) {
+		free(CONFIG.terminalCommand);
+	}
+
+	if(CONFIG.terminalCommandSliced) {
+		for(size_t i = 0; CONFIG.terminalCommandSliced[i] != NULL; i++) {
+			free(CONFIG.terminalCommandSliced[i]);
 		}
 
-		size_t tokenLength = end - start;
-
-		// Debug
-		printf("%.*s\n", (int)tokenLength, data + start);
+		free(CONFIG.terminalCommandSliced);
 	}
 }

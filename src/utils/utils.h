@@ -40,6 +40,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+typedef struct {
+	const char* data;
+	size_t length;
+	size_t line;
+} Token;
+
 void* IFNULLPANIC(void* value, int exitCode, const char* msg, ...);
 bool IFFALSEPANIC(bool value, int exitCode, const char* msg, ...);
 void IFNULLPANICALONE(void* value, int exitCode, const char* msg, ...);
@@ -67,5 +73,10 @@ bool CopyFile(const char* src, const char* dst);
 char* ExpandPath(const char* path);
 bool MakeDirP(const char* path);
 bool PathExists(const char* path);
+
+Token NextToken(const char* data, size_t size, size_t* idx, size_t* line);
+int TokenEquals(Token token, const char* str);
+
+char** SplitString(const char* string);
 
 #endif

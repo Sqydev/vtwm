@@ -42,9 +42,13 @@
 
 typedef struct Config {
 	char* configPath;
+
+	char* terminalCommand;
+	char** terminalCommandSliced;
 } Config;
 
 void LoadConfig(void);
 void ParseConfig(const char* data, size_t size);
+void UnloadConfig(void);
 
 #endif
