@@ -18,6 +18,7 @@ Looks -> (NORMAL || SUPER) {
 
 Cursor {
 	icon = default; // icon = any; or icon = "name";
+	hardware = false;
 };
 
 Input {
@@ -39,8 +40,4 @@ Keybinds {
 
 	SUPER && Escape -> quit();
 	SUPER && Return -> spawn(Terminal.command);
-};
-
-Config {
-	autoReload = true;
 };

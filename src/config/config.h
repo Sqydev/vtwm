@@ -37,14 +37,84 @@
 #define VTWM_CONFIG_H
 
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include <xkbcommon/xkbcommon.h>
+#define CONFIG_LAYER_COUNT 3
+#define CONFIG_LAYER_ALL ((1u << CONFIG_LAYER_COUNT) - 1u)
+
+typedef enum ConfigLayer {
+	CONFIG_LAYER_TTY = 0,
+	CONFIG_LAYER_NORMAL = 1,
+	CONFIG_LAYER_SUPER = 2
+} ConfigLayer;
+
+typedef enum ConfigModifier {
+	CONFIG_MODIFIER_SUPER = 1u << 0,
+	CONFIG_MODIFIER_CTRL = 1u << 1,
+	CONFIG_MODIFIER_ALT = 1u << 2,
+	CONFIG_MODIFIER_SHIFT = 1u << 3
+} ConfigModifier;
+
+typedef struct ConfigMargin {
+	int top;
+	int bottom;
+	int left;
+	int right;
+} ConfigMargin;
+
+typedef struct ConfigBorder {
+	uint32_t focusedColor;
+	uint32_t unFocusedColor;
+	int radius;
+} ConfigBorder;
+
+typedef struct ConfigLooks {
+	bool defined;
+
+	ConfigMargin margin;
+	ConfigBorder border;
+} ConfigLooks;
+
+typedef struct ConfigCursor {
+	char* icon;
+	bool hardware;
+} ConfigCursor;
+
+typedef struct ConfigInput {
+	char* layout;
+	int repeatRate;
+	int repeatDelay;
+} ConfigInput;
+
+typedef struct ConfigStartUp {
+	char** commands;
+	size_t commandCount;
+} ConfigStartUp;
+
+typedef struct ConfigKeybind {
+	char* binding;
+	uint32_t layers;
+	uint32_t modifiers;
+
+	char* key;
+	char* action;
+} ConfigKeybind;
 
 typedef struct Config {
 	char* configPath;
 
 	char* terminalCommand;
 	char** terminalCommandSliced;
+
+	ConfigLooks looks[CONFIG_LAYER_COUNT];
+
+	ConfigCursor cursor;
+	ConfigInput input;
+	ConfigStartUp startup;
+
+	ConfigKeybind* keybinds;
+	size_t keybindCount;
 } Config;
 
 void LoadConfig(void);

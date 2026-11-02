@@ -109,6 +109,7 @@ void NewPointerDevice(struct wlr_input_device* device);
 void NewTouchDevice(struct wlr_input_device* device);
 
 void KeyboardKey(struct wl_listener* listener, void* data);
+bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers);
 void KeyboardModifiers(struct wl_listener* listener, void* data);
 void DestroyKeyboard(struct wl_listener* listener, void* data);
 void SetKeymap(struct wlr_keyboard* keyboard);

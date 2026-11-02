@@ -78,5 +78,10 @@ Token NextToken(const char* data, size_t size, size_t* idx, size_t* line);
 int TokenEquals(Token token, const char* str);
 
 char** SplitString(const char* string);
+void FreeStringArray(char** array);
+
+void Spawn(char** arguments);
+void SpawnCommand(const char* command);
+void SpawnCommandRange(const char* start, size_t length);
 
 #endif

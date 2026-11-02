@@ -35,14 +35,15 @@
 
 #include "./config.h"
 
+#include "./defaults/defaults.h"
+#include "./parser/parser.h"
+#include "./sections/sections.h"
+
 #include "../coredata.h"
 #include "../defines.h"
 #include "../utils/utils.h"
 
 #include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,187 +66,216 @@ static char* GetUserConfigDir(void) {
 	return JoinStrings(home, "/.config/vtwm");
 }
 
-static void SetConfigPath(const char* path) {
-	char* pathCopy = strdup(path);
-	if(!pathCopy) {
-		Panic(EXIT_FAILURE, "Failed to set config path %s: %s\n", path, strerror(errno));
+static bool LoadConfigFile(void) {
+	FILE* configFile = fopen(CONFIG.configPath, "r");
+	if(!configFile) {
+		fprintf(
+			stderr,
+			"Config warning: failed to open %s: %s\n",
+			CONFIG.configPath,
+			strerror(errno)
+		);
+		return false;
+	}
+
+	int fd = fileno(configFile);
+
+	struct stat st;
+	if(fstat(fd, &st) != 0 || st.st_size <= 0) {
+		fprintf(stderr, "Config warning: config file is empty or unreadable: %s\n", CONFIG.configPath);
+		fclose(configFile);
+		return false;
+	}
+
+	char* configStr = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+
+	if(configStr == MAP_FAILED) {
+		fprintf(
+			stderr,
+			"Config warning: failed to map %s: %s\n",
+			CONFIG.configPath,
+			strerror(errno)
+		);
+		fclose(configFile);
+		return false;
+	}
+
+	ParseConfig(configStr, (size_t)st.st_size);
+
+	munmap(configStr, (size_t)st.st_size);
+	fclose(configFile);
+
+	return true;
+}
+
+static bool TryConfigPath(const char* path, bool warnIfMissing) {
+	char* expanded = ExpandPath(path);
+	if(!expanded) {
+		fprintf(stderr, "Config warning: cannot expand path: %s\n", path);
+		return false;
+	}
+
+	if(!PathExists(expanded)) {
+		if(warnIfMissing) {
+			fprintf(stderr, "Config warning: config not found: %s\n", expanded);
+		}
+
+		free(expanded);
+		return false;
 	}
 
 	free(CONFIG.configPath);
+	CONFIG.configPath = expanded;
 
-	CONFIG.configPath = pathCopy;
+	if(LoadConfigFile()) { return true; }
+
+	free(CONFIG.configPath);
+	CONFIG.configPath = NULL;
+
+	return false;
 }
 
 void LoadConfig(void) {
-	if(CONFIG.configPath) {
-		char* path = ExpandPath(CONFIG.configPath);
-		if(!path) {
-			Panic(1, "Cannot expand path: %s\n", CONFIG.configPath);
-		}
-		free(CONFIG.configPath);
-		CONFIG.configPath = path;
+	char* explicitPath = CONFIG.configPath;
+	CONFIG.configPath = NULL;
 
-		if(PathExists(CONFIG.configPath)) { goto loadConfig; }
+	if(explicitPath) {
+		bool loaded = TryConfigPath(explicitPath, true);
+		free(explicitPath);
 
-		free(CONFIG.configPath);
-		CONFIG.configPath = NULL;
+		if(loaded) { return; }
 	}
 
 	const char* envPath = getenv("VTWM_CONFIG_PATH");
-	if(envPath && *envPath) {
-		char* path = ExpandPath(envPath);
-		if(!path) {
-			Panic(1, "Cannot expand path: %s\n", envPath);
-		}
-		if(PathExists(path)) {
-			SetConfigPath(path);
-			free(path);
-			goto loadConfig;
-		}
-		free(path);
-	}
+	if(envPath && *envPath && TryConfigPath(envPath, true)) { return; }
 
 	char* userDir = GetUserConfigDir();
 	char* userPath = userDir ? JoinStrings(userDir, "/" CONFIG_FILE_NAME) : NULL;
+	bool userConfigExists = userPath && PathExists(userPath);
 
-	if(userPath && PathExists(userPath)) {
-		SetConfigPath(userPath);
+	if(userConfigExists) {
+		bool loaded = TryConfigPath(userPath, false);
+
 		free(userDir);
 		free(userPath);
-		goto loadConfig;
+
+		if(loaded) { return; }
+
+		fprintf(stderr, "Config warning: cannot load user config, using built-in defaults\n");
+		ParseConfig(NULL, 0);
+		return;
 	}
 
 	const char* defaultPath = VTWM_DEFAULT_CONFIG_PATH;
+	bool loaded = false;
 
-	if(!PathExists(defaultPath)) {
-		Panic(1,
-			"No config found.\n"
-			"Tried:\n"
-			"  %s\n"
-			"  %s\n"
-			"Create one or pass --config <path>.\n",
-			userPath ? userPath : "(no user config dir)",
-			defaultPath);
+	if(PathExists(defaultPath)) {
+		if(userDir && userPath && MakeDirP(userDir) && CopyFile(defaultPath, userPath)) {
+			loaded = TryConfigPath(userPath, false);
+		}
+		else if(userDir && userPath) {
+			fprintf(
+				stderr,
+				"Config warning: cannot create %s, loading %s\n",
+				userPath,
+				defaultPath
+			);
+		}
+
+		if(!loaded) {
+			loaded = TryConfigPath(defaultPath, false);
+		}
 	}
-
-	if(!userDir || !userPath) {
-		SetConfigPath(defaultPath);
-		free(userDir);
-		free(userPath);
-		goto loadConfig;
-	}
-
-	if(!MakeDirP(userDir) || !CopyFile(defaultPath, userPath)) {
-		Panic(1, "Cannot create %s: %s\n", userPath, strerror(errno));
-	}
-
-	SetConfigPath(userPath);
 
 	free(userDir);
 	free(userPath);
 
-loadConfig: ;
+	if(loaded) { return; }
 
-	FILE* configFile = IFNULLPANIC(fopen(CONFIG.configPath, "r"), 1, "Failed to open config file at: %s\n", CONFIG.configPath);
-	int fd = fileno(configFile);
-
-	struct stat st;
-	fstat(fd, &st);
-
-	char* configStr = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-	if(configStr == MAP_FAILED) {
-		fclose(configFile);
-		Panic(1, "Failed to mmap config file to string\n");
-	}
-
-	ParseConfig(configStr, st.st_size);
-
-	if(configStr) { munmap(configStr, st.st_size); }
-	if(configFile) { fclose(configFile); }
+	fprintf(stderr, "Config warning: no config file found, using built-in defaults\n");
+	ParseConfig(NULL, 0);
 }
 
-// This will become in WM message.
-static void ConfigWarning(size_t line, const char* message) {
-	fprintf(stderr, "Config warning at line %zu: %s\n", line, message);
+static void ParseCategoryBody(ConfigParser* parser, Token name, uint32_t layers) {
+	if(TokenEquals(name, "Terminal")) {
+		ParseTerminalBlock(parser);
+	}
+	else if(TokenEquals(name, "Looks")) {
+		ParseLooksBlock(parser, layers);
+	}
+	else if(TokenEquals(name, "Cursor")) {
+		ParseCursorBlock(parser);
+	}
+	else if(TokenEquals(name, "Input")) {
+		ParseInputBlock(parser);
+	}
+	else if(TokenEquals(name, "StartUp")) {
+		ParseStartUpBlock(parser);
+	}
+	else if(TokenEquals(name, "Keybinds")) {
+		ParseKeybindsBlock(parser);
+	}
+	else {
+		ConfigWarning(name.line, "Unknown category, ignoring");
+		SkipBlockBody(parser, name.line);
+	}
 }
 
 void ParseConfig(const char* data, size_t size) {
-	size_t idx = 0;
-	size_t line = 1;
+	SetConfigDefaults();
 
-	Token token;
+	ConfigParser parser;
+	ConfigParserInit(&parser, data, size);
 
-	while((token = NextToken(data, size, &idx, &line)).data != NULL) {
-		if(TokenEquals(token, "Terminal")) {
-			Token next = NextToken(data, size, &idx, &line);
+	bool startupSeen = false;
+	bool keybindsSeen = false;
 
-			if(!TokenEquals(next, "{")) {
-				ConfigWarning(token.line, "Expected '{' after Terminal");
-				continue;
-			}
+	while(parser.token.data) {
+		if(ParserAccept(&parser, ";")) { continue; }
 
-			Token key = NextToken(data, size, &idx, &line);
-			Token equal = NextToken(data, size, &idx, &line);
-			Token value = NextToken(data, size, &idx, &line);
-
-			if(!TokenEquals(key, "command") || !TokenEquals(equal, "=")) {
-				ConfigWarning(key.data ? key.line : token.line, "Invalid Terminal configuration");
-				continue;
-			}
-
-			if(!value.data || value.length == 0) {
-				ConfigWarning(key.line, "Invalid Terminal.command value");
-				continue;
-			}
-
-			if(CONFIG.terminalCommand) {
-				ConfigWarning(key.line, "Terminal.command already defined, ignoring duplicate");
-				continue;
-			}
-
-			CONFIG.terminalCommand = strndup(value.data, value.length);
-
-			if(!CONFIG.terminalCommand) {
-				Panic(EXIT_FAILURE, "Failed to allocate Terminal.command\n");
-			}
-
-			CONFIG.terminalCommandSliced = SplitString(CONFIG.terminalCommand);
-
-			if(!CONFIG.terminalCommandSliced) {
-				Panic(EXIT_FAILURE, "Failed to split Terminal.command\n");
-			}
+		if(TokenEquals(parser.token, "}")) {
+			ConfigWarning(parser.token.line, "Unexpected '}'");
+			ParserAdvance(&parser);
+			continue;
 		}
-		else if(TokenEquals(token, "#")) {
-			Token comment;
 
-			do {
-				comment = NextToken(data, size, &idx, &line);
-			} while(comment.data && comment.line == token.line);
+		Token name = parser.token;
+		size_t entryLine = name.line;
+		ParserAdvance(&parser);
+
+		uint32_t layers = CONFIG_LAYER_ALL;
+
+		if(ParserAccept(&parser, "->")) {
+			layers = ParseLayerScope(&parser);
 		}
-		else {
-			ConfigWarning(token.line, "Unexpected token(ignoring)");
+
+		if(!ParserExpect(&parser, "{")) {
+			SkipUnknownEntry(&parser, entryLine);
+			continue;
 		}
+
+		if(TokenEquals(name, "StartUp") && !startupSeen) {
+			ClearStartUp();
+			startupSeen = true;
+		}
+		else if(TokenEquals(name, "Keybinds") && !keybindsSeen) {
+			ClearKeybinds();
+			keybindsSeen = true;
+		}
+
+		ParseCategoryBody(&parser, name, layers);
+
+		ParserAccept(&parser, ";");
 	}
 
-	if(!CONFIG.terminalCommand) {
-		Panic(EXIT_FAILURE, "Missing required configuration: Terminal.command\n");
-	}
+	TerminalCommandSet();
 }
 
 void UnloadConfig(void) {
+	ClearConfigValues();
+
 	if(CONFIG.configPath) {
 		free(CONFIG.configPath);
-	}
-
-	if(CONFIG.terminalCommand) {
-		free(CONFIG.terminalCommand);
-	}
-
-	if(CONFIG.terminalCommandSliced) {
-		for(size_t i = 0; CONFIG.terminalCommandSliced[i] != NULL; i++) {
-			free(CONFIG.terminalCommandSliced[i]);
-		}
-
-		free(CONFIG.terminalCommandSliced);
+		CONFIG.configPath = NULL;
 	}
 }

@@ -36,13 +36,9 @@
 #include "../input.h"
 
 #include "../../../coredata.h"
-#include "../../../utils/utils.h"
-
-#include <unistd.h>
 
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_seat.h>
-#include <xkbcommon/xkbcommon-keysyms.h>
 
 void KeyboardKey(struct wl_listener* listener, void* data) {
 	VtwmSeat* seat = wl_container_of(listener, seat, keyboard_key);
@@ -67,15 +63,9 @@ void KeyboardKey(struct wl_listener* listener, void* data) {
 
 	// Only handle shortcuts on active seat
 	if(seat == INPUT.active_seat && event->state == WL_KEYBOARD_KEY_STATE_PRESSED && nsyms > 0) {
-		if((mods & WLR_MODIFIER_ALT) && syms[0] == XKB_KEY_Escape) {
-			Close(0);
-		}
-		if((mods & WLR_MODIFIER_ALT) && syms[0] == XKB_KEY_Tab) {
-			pid_t pid = fork();
-
-			if(pid == 0) {
-				execvp(CONFIG.terminalCommandSliced[0], CONFIG.terminalCommandSliced);
-				_exit(1);
+		for(int i = 0; i < nsyms; i++) {
+			if(KeybindHandle(seat, syms[i], mods)) {
+				return;
 			}
 		}
 	}

@@ -37,18 +37,93 @@
 
 #include <ctype.h>
 
+static bool IsAtLineStart(const char* data, size_t idx) {
+	for(size_t i = idx; i > 0; i--) {
+		unsigned char c = (unsigned char)data[i - 1];
+
+		if(c == '\n') { return true; }
+		if(!isspace(c)) { return false; }
+	}
+
+	return true;
+}
+
+static bool IsHashComment(const char* data, size_t size, size_t idx) {
+	if(idx + 1 >= size) { return true; }
+
+	unsigned char next = (unsigned char)data[idx + 1];
+
+	if(isspace(next)) { return true; }
+
+	return IsAtLineStart(data, idx);
+}
+
+static bool IsSinglePunctuation(char c) {
+	switch(c) {
+		case '{':
+		case '}':
+		case '(':
+		case ')':
+		case '[':
+		case ']':
+		case '=':
+		case ';':
+		case ',':
+			return true;
+		default: {
+			return false;
+		}
+	}
+}
+
+static size_t MatchOperator(const char* data, size_t size, size_t idx) {
+	if(idx + 2 < size && data[idx] == '.' && data[idx + 1] == '.' && data[idx + 2] == '.') {
+		return 3;
+	}
+
+	if(idx + 1 < size) {
+		if((data[idx] == '-' && data[idx + 1] == '>') || (data[idx] == '|' && data[idx + 1] == '|') || (data[idx] == '&' && data[idx + 1] == '&')) {
+			return 2;
+		}
+	}
+
+	return 0;
+}
+
 Token NextToken(const char* data, size_t size, size_t* idx, size_t* line) {
 	Token token = {0};
 
-	while(*idx < size && isspace((unsigned char)data[*idx])) {
-		if(data[*idx] == '\n') {
-			(*line)++;
+	for(;;) {
+		while(*idx < size && isspace((unsigned char)data[*idx])) {
+			if(data[*idx] == '\n') {
+				(*line)++;
+			}
+
+			(*idx)++;
 		}
 
-		(*idx)++;
-	}
+		if(*idx >= size) { return token; }
 
-	if(*idx >= size) { return token; }
+		if(data[*idx] == '/' && *idx + 1 < size && data[*idx + 1] == '/') {
+			*idx += 2;
+
+			while(*idx < size && data[*idx] != '\n') {
+				(*idx)++;
+			}
+
+			continue;
+		}
+
+		if(data[*idx] == '#' && IsHashComment(data, size, *idx)) {
+			while(*idx < size && data[*idx] != '\n') {
+				(*idx)++;
+			}
+
+			continue;
+		}
+
+		break;
+	}
 
 	size_t start;
 	size_t end;
@@ -71,13 +146,27 @@ Token NextToken(const char* data, size_t size, size_t* idx, size_t* line) {
 		if(*idx < size) { (*idx)++; }
 	}
 	else {
-		start = *idx;
+		size_t operatorLength = MatchOperator(data, size, *idx);
 
-		while(*idx < size && !isspace((unsigned char)data[*idx])) {
-			(*idx)++;
+		if(operatorLength > 0) {
+			start = *idx;
+			*idx += operatorLength;
+			end = *idx;
 		}
+		else if(IsSinglePunctuation(data[*idx])) {
+			start = *idx;
+			(*idx)++;
+			end = *idx;
+		}
+		else {
+			start = *idx;
 
-		end = *idx;
+			while(*idx < size && !isspace((unsigned char)data[*idx]) && !IsSinglePunctuation(data[*idx]) && MatchOperator(data, size, *idx) == 0) {
+				(*idx)++;
+			}
+
+			end = *idx;
+		}
 	}
 
 	token.data = data + start;
