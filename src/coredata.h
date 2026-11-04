@@ -40,11 +40,13 @@
 #include "./events/events.h"
 #include "./input/input.h"
 #include "./config/config.h"
+#include "./ipc/ipc.h"
 
 #define COMP DATA.Compositor
 #define EVENTS DATA.Events
 #define INPUT DATA.Input
 #define CONFIG DATA.Config
+#define IPC DATA.Ipc
 
 typedef struct Coredata {
 	bool debug;
@@ -56,6 +58,10 @@ typedef struct Coredata {
 	InputManager Input;
 
 	Config Config;
+
+	Ipc Ipc;
+
+	struct wl_event_source* exitSignalSources[3];
 } Coredata;
 
 extern Coredata DATA;

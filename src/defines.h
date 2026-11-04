@@ -44,6 +44,22 @@
 	#define VTWM_DEFAULT_CONFIG_PATH VTWM_ASSETS_DIR "config/config.vtwm"
 #endif
 
+#ifndef IPC_SOCKET_PREFIX
+	#define IPC_SOCKET_PREFIX "vtwm-"
+#endif
+#ifndef IPC_SOCKET_SUFFIX
+	#define IPC_SOCKET_SUFFIX ".sock"
+#endif
+#ifndef IPC_COMMAND_MAX
+	#define IPC_COMMAND_MAX 256
+#endif
+#ifndef IPC_RESPONSE_MAX
+	#define IPC_RESPONSE_MAX 32
+#endif
+#ifndef IPC_TIMEOUT_MS
+	#define IPC_TIMEOUT_MS 2000
+#endif
+
 #ifndef STB_IMAGE_IMPLEMENTATION
 	#define STB_IMAGE_IMPLEMENTATION
 #endif

@@ -55,6 +55,7 @@ void IFNULLPANICALONECONST(const void* value, int exitCode, const char* msg, ...
 
 void Close(int exitCode);
 int Finish(void);
+void InitSignals(void);
 
 void FullWrite(int fd, const char* buffer, size_t size);
 
@@ -83,5 +84,7 @@ void FreeStringArray(char** array);
 void Spawn(char** arguments);
 void SpawnCommand(const char* command);
 void SpawnCommandRange(const char* start, size_t length);
+
+bool GetRuntimeDir(char* path, size_t size);
 
 #endif

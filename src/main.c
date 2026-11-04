@@ -37,6 +37,8 @@
 
 #include "./utils/utils.h"
 #include "./compositor/compositor.h"
+#include "./ctl/vtwmctl.h"
+#include "./ipc/ipc.h"
 
 #include <config/config.h>
 #include <stddef.h>
@@ -103,11 +105,21 @@ int main(int argc, char** argv) {
 
 	DATA.debug = false;
 
+	if(argc > 1 && strcmp(argv[1], "ctl") == 0) {
+		return RunCtl(argc, argv);
+	}
+
 	HandleOpts(&argc, &argv);
 
 	LoadConfig();
 
 	InitCompositor();
+
+	if(!InitIPC(COMP.display)) {
+		wlr_log(WLR_ERROR, "Failed to initialize IPC, continuing without it");
+	}
+
+	InitSignals();
 
 	StartCompositor();
 

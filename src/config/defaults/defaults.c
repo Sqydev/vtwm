@@ -50,41 +50,60 @@
 #define DEFAULT_BORDER_UNFOCUSED_COLOR 0x000000u
 #define DEFAULT_BORDER_RADIUS 4
 
+void ConfigClearValues(Config* config) {
+	if(!config) {
+		return;
+	}
+
+	free(config->terminalCommand);
+	config->terminalCommand = NULL;
+
+	FreeStringArray(config->terminalCommandSliced);
+	config->terminalCommandSliced = NULL;
+
+	memset(config->looks, 0, sizeof(config->looks));
+
+	free(config->cursor.icon);
+	config->cursor.icon = NULL;
+	config->cursor.hardware = false;
+
+	free(config->input.layout);
+	config->input.layout = NULL;
+	config->input.repeatRate = 0;
+	config->input.repeatDelay = 0;
+
+	for(size_t i = 0; i < config->startup.commandCount; i++) {
+		free(config->startup.commands[i]);
+	}
+
+	free(config->startup.commands);
+	config->startup.commands = NULL;
+	config->startup.commandCount = 0;
+
+	for(size_t i = 0; i < config->keybindCount; i++) {
+		free(config->keybinds[i].binding);
+		free(config->keybinds[i].key);
+		free(config->keybinds[i].action);
+	}
+
+	free(config->keybinds);
+	config->keybinds = NULL;
+	config->keybindCount = 0;
+}
+
+void ConfigDestroy(Config* config) {
+	if(!config) {
+		return;
+	}
+
+	ConfigClearValues(config);
+
+	free(config->configPath);
+	config->configPath = NULL;
+}
+
 void ClearConfigValues(void) {
-	free(CONFIG.terminalCommand);
-	CONFIG.terminalCommand = NULL;
-
-	FreeStringArray(CONFIG.terminalCommandSliced);
-	CONFIG.terminalCommandSliced = NULL;
-
-	memset(CONFIG.looks, 0, sizeof(CONFIG.looks));
-
-	free(CONFIG.cursor.icon);
-	CONFIG.cursor.icon = NULL;
-	CONFIG.cursor.hardware = false;
-
-	free(CONFIG.input.layout);
-	CONFIG.input.layout = NULL;
-	CONFIG.input.repeatRate = 0;
-	CONFIG.input.repeatDelay = 0;
-
-	for(size_t i = 0; i < CONFIG.startup.commandCount; i++) {
-		free(CONFIG.startup.commands[i]);
-	}
-
-	free(CONFIG.startup.commands);
-	CONFIG.startup.commands = NULL;
-	CONFIG.startup.commandCount = 0;
-
-	for(size_t i = 0; i < CONFIG.keybindCount; i++) {
-		free(CONFIG.keybinds[i].binding);
-		free(CONFIG.keybinds[i].key);
-		free(CONFIG.keybinds[i].action);
-	}
-
-	free(CONFIG.keybinds);
-	CONFIG.keybinds = NULL;
-	CONFIG.keybindCount = 0;
+	ConfigClearValues(&CONFIG);
 }
 
 void SetConfigDefaults(void) {

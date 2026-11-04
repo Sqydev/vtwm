@@ -36,7 +36,11 @@
 #ifndef VTWM_CONFIG_DEFAULTS_H
 #define VTWM_CONFIG_DEFAULTS_H
 
+#include "../config.h"
+
 void ClearConfigValues(void);
+void ConfigClearValues(Config* config);
+void ConfigDestroy(Config* config);
 void SetConfigDefaults(void);
 
 #endif

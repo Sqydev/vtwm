@@ -135,7 +135,7 @@ static bool TryConfigPath(const char* path, bool warnIfMissing) {
 	return false;
 }
 
-void LoadConfig(void) {
+bool LoadConfig(void) {
 	char* explicitPath = CONFIG.configPath;
 	CONFIG.configPath = NULL;
 
@@ -143,11 +143,11 @@ void LoadConfig(void) {
 		bool loaded = TryConfigPath(explicitPath, true);
 		free(explicitPath);
 
-		if(loaded) { return; }
+		if(loaded) { return true; }
 	}
 
 	const char* envPath = getenv("VTWM_CONFIG_PATH");
-	if(envPath && *envPath && TryConfigPath(envPath, true)) { return; }
+	if(envPath && *envPath && TryConfigPath(envPath, true)) { return true; }
 
 	char* userDir = GetUserConfigDir();
 	char* userPath = userDir ? JoinStrings(userDir, "/" CONFIG_FILE_NAME) : NULL;
@@ -159,11 +159,11 @@ void LoadConfig(void) {
 		free(userDir);
 		free(userPath);
 
-		if(loaded) { return; }
+		if(loaded) { return true; }
 
 		fprintf(stderr, "Config warning: cannot load user config, using built-in defaults\n");
 		ParseConfig(NULL, 0);
-		return;
+		return false;
 	}
 
 	const char* defaultPath = VTWM_DEFAULT_CONFIG_PATH;
@@ -190,10 +190,47 @@ void LoadConfig(void) {
 	free(userDir);
 	free(userPath);
 
-	if(loaded) { return; }
+	if(loaded) { return true; }
 
 	fprintf(stderr, "Config warning: no config file found, using built-in defaults\n");
 	ParseConfig(NULL, 0);
+	return false;
+}
+
+bool ReloadConfig(void) {
+	Config previous = CONFIG;
+	char* path = NULL;
+
+	if(previous.configPath) {
+		path = strdup(previous.configPath);
+
+		if(!path) {
+			fprintf(stderr, "Config warning: cannot copy config path\n");
+			return false;
+		}
+	}
+
+	memset(&CONFIG, 0, sizeof(CONFIG));
+
+	bool loaded;
+
+	if(path) {
+		CONFIG.configPath = path;
+		loaded = TryConfigPath(path, true);
+	}
+	else {
+		loaded = LoadConfig();
+	}
+
+	if(loaded) {
+		ConfigDestroy(&previous);
+		return true;
+	}
+
+	ConfigDestroy(&CONFIG);
+	CONFIG = previous;
+
+	return false;
 }
 
 static void ParseCategoryBody(ConfigParser* parser, Token name, uint32_t layers) {
@@ -272,10 +309,5 @@ void ParseConfig(const char* data, size_t size) {
 }
 
 void UnloadConfig(void) {
-	ClearConfigValues();
-
-	if(CONFIG.configPath) {
-		free(CONFIG.configPath);
-		CONFIG.configPath = NULL;
-	}
+	ConfigDestroy(&CONFIG);
 }

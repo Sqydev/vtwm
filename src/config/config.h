@@ -117,7 +117,8 @@ typedef struct Config {
 	size_t keybindCount;
 } Config;
 
-void LoadConfig(void);
+bool LoadConfig(void);
+bool ReloadConfig(void);
 void ParseConfig(const char* data, size_t size);
 void UnloadConfig(void);
 

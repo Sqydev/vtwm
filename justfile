@@ -26,7 +26,7 @@ all:
 	just bleeding normal stable musl
 
 clean:
-	rm -rf .cmake/ compile_commands.json compiled/
+	rm -rf .cmake/ compile_commands.json compiled/ core .cache/
 
 license-check:
 	bash scripts/check_license.sh

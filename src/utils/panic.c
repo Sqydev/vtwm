@@ -175,9 +175,9 @@ void InitPanic(void) {
 
 	sigaction(SIGSEGV, &sa, NULL);
 	sigaction(SIGABRT, &sa, NULL);
-	sigaction(SIGBUS,  &sa, NULL);
-	sigaction(SIGILL,  &sa, NULL);
-	sigaction(SIGFPE,  &sa, NULL);
+	sigaction(SIGBUS, &sa, NULL);
+	sigaction(SIGILL, &sa, NULL);
+	sigaction(SIGFPE, &sa, NULL);
 }
 
 void vaPanic(int exitCode, const char* msg, va_list args) {
