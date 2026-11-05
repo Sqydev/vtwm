@@ -33,70 +33,77 @@
 *    source or binary distribution.
 */
 
-#include "./utils.h"
+#include "./strings.h"
 
 #include <ctype.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
-void Spawn(char** arguments) {
-	if(!arguments || !arguments[0]) {
-		return;
+char** SplitString(const char* string) {
+	size_t count = 0;
+	size_t capacity = 4;
+
+	char** args = malloc(capacity * sizeof(char*));
+
+	if(!args) {
+		return NULL;
 	}
 
-	pid_t pid = fork();
+	const char* ptr = string;
 
-	if(pid == 0) {
-		execvp(arguments[0], arguments);
-		_exit(1);
-	}
-}
+	while(*ptr) {
+		while(isspace((unsigned char)*ptr)) {
+			ptr++;
+		}
 
-void SpawnCommand(const char* command) {
-	if(!command) {
-		return;
-	}
+		if(!*ptr) {
+			break;
+		}
 
-	char** arguments = SplitString(command);
-	if(!arguments) {
-		return;
-	}
+		const char* start = ptr;
 
-	Spawn(arguments);
-	FreeStringArray(arguments);
-}
+		while(*ptr && !isspace((unsigned char)*ptr)) {
+			ptr++;
+		}
 
-void SpawnCommandRange(const char* start, size_t length) {
-	if(!start) {
-		return;
-	}
+		size_t length = (size_t)(ptr - start);
 
-	while(length > 0 && isspace((unsigned char)start[0])) {
-		start++;
-		length--;
-	}
+		if(count + 1 >= capacity) {
+			capacity *= 2;
 
-	while(length > 0 && isspace((unsigned char)start[length - 1])) {
-		length--;
-	}
+			char** tmp = realloc(args, capacity * sizeof(char*));
 
-	if(length == 0) {
-		return;
-	}
+			if(!tmp) {
+				goto error;
+			}
 
-	char* command = strndup(start, length);
-	if(!command) {
-		Panic(EXIT_FAILURE, "Failed to allocate spawn command\n");
+			args = tmp;
+		}
+
+		args[count] = strndup(start, length);
+
+		if(!args[count]) {
+			goto error;
+		}
+
+		count++;
 	}
 
-	if(length >= 2 &&
-		((command[0] == '"' && command[length - 1] == '"') ||
-		(command[0] == '\'' && command[length - 1] == '\''))) {
-		memmove(command, command + 1, length - 2);
-		command[length - 2] = '\0';
+	if(count == 0) {
+		free(args);
+		return NULL;
 	}
 
-	SpawnCommand(command);
-	free(command);
+	args[count] = NULL;
+
+	return args;
+
+error:
+	for(size_t i = 0; i < count; i++) {
+		free(args[i]);
+	}
+
+	free(args);
+	return NULL;
 }

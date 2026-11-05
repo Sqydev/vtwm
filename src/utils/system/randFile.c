@@ -33,23 +33,60 @@
 *    source or binary distribution.
 */
 
-#include <stddef.h>
+#include "./system.h"
+
+#include "../../linclude/stb_image.h"
+
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-char* JoinStrings(const char* a, const char* b) {
-	if(!a || !b) { return NULL; }
+char* GetRandomFile(const char* dirPath) {
+	DIR* dir = opendir(dirPath);
+	if(!dir) { return NULL; }
 
-	size_t len = strlen(a) + strlen(b) + 1;
-	char* result = malloc(len);
+	struct dirent* entry;
+	char** files = NULL;
+	size_t count = 0;
 
-	if(!result) { return NULL; }
+	while((entry = readdir(dir))) {
+		if(entry->d_name[0] == '.') { continue; }
 
-	int written = snprintf(result, len, "%s%s", a, b);
-	if(written < 0 || (size_t)written >= len) {
-		free(result);
+		char** tmp = realloc(files, (count + 1) * sizeof(*files));
+		if(!tmp) { break; }
+
+		files = tmp;
+		char* name = strdup(entry->d_name);
+		if(!name) {
+			break;
+		}
+		files[count++] = name;
+	}
+
+	closedir(dir);
+
+	if(count == 0) {
+		free(files);
 		return NULL;
 	}
+
+	size_t index = (size_t)rand() % count;
+
+	size_t length = strlen(dirPath) + 1 + strlen(files[index]) + 1;
+	char* result = malloc(length);
+
+	if(result) {
+		int written = snprintf(result, length, "%s/%s", dirPath, files[index]);
+		if(written < 0 || (size_t)written >= length) {
+			free(result);
+			result = NULL;
+		}
+	}
+
+	for(size_t i = 0; i < count; i++) { free(files[i]); }
+
+	free(files);
+
 	return result;
 }

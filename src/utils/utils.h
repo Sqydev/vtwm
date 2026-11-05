@@ -36,55 +36,10 @@
 #ifndef VTWM_UTILS_H
 #define VTWM_UTILS_H
 
-#include <stddef.h>
-#include <stdbool.h>
-#include <stdio.h>
-
-typedef struct {
-	const char* data;
-	size_t length;
-	size_t line;
-} Token;
-
-void* IFNULLPANIC(void* value, int exitCode, const char* msg, ...);
-bool IFFALSEPANIC(bool value, int exitCode, const char* msg, ...);
-void IFNULLPANICALONE(void* value, int exitCode, const char* msg, ...);
-void IFFALSEPANICALONE(bool value, int exitCode, const char* msg, ...);
-const void* IFNULLPANICCONST(const void* value, int exitCode, const char* msg, ...);
-void IFNULLPANICALONECONST(const void* value, int exitCode, const char* msg, ...);
-
-void Close(int exitCode);
-int Finish(void);
-void InitSignals(void);
-
-void FullWrite(int fd, const char* buffer, size_t size);
-
-void InitPanic(void);
-void vaPanic(int exitCode, const char* msg, va_list args);
-void Panic(int exitCode, const char* msg, ...)
-	__attribute__((format(printf, 2, 3)));
-
-char* GetRandomFileFromDir(const char* dirPath);
-
-char* JoinStrings(const char* a, const char* b);
-
-char* GetUserHomeDir(void);
-
-bool CopyFile(const char* src, const char* dst);
-char* ExpandPath(const char* path);
-bool MakeDirP(const char* path);
-bool PathExists(const char* path);
-
-Token NextToken(const char* data, size_t size, size_t* idx, size_t* line);
-int TokenEquals(Token token, const char* str);
-
-char** SplitString(const char* string);
-void FreeStringArray(char** array);
-
-void Spawn(char** arguments);
-void SpawnCommand(const char* command);
-void SpawnCommandRange(const char* start, size_t length);
-
-bool GetRuntimeDir(char* path, size_t size);
+#include "./close/close.h"
+#include "./errors/errors.h"
+#include "./paths/paths.h"
+#include "./strings/strings.h"
+#include "./system/system.h"
 
 #endif

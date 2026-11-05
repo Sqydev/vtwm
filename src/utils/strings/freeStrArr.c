@@ -33,35 +33,18 @@
 *    source or binary distribution.
 */
 
-#include "./utils.h"
+#include "./strings.h"
 
-bool CopyFile(const char* src, const char* dst) {
-	FILE* in = fopen(src, "rb");
-	if(!in) { return false; }
+#include "../utils.h"
 
-	FILE* out = fopen(dst, "wb");
-	if(!out) {
-		fclose(in);
-		return false;
+#include <stdlib.h>
+
+void FreeStringArray(char** array) {
+	if(!array) { return; }
+
+	for(size_t i = 0; array[i] != NULL; i++) {
+		free(array[i]);
 	}
 
-	char buffer[8192];
-	bool ok = true;
-
-	size_t readSize = 0;
-	while((readSize = fread(buffer, 1, sizeof(buffer), in)) > 0) {
-		if(fwrite(buffer, 1, readSize, out) != readSize) {
-			ok = false;
-			break;
-		}
-	}
-
-	if(ferror(in)) { ok = false; }
-
-	if(fclose(out) != 0) { ok = false; }
-	fclose(in);
-
-	if(!ok) { remove(dst); }
-
-	return ok;
+	free(array);
 }

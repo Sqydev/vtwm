@@ -33,27 +33,37 @@
 *    source or binary distribution.
 */
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
+#include "./system.h"
 
-void FullWrite(int fd, const char* buffer, size_t size) {
-	size_t written = 0;
+#include "../utils.h"
 
-	while(written < size) {
-		ssize_t n = write(fd, buffer + written, size - written);
+bool CopyFile(const char* src, const char* dst) {
+	FILE* in = fopen(src, "rb");
+	if(!in) { return false; }
 
-		if(n > 0) {
-			written += (size_t)n;
-		}
-		else if(n == -1) {
-			if(errno == EINTR) {
-				continue;
-			}
-			break;
-		}
-		else {
+	FILE* out = fopen(dst, "wb");
+	if(!out) {
+		fclose(in);
+		return false;
+	}
+
+	char buffer[8192];
+	bool ok = true;
+
+	size_t readSize = 0;
+	while((readSize = fread(buffer, 1, sizeof(buffer), in)) > 0) {
+		if(fwrite(buffer, 1, readSize, out) != readSize) {
+			ok = false;
 			break;
 		}
 	}
+
+	if(ferror(in)) { ok = false; }
+
+	if(fclose(out) != 0) { ok = false; }
+	fclose(in);
+
+	if(!ok) { remove(dst); }
+
+	return ok;
 }

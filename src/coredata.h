@@ -50,6 +50,7 @@
 
 typedef struct Coredata {
 	bool debug;
+	int exitCode;
 
 	Compositor Compositor;
 

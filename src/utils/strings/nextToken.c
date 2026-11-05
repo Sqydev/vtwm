@@ -33,7 +33,9 @@
 *    source or binary distribution.
 */
 
-#include "./utils.h"
+#include "./strings.h"
+
+#include "../utils.h"
 
 #include <ctype.h>
 

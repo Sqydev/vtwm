@@ -33,70 +33,11 @@
 *    source or binary distribution.
 */
 
-#include "./utils.h"
-
-#include "../coredata.h"
-#include "../compositor/compositor.h"
-#include "../ipc/ipc.h"
-
-#include <signal.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
-#include <wayland-server-core.h>
-#include <wlr/util/log.h>
+char* GetXdgRuntimePath(void) {
+	char* runtime = getenv("XDG_RUNTIME_DIR");
 
-static int closeExitCode = EXIT_SUCCESS;
-
-void Close(int exitCode) {
-	closeExitCode = exitCode;
-	if(COMP.display) {
-		wl_display_terminate(COMP.display);
-	}
-}
-
-
-int Finish(void) {
-	FinishIPC();
-
-	for(size_t i = 0; i < sizeof(DATA.exitSignalSources) / sizeof(DATA.exitSignalSources[0]); i++) {
-		if(DATA.exitSignalSources[i]) {
-			wl_event_source_remove(DATA.exitSignalSources[i]);
-			DATA.exitSignalSources[i] = NULL;
-		}
-	}
-
-	FreeCompositor();
-	UnloadConfig();
-	return closeExitCode;
-}
-
-static int HandleExitSignal(int signalNumber, void* data) {
-	(void)data;
-
-	wlr_log(WLR_INFO, "Received signal %d, shutting down", signalNumber);
-	Close(128 + signalNumber);
-
-	return 0;
-}
-
-void InitSignals(void) {
-	if(!COMP.display) {
-		return;
-	}
-
-	struct wl_event_loop* loop = wl_display_get_event_loop(COMP.display);
-	if(!loop) {
-		wlr_log(WLR_ERROR, "Failed to get event loop for signal handling");
-		return;
-	}
-
-	const int signals[] = {SIGINT, SIGTERM, SIGQUIT};
-
-	for(size_t i = 0; i < sizeof(signals) / sizeof(signals[0]); i++) {
-		DATA.exitSignalSources[i] = wl_event_loop_add_signal(loop, signals[i], HandleExitSignal, NULL);
-
-		if(!DATA.exitSignalSources[i]) {
-			wlr_log(WLR_ERROR, "Failed to add handler for signal %d", signals[i]);
-		}
-	}
+	return runtime;
 }

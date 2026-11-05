@@ -33,30 +33,29 @@
 *    source or binary distribution.
 */
 
-#include "./utils.h"
+#include "./system.h"
 
-#include <errno.h>
-#include <string.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <unistd.h>
+#include <errno.h>
 
-bool MakeDirP(const char* path) {
-	char* copy = strdup(path);
-	if(!copy) { return false; }
+void FullWrite(int fd, const char* buffer, size_t size) {
+	size_t written = 0;
 
-	for(char* p = copy + 1; *p; p++) {
-		if(*p != '/') { continue; }
+	while(written < size) {
+		ssize_t n = write(fd, buffer + written, size - written);
 
-		*p = '\0';
-		if(mkdir(copy, 0755) != 0 && errno != EEXIST) {
-			free(copy);
-			return false;
+		if(n > 0) {
+			written += (size_t)n;
 		}
-		*p = '/';
+		else if(n == -1) {
+			if(errno == EINTR) {
+				continue;
+			}
+			break;
+		}
+		else {
+			break;
+		}
 	}
-
-	bool ok = mkdir(copy, 0755) == 0 || errno == EEXIST;
-	free(copy);
-	return ok;
 }

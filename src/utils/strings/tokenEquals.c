@@ -33,58 +33,13 @@
 *    source or binary distribution.
 */
 
-#include "../linclude/stb_image.h"
+#include "./strings.h"
 
-#include <dirent.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-char* GetRandomFileFromDir(const char* dirPath) {
-	DIR* dir = opendir(dirPath);
-	if(!dir) { return NULL; }
+int TokenEquals(Token token, const char* str) {
+	size_t len = strlen(str);
 
-	struct dirent* entry;
-	char** files = NULL;
-	size_t count = 0;
-
-	while((entry = readdir(dir))) {
-		if(entry->d_name[0] == '.') { continue; }
-
-		char** tmp = realloc(files, (count + 1) * sizeof(*files));
-		if(!tmp) { break; }
-
-		files = tmp;
-		char* name = strdup(entry->d_name);
-		if(!name) {
-			break;
-		}
-		files[count++] = name;
-	}
-
-	closedir(dir);
-
-	if(count == 0) {
-		free(files);
-		return NULL;
-	}
-
-	size_t index = (size_t)rand() % count;
-
-	size_t length = strlen(dirPath) + 1 + strlen(files[index]) + 1;
-	char* result = malloc(length);
-
-	if(result) {
-		int written = snprintf(result, length, "%s/%s", dirPath, files[index]);
-		if(written < 0 || (size_t)written >= length) {
-			free(result);
-			result = NULL;
-		}
-	}
-
-	for(size_t i = 0; i < count; i++) { free(files[i]); }
-
-	free(files);
-
-	return result;
+	return token.data && token.length == len && strncmp(token.data, str, len) == 0;
 }

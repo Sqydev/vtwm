@@ -44,6 +44,7 @@
 #include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -53,9 +54,9 @@ int RunCtl(int argc, char** argv) {
 		return 1;
 	}
 
-	char runtime[PATH_MAX];
+	char* runtime;
 
-	if(!GetRuntimeDir(runtime, sizeof(runtime))) {
+	if(!(runtime = GetXdgRuntimePath())) {
 		fprintf(stderr, "Cannot determine runtime directory: %s\n", strerror(errno));
 		return 1;
 	}

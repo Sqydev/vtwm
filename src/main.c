@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
 		wlr_log(WLR_ERROR, "Failed to initialize IPC, continuing without it");
 	}
 
-	InitSignals();
+	InitCloseSignals();
 
 	StartCompositor();
 

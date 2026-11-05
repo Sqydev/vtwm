@@ -54,9 +54,8 @@ bool GetIpcServerPath(char* path, size_t size) {
 		return false;
 	}
 
-	char runtime[PATH_MAX];
-
-	if(!GetRuntimeDir(runtime, sizeof(runtime))) {
+	char* runtime;
+	if(!(runtime = GetXdgRuntimePath())) {
 		return false;
 	}
 

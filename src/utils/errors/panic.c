@@ -33,11 +33,13 @@
 *    source or binary distribution.
 */
 
-#include "./utils.h"
+#include "./errors.h"
 
-#include "../defines.h"
+#include "../utils.h"
 
-#include "../linclude/stb_image.h"
+#include "../../defines.h"
+
+#include "../../linclude/stb_image.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -63,7 +65,7 @@ void InitPanicScreen(void) {
 		return;
 	}
 
-	char* path = GetRandomFileFromDir(dir);
+	char* path = GetRandomFile(dir);
 	free(dir);
 
 	if(!path) {

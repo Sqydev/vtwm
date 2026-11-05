@@ -33,19 +33,72 @@
 *    source or binary distribution.
 */
 
-#include "./utils.h"
+#include "./system.h"
 
+#include "../utils.h"
+
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-char* ExpandPath(const char* path) {
-	if(!path) { return NULL; }
-
-	if(path[0] == '~' && (path[1] == '/' || path[1] == '\0')) {
-		const char* home = getenv("HOME");
-		if(!home) { return NULL; }
-		return JoinStrings(home, path + 1);
+void Spawn(char** arguments) {
+	if(!arguments || !arguments[0]) {
+		return;
 	}
 
-	return strdup(path);
+	pid_t pid = fork();
+
+	if(pid == 0) {
+		execvp(arguments[0], arguments);
+		_exit(1);
+	}
+}
+
+void SpawnCommand(const char* command) {
+	if(!command) {
+		return;
+	}
+
+	char** arguments = SplitString(command);
+	if(!arguments) {
+		return;
+	}
+
+	Spawn(arguments);
+	FreeStringArray(arguments);
+}
+
+void SpawnCommandRange(const char* start, size_t length) {
+	if(!start) {
+		return;
+	}
+
+	while(length > 0 && isspace((unsigned char)start[0])) {
+		start++;
+		length--;
+	}
+
+	while(length > 0 && isspace((unsigned char)start[length - 1])) {
+		length--;
+	}
+
+	if(length == 0) {
+		return;
+	}
+
+	char* command = strndup(start, length);
+	if(!command) {
+		Panic(EXIT_FAILURE, "Failed to allocate spawn command\n");
+	}
+
+	if(length >= 2 &&
+		((command[0] == '"' && command[length - 1] == '"') ||
+		(command[0] == '\'' && command[length - 1] == '\''))) {
+		memmove(command, command + 1, length - 2);
+		command[length - 2] = '\0';
+	}
+
+	SpawnCommand(command);
+	free(command);
 }

@@ -33,11 +33,25 @@
 *    source or binary distribution.
 */
 
-#include "./utils.h"
+#include "./strings.h"
 
-#include <sys/stat.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-bool PathExists(const char* path) {
-	struct stat st;
-	return path && stat(path, &st) == 0;
+char* JoinStrings(const char* a, const char* b) {
+	if(!a || !b) { return NULL; }
+
+	size_t len = strlen(a) + strlen(b) + 1;
+	char* result = malloc(len);
+
+	if(!result) { return NULL; }
+
+	int written = snprintf(result, len, "%s%s", a, b);
+	if(written < 0 || (size_t)written >= len) {
+		free(result);
+		return NULL;
+	}
+	return result;
 }

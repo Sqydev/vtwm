@@ -33,75 +33,21 @@
 *    source or binary distribution.
 */
 
-#include <ctype.h>
-#include <stddef.h>
+#include "./paths.h"
+
+#include "../utils.h"
+
 #include <stdlib.h>
 #include <string.h>
 
-char** SplitString(const char* string) {
-	size_t count = 0;
-	size_t capacity = 4;
+char* ExpandPath(const char* path) {
+	if(!path) { return NULL; }
 
-	char** args = malloc(capacity * sizeof(char*));
-
-	if(!args) {
-		return NULL;
+	if(path[0] == '~' && (path[1] == '/' || path[1] == '\0')) {
+		const char* home = getenv("HOME");
+		if(!home) { return NULL; }
+		return JoinStrings(home, path + 1);
 	}
 
-	const char* ptr = string;
-
-	while(*ptr) {
-		while(isspace((unsigned char)*ptr)) {
-			ptr++;
-		}
-
-		if(!*ptr) {
-			break;
-		}
-
-		const char* start = ptr;
-
-		while(*ptr && !isspace((unsigned char)*ptr)) {
-			ptr++;
-		}
-
-		size_t length = (size_t)(ptr - start);
-
-		if(count + 1 >= capacity) {
-			capacity *= 2;
-
-			char** tmp = realloc(args, capacity * sizeof(char*));
-
-			if(!tmp) {
-				goto error;
-			}
-
-			args = tmp;
-		}
-
-		args[count] = strndup(start, length);
-
-		if(!args[count]) {
-			goto error;
-		}
-
-		count++;
-	}
-
-	if(count == 0) {
-		free(args);
-		return NULL;
-	}
-
-	args[count] = NULL;
-
-	return args;
-
-error:
-	for(size_t i = 0; i < count; i++) {
-		free(args[i]);
-	}
-
-	free(args);
-	return NULL;
+	return strdup(path);
 }
