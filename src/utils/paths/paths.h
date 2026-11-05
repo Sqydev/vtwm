@@ -37,11 +37,13 @@
 #define VTWM_UTILS_PATHS_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 char* ExpandPath(const char* path);
 
 char* GetHomePath(void);
 char* GetXdgRuntimePath(void);
+char* GetSelfPath(size_t* size);
 
 bool PathExists(const char* path);
 
