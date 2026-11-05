@@ -37,6 +37,7 @@
 #define VTWM_CONFIG_PARSER_H
 
 #include "../config.h"
+
 #include "../../utils/utils.h"
 
 #include <stdbool.h>
@@ -59,27 +60,19 @@ void ParserSkipSemicolon(ConfigParser* parser, size_t entryLine);
 
 void ConfigWarning(size_t line, const char* message);
 
-char* DuplicateString(const char* value);
-char* TokenDuplicate(Token token);
-char* CopyTrimmed(const char* start, const char* end);
-
 void SkipBlockBody(ConfigParser* parser, size_t entryLine);
 void SkipBlock(ConfigParser* parser, size_t entryLine);
 void SkipUnknownEntry(ConfigParser* parser, size_t entryLine);
 
 bool ParserBeginValue(ConfigParser* parser, size_t entryLine);
 
-bool ParseIntegerToken(Token token, int* destination);
-bool ParseColorToken(Token token, uint32_t* destination);
-
 void ParseStringValue(ConfigParser* parser, char** destination, size_t entryLine);
 void ParseIntegerValue(ConfigParser* parser, int* destination, size_t entryLine);
 void ParseBooleanValue(ConfigParser* parser, bool* destination, size_t entryLine);
 void ParseColorValue(ConfigParser* parser, uint32_t* destination, size_t entryLine);
 
-bool TokenEqualsIgnoreCase(Token token, const char* text);
-bool ParseLayerName(Token token, uint32_t* layers);
-uint32_t ParseLayerScope(ConfigParser* parser);
-uint32_t ParseModifierName(const char* name);
+bool ParseLayerName(Token token, ConfigLayers* layers);
+ConfigLayers ParseLayerScope(ConfigParser* parser);
+bool ParseModifierName(const char* name, ConfigModifier* modifier);
 
 #endif

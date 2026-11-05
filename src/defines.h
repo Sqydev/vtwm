@@ -43,6 +43,9 @@
 	// Default as to not default path but path to default config
 	#define VTWM_DEFAULT_CONFIG_PATH VTWM_ASSETS_DIR "config/config.vtwm"
 #endif
+#ifndef VTWM_CONFIG_FILENAME
+	#define VTWM_CONFIG_FILENAME "config.vtwm"
+#endif
 
 #ifndef IPC_SOCKET_PREFIX
 	#define IPC_SOCKET_PREFIX "vtwm-"

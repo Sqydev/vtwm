@@ -55,7 +55,7 @@ void ProcessCursorMotion(VtwmSeat* seat, uint32_t time) {
 	// Nothing under the cursor, so nobody has the focus now
 	if(!scene_surface) {
 		if(INPUT.cursor_manager) {
-			wlr_cursor_set_xcursor(INPUT.cursor, INPUT.cursor_manager, "default");
+			wlr_cursor_set_xcursor(INPUT.cursor, INPUT.cursor_manager, CURSOR_DEFAULT_ICON);
 		}
 		wlr_seat_pointer_notify_clear_focus(seat->wlr_seat);
 		return;

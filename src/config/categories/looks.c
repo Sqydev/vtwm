@@ -33,7 +33,7 @@
 *    source or binary distribution.
 */
 
-#include "./sections.h"
+#include "./categories.h"
 
 #include "../../coredata.h"
 
@@ -112,7 +112,7 @@ static void ParseBorderBlock(ConfigParser* parser, ConfigBorder* border) {
 	ConfigWarning(parser->line, "Unexpected end of file inside Border");
 }
 
-void ParseLooksBlock(ConfigParser* parser, uint32_t layers) {
+void ParseLooksBlock(ConfigParser* parser, ConfigLayers layers) {
 	ConfigLooks looks = {
 		.defined = true,
 		.margin = {0},
@@ -120,7 +120,7 @@ void ParseLooksBlock(ConfigParser* parser, uint32_t layers) {
 	};
 
 	for(size_t i = 0; i < CONFIG_LAYER_COUNT; i++) {
-		if(layers & (1u << i)) {
+		if(layers.enabled[i]) {
 			looks = CONFIG.looks[i];
 			break;
 		}
@@ -155,7 +155,7 @@ void ParseLooksBlock(ConfigParser* parser, uint32_t layers) {
 	}
 
 	for(size_t i = 0; i < CONFIG_LAYER_COUNT; i++) {
-		if(layers & (1u << i)) {
+		if(layers.enabled[i]) {
 			CONFIG.looks[i] = looks;
 		}
 	}

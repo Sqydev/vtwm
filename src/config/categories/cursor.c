@@ -33,90 +33,34 @@
 *    source or binary distribution.
 */
 
-#include "./sections.h"
+#include "./categories.h"
 
 #include "../../coredata.h"
 
-#include <stdlib.h>
-
-void ClearStartUp(void) {
-	for(size_t i = 0; i < CONFIG.startup.commandCount; i++) {
-		free(CONFIG.startup.commands[i]);
-	}
-
-	free(CONFIG.startup.commands);
-	CONFIG.startup.commands = NULL;
-	CONFIG.startup.commandCount = 0;
-}
-
-static void StartUpAdd(char* command) {
-	char** commands = realloc(
-		CONFIG.startup.commands,
-		(CONFIG.startup.commandCount + 1) * sizeof(char*)
-	);
-
-	if(!commands) {
-		free(command);
-		Panic(EXIT_FAILURE, "Failed to allocate startup command\n");
-	}
-
-	CONFIG.startup.commands = commands;
-	CONFIG.startup.commands[CONFIG.startup.commandCount] = command;
-	CONFIG.startup.commandCount++;
-}
-
-static void ParseStartUpEntry(ConfigParser* parser, Token name, size_t entryLine) {
-	if(!TokenEquals(name, "spawn")) {
-		ConfigWarning(entryLine, "Unknown StartUp entry, ignoring");
-		SkipUnknownEntry(parser, entryLine);
-		return;
-	}
-
-	if(!ParserExpect(parser, "(")) {
-		SkipUnknownEntry(parser, entryLine);
-		return;
-	}
-
-	if(!parser->token.data ||
-		TokenEquals(parser->token, ")") ||
-		TokenEquals(parser->token, "}") ||
-		TokenEquals(parser->token, ";")) {
-		ConfigWarning(entryLine, "Missing spawn command");
-		ParserAccept(parser, ")");
-		ParserAccept(parser, ";");
-		return;
-	}
-
-	char* command = TokenDuplicate(parser->token);
-	ParserAdvance(parser);
-
-	if(!ParserAccept(parser, ")")) {
-		ConfigWarning(entryLine, "spawn expects exactly one argument");
-		while(parser->token.data &&
-			!TokenEquals(parser->token, ")") &&
-			!TokenEquals(parser->token, ";") &&
-			!TokenEquals(parser->token, "}")) {
-			ParserAdvance(parser);
-		}
-
-		ParserAccept(parser, ")");
-	}
-
-	ParserSkipSemicolon(parser, entryLine);
-	StartUpAdd(command);
-}
-
-void ParseStartUpBlock(ConfigParser* parser) {
+void ParseCursorBlock(ConfigParser* parser) {
 	while(parser->token.data) {
 		if(ParserAccept(parser, "}")) { return; }
 		if(ParserAccept(parser, ";")) { continue; }
 
-		Token name = parser->token;
-		size_t entryLine = name.line;
+		Token key = parser->token;
+		size_t entryLine = key.line;
 		ParserAdvance(parser);
 
-		ParseStartUpEntry(parser, name, entryLine);
+		if(TokenEquals(key, "theme")) {
+			if(ParserBeginValue(parser, entryLine)) {
+				ParseStringValue(parser, &CONFIG.cursor.theme, entryLine);
+			}
+		}
+		else if(TokenEquals(key, "hardware")) {
+			if(ParserBeginValue(parser, entryLine)) {
+				ParseBooleanValue(parser, &CONFIG.cursor.hardware, entryLine);
+			}
+		}
+		else {
+			ConfigWarning(entryLine, "Unknown Cursor field, ignoring");
+			SkipUnknownEntry(parser, entryLine);
+		}
 	}
 
-	ConfigWarning(parser->line, "Unexpected end of file inside StartUp");
+	ConfigWarning(parser->line, "Unexpected end of file inside Cursor");
 }

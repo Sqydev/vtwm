@@ -110,8 +110,11 @@ void InitCompositor(void) {
 	// Seat0 is the primary seat and the compositor makes it on startup, so the counter starts on 1
 	INPUT.seat_counter = 1;
 	INPUT.cursor = NULL;
+
+	wl_list_init(&COMP.outputs);
+
 	// One xcursor manager for all the seats, they only share the images
-	INPUT.cursor_manager = IFNULLPANIC(wlr_xcursor_manager_create(NULL, 24), 1, "Failed to create xcursor manager\n");
+	UpdateCursorConfig();
 
 	// The shared cursor has to exist before the seats, they use it for pointer and touch
 	InitCursor();
@@ -128,7 +131,6 @@ void InitCompositor(void) {
 
 	// Configure a listener to be notified when new outputs are available on the
 	// backend.
-	wl_list_init(&COMP.outputs);
 	EVENTS.Output.new_output.notify = NewOutput;
 	wl_signal_add(&COMP.backend->events.new_output, &EVENTS.Output.new_output);
 

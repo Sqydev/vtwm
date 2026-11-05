@@ -33,7 +33,9 @@
 *    source or binary distribution.
 */
 
-#include "./sections.h"
+#include "./categories.h"
+
+#include "../values/values.h"
 
 #include "../../coredata.h"
 
@@ -42,15 +44,7 @@
 #include <string.h>
 
 void ClearKeybinds(void) {
-	for(size_t i = 0; i < CONFIG.keybindCount; i++) {
-		free(CONFIG.keybinds[i].binding);
-		free(CONFIG.keybinds[i].key);
-		free(CONFIG.keybinds[i].action);
-	}
-
-	free(CONFIG.keybinds);
-	CONFIG.keybinds = NULL;
-	CONFIG.keybindCount = 0;
+	ConfigClearKeybinds(&CONFIG.keybinds, &CONFIG.keybindCount);
 }
 
 static void KeybindAdd(ConfigKeybind keybind) {
@@ -92,10 +86,10 @@ static void ParseKeybindBinding(char* binding, ConfigKeybind* keybind, size_t en
 				Panic(EXIT_FAILURE, "Failed to allocate keybind part\n");
 			}
 
-			uint32_t modifier = ParseModifierName(part);
+			ConfigModifier modifier;
 
-			if(modifier) {
-				keybind->modifiers |= modifier;
+			if(ParseModifierName(part, &modifier)) {
+				keybind->modifiers.enabled[modifier] = true;
 				free(part);
 			}
 			else if(!keybind->key) {
@@ -185,8 +179,8 @@ static void ParseKeybindEntry(ConfigParser* parser) {
 
 	ConfigKeybind keybind = {
 		.binding = CopyTrimmed(bindingStart, bindingEnd),
-		.layers = CONFIG_LAYER_ALL,
-		.modifiers = 0,
+		.layers = ConfigLayersAll(),
+		.modifiers = { .enabled = {0} },
 		.key = NULL,
 		.action = CopyTrimmed(actionStart, actionEnd)
 	};

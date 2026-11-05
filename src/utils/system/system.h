@@ -42,6 +42,9 @@
 bool MakeDirP(const char* path);
 bool MakeDir(const char* path);
 
+bool MmapFile(const char* path, const char** data, size_t* size);
+void UnmapFile(const char* data, size_t size);
+
 bool CopyFile(const char* src, const char* dst);
 
 void FullWrite(int fd, const char* buffer, size_t size);

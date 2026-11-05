@@ -34,6 +34,7 @@
 */
 
 #include "../input.h"
+#include "../../../coredata.h"
 
 #include <xkbcommon/xkbcommon.h>
 
@@ -50,11 +51,14 @@ void SetKeymap(struct wlr_keyboard* keyboard) {
 		return;
 	}
 
-	struct xkb_keymap* keymap = xkb_keymap_new_from_names(context, NULL, XKB_KEYMAP_COMPILE_NO_FLAGS);
+	struct xkb_rule_names names = {
+		.layout = CONFIG.input.layout
+	};
+
+	struct xkb_keymap* keymap = xkb_keymap_new_from_names(context, &names, XKB_KEYMAP_COMPILE_NO_FLAGS);
 	if(keymap) {
 		wlr_keyboard_set_keymap(keyboard, keymap);
-		// 25 keys per second and 600ms delay, like in sway
-		wlr_keyboard_set_repeat_info(keyboard, 25, 600);
+		wlr_keyboard_set_repeat_info(keyboard, CONFIG.input.repeatRate, CONFIG.input.repeatDelay);
 		xkb_keymap_unref(keymap);
 	}
 

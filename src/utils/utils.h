@@ -38,6 +38,7 @@
 
 #include "./close/close.h"
 #include "./errors/errors.h"
+#include "./parse/parse.h"
 #include "./paths/paths.h"
 #include "./strings/strings.h"
 #include "./system/system.h"

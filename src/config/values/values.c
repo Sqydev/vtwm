@@ -33,7 +33,7 @@
 *    source or binary distribution.
 */
 
-#include "./defaults.h"
+#include "./values.h"
 
 #include "../../coredata.h"
 #include "../../utils/utils.h"
@@ -42,13 +42,35 @@
 #include <string.h>
 
 #define DEFAULT_TERMINAL_COMMAND "alacritty"
-#define DEFAULT_CURSOR_ICON "default"
+#define DEFAULT_CURSOR_THEME "default"
 #define DEFAULT_INPUT_LAYOUT "en"
 #define DEFAULT_INPUT_REPEAT_RATE 25
 #define DEFAULT_INPUT_REPEAT_DELAY 600
 #define DEFAULT_BORDER_FOCUSED_COLOR 0xFFFFFFu
 #define DEFAULT_BORDER_UNFOCUSED_COLOR 0x000000u
 #define DEFAULT_BORDER_RADIUS 4
+
+void ConfigClearStartUp(ConfigStartUp* startup) {
+	for(size_t i = 0; i < startup->commandCount; i++) {
+		free(startup->commands[i]);
+	}
+
+	free(startup->commands);
+	startup->commands = NULL;
+	startup->commandCount = 0;
+}
+
+void ConfigClearKeybinds(ConfigKeybind** keybinds, size_t* keybindCount) {
+	for(size_t i = 0; i < *keybindCount; i++) {
+		free((*keybinds)[i].binding);
+		free((*keybinds)[i].key);
+		free((*keybinds)[i].action);
+	}
+
+	free(*keybinds);
+	*keybinds = NULL;
+	*keybindCount = 0;
+}
 
 void ConfigClearValues(Config* config) {
 	if(!config) {
@@ -63,8 +85,8 @@ void ConfigClearValues(Config* config) {
 
 	memset(config->looks, 0, sizeof(config->looks));
 
-	free(config->cursor.icon);
-	config->cursor.icon = NULL;
+	free(config->cursor.theme);
+	config->cursor.theme = NULL;
 	config->cursor.hardware = false;
 
 	free(config->input.layout);
@@ -72,23 +94,8 @@ void ConfigClearValues(Config* config) {
 	config->input.repeatRate = 0;
 	config->input.repeatDelay = 0;
 
-	for(size_t i = 0; i < config->startup.commandCount; i++) {
-		free(config->startup.commands[i]);
-	}
-
-	free(config->startup.commands);
-	config->startup.commands = NULL;
-	config->startup.commandCount = 0;
-
-	for(size_t i = 0; i < config->keybindCount; i++) {
-		free(config->keybinds[i].binding);
-		free(config->keybinds[i].key);
-		free(config->keybinds[i].action);
-	}
-
-	free(config->keybinds);
-	config->keybinds = NULL;
-	config->keybindCount = 0;
+	ConfigClearStartUp(&config->startup);
+	ConfigClearKeybinds(&config->keybinds, &config->keybindCount);
 }
 
 void ConfigDestroy(Config* config) {
@@ -109,24 +116,12 @@ void ClearConfigValues(void) {
 void SetConfigDefaults(void) {
 	ClearConfigValues();
 
-	CONFIG.terminalCommand = IFNULLPANIC(
-		strdup(DEFAULT_TERMINAL_COMMAND),
-		EXIT_FAILURE,
-		"Failed to allocate default config string\n"
-	);
+	CONFIG.terminalCommand = IFNULLPANIC(strdup(DEFAULT_TERMINAL_COMMAND), EXIT_FAILURE, "Failed to allocate default config string\n");
 
-	CONFIG.cursor.icon = IFNULLPANIC(
-		strdup(DEFAULT_CURSOR_ICON),
-		EXIT_FAILURE,
-		"Failed to allocate default config string\n"
-	);
+	CONFIG.cursor.theme = IFNULLPANIC(strdup(DEFAULT_CURSOR_THEME), EXIT_FAILURE, "Failed to allocate default config string\n");
 	CONFIG.cursor.hardware = false;
 
-	CONFIG.input.layout = IFNULLPANIC(
-		strdup(DEFAULT_INPUT_LAYOUT),
-		EXIT_FAILURE,
-		"Failed to allocate default config string\n"
-	);
+	CONFIG.input.layout = IFNULLPANIC(strdup(DEFAULT_INPUT_LAYOUT), EXIT_FAILURE, "Failed to allocate default config string\n");
 	CONFIG.input.repeatRate = DEFAULT_INPUT_REPEAT_RATE;
 	CONFIG.input.repeatDelay = DEFAULT_INPUT_REPEAT_DELAY;
 
@@ -145,6 +140,6 @@ void SetConfigDefaults(void) {
 		}
 	};
 
-	CONFIG.looks[CONFIG_LAYER_NORMAL] = looks;
-	CONFIG.looks[CONFIG_LAYER_SUPER] = looks;
+	CONFIG.looks[LAYER_NORMAL] = looks;
+	CONFIG.looks[LAYER_SUPER] = looks;
 }

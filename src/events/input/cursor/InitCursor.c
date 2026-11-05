@@ -41,15 +41,15 @@
 
 #include <wlr/types/wlr_cursor.h>
 
-// The cursor is shared by every seat, so its listeners live in EVENTS.Input
-// instead of a single seat. The callbacks pick the active seat when they run.
+// The cursor is shared by every seat, so its listeners live in EVENTS.Input instead of a single seat.
+// The callbacks pick the active seat when they run.
 void InitCursor(void) {
 	INPUT.cursor = IFNULLPANIC(wlr_cursor_create(), 1, "Failed to create cursor\n");
 	wlr_cursor_attach_output_layout(INPUT.cursor, COMP.output_layout);
 
 	// All seats share one xcursor manager
 	if(INPUT.cursor_manager) {
-		wlr_cursor_set_xcursor(INPUT.cursor, INPUT.cursor_manager, "default");
+		wlr_cursor_set_xcursor(INPUT.cursor, INPUT.cursor_manager, CURSOR_DEFAULT_ICON);
 	}
 
 	EVENTS.Input.cursor_motion.notify = PointerMotion;

@@ -48,12 +48,15 @@ typedef struct VtwmOutput {
 	struct wlr_output* wlr_output;
 	struct wlr_scene_output* scene_output;
 
+	bool softwareCursorLocked;
+
 	struct wl_listener frame;
 	struct wl_listener request_state;
 	struct wl_listener destroy;
 } VtwmOutput;
 
 void NewOutput(struct wl_listener* listener, void* data);
+void ConfigureOutputCursor(VtwmOutput* output);
 void OutputFrame(struct wl_listener* listener, void* data);
 void RequestState(struct wl_listener* listener, void* data);
 void DestroyOutput(struct wl_listener* listener, void* data);

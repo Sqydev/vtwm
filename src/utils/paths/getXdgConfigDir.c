@@ -33,14 +33,32 @@
 *    source or binary distribution.
 */
 
-#ifndef VTWM_CONFIG_DEFAULTS_H
-#define VTWM_CONFIG_DEFAULTS_H
+#include "./paths.h"
 
-#include "../config.h"
+#include "../utils.h"
 
-void ClearConfigValues(void);
-void ConfigClearValues(Config* config);
-void ConfigDestroy(Config* config);
-void SetConfigDefaults(void);
+#include <stdlib.h>
 
-#endif
+char* GetXdgConfigDir(void) {
+	const char* xdg = getenv("XDG_CONFIG_HOME");
+	if(xdg && xdg[0] == '/') {
+		char* prefix = JoinStrings(xdg, "/");
+		if(!prefix) { return NULL; }
+
+		char* path = JoinStrings(prefix, "vtwm");
+		free(prefix);
+
+		return path;
+	}
+
+	const char* home = getenv("HOME");
+	if(!home) { return NULL; }
+
+	char* prefix = JoinStrings(home, "/.config/");
+	if(!prefix) { return NULL; }
+
+	char* path = JoinStrings(prefix, "vtwm");
+	free(prefix);
+
+	return path;
+}

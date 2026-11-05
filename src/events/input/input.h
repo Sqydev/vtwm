@@ -36,6 +36,9 @@
 #ifndef VTWM_EVENTS_INPUT_INPUT_H
 #define VTWM_EVENTS_INPUT_INPUT_H
 
+#define CURSOR_SIZE 24
+#define CURSOR_DEFAULT_ICON "default"
+
 #include <stdint.h>
 
 #include <wayland-server-core.h>
@@ -113,6 +116,7 @@ bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers);
 void KeyboardModifiers(struct wl_listener* listener, void* data);
 void DestroyKeyboard(struct wl_listener* listener, void* data);
 void SetKeymap(struct wlr_keyboard* keyboard);
+void UpdateKeyboardConfig(void);
 
 void PointerMotion(struct wl_listener* listener, void* data);
 void PointerMotionAbsolute(struct wl_listener* listener, void* data);
@@ -151,6 +155,7 @@ struct VtwmView* SeatViewAt(VtwmSeat* seat, double x, double y, struct wlr_scene
 
 void InitCursor(void);
 void DestroyCursor(void);
+void UpdateCursorConfig(void);
 
 VtwmSeat* CreateSeat(const char* name);
 VtwmSeat* AutoCreateSeat(void);

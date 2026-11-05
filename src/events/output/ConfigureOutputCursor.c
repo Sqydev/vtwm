@@ -33,34 +33,26 @@
 *    source or binary distribution.
 */
 
-#include "./sections.h"
+#include "./output.h"
 
 #include "../../coredata.h"
 
-void ParseCursorBlock(ConfigParser* parser) {
-	while(parser->token.data) {
-		if(ParserAccept(parser, "}")) { return; }
-		if(ParserAccept(parser, ";")) { continue; }
+#include <wlr/util/log.h>
 
-		Token key = parser->token;
-		size_t entryLine = key.line;
-		ParserAdvance(parser);
-
-		if(TokenEquals(key, "icon")) {
-			if(ParserBeginValue(parser, entryLine)) {
-				ParseStringValue(parser, &CONFIG.cursor.icon, entryLine);
-			}
-		}
-		else if(TokenEquals(key, "hardware")) {
-			if(ParserBeginValue(parser, entryLine)) {
-				ParseBooleanValue(parser, &CONFIG.cursor.hardware, entryLine);
-			}
-		}
-		else {
-			ConfigWarning(entryLine, "Unknown Cursor field, ignoring");
-			SkipUnknownEntry(parser, entryLine);
-		}
+void ConfigureOutputCursor(VtwmOutput* output) {
+	if(!output || !output->wlr_output) {
+		return;
 	}
 
-	ConfigWarning(parser->line, "Unexpected end of file inside Cursor");
+	if(INPUT.cursor_manager &&
+		!wlr_xcursor_manager_load(INPUT.cursor_manager, output->wlr_output->scale)) {
+		wlr_log(WLR_ERROR, "Failed to load cursor theme for output scale %.2f", output->wlr_output->scale);
+	}
+
+	bool lockSoftwareCursor = !CONFIG.cursor.hardware;
+
+	if(output->softwareCursorLocked != lockSoftwareCursor) {
+		wlr_output_lock_software_cursors(output->wlr_output, lockSoftwareCursor);
+		output->softwareCursorLocked = lockSoftwareCursor;
+	}
 }

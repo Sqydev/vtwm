@@ -113,4 +113,6 @@ void NewOutput(struct wl_listener* listener, void* data) {
 		return;
 	}
 	wlr_scene_output_layout_add_output(COMP.scene_output_layout, layout_output, output->scene_output);
+
+	ConfigureOutputCursor(output);
 }

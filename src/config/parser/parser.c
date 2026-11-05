@@ -35,12 +35,8 @@
 
 #include "./parser.h"
 
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <strings.h>
 
 void ConfigParserInit(ConfigParser* parser, const char* data, size_t size) {
@@ -87,46 +83,6 @@ void ConfigWarning(size_t line, const char* message) {
 	fprintf(stderr, "Config warning at line %zu: %s\n", line, message);
 }
 
-char* DuplicateString(const char* value) {
-	char* copy = strdup(value);
-	if(!copy) {
-		Panic(EXIT_FAILURE, "Failed to allocate config string\n");
-	}
-
-	return copy;
-}
-
-char* TokenDuplicate(Token token) {
-	char* copy = strndup(token.data, token.length);
-	if(!copy) {
-		Panic(EXIT_FAILURE, "Failed to allocate config token\n");
-	}
-
-	return copy;
-}
-
-char* CopyTrimmed(const char* start, const char* end) {
-	while(start < end && isspace((unsigned char)*start)) {
-		start++;
-	}
-
-	while(end > start && isspace((unsigned char)end[-1])) {
-		end--;
-	}
-
-	size_t length = (size_t)(end - start);
-
-	char* copy = malloc(length + 1);
-	if(!copy) {
-		Panic(EXIT_FAILURE, "Failed to allocate config string\n");
-	}
-
-	memcpy(copy, start, length);
-	copy[length] = '\0';
-
-	return copy;
-}
-
 void SkipBlockBody(ConfigParser* parser, size_t entryLine) {
 	int depth = 1;
 
@@ -159,9 +115,7 @@ void SkipBlock(ConfigParser* parser, size_t entryLine) {
 
 void SkipUnknownEntry(ConfigParser* parser, size_t entryLine) {
 	if(ParserAccept(parser, "=")) {
-		if(parser->token.data &&
-			!TokenEquals(parser->token, "}") &&
-			!TokenEquals(parser->token, ";")) {
+		if(parser->token.data && !TokenEquals(parser->token, "}") && !TokenEquals(parser->token, ";")) {
 			ParserAdvance(parser);
 		}
 
@@ -176,9 +130,7 @@ void SkipUnknownEntry(ConfigParser* parser, size_t entryLine) {
 	}
 
 	if(TokenEquals(parser->token, "->")) {
-		while(parser->token.data &&
-			!TokenEquals(parser->token, "{") &&
-			!TokenEquals(parser->token, ";")) {
+		while(parser->token.data && !TokenEquals(parser->token, "{") && !TokenEquals(parser->token, ";")) {
 			ParserAdvance(parser);
 		}
 
@@ -190,9 +142,7 @@ void SkipUnknownEntry(ConfigParser* parser, size_t entryLine) {
 		return;
 	}
 
-	while(parser->token.data &&
-		!TokenEquals(parser->token, ";") &&
-		!TokenEquals(parser->token, "}")) {
+	while(parser->token.data && !TokenEquals(parser->token, ";") && !TokenEquals(parser->token, "}")) {
 		ParserAdvance(parser);
 	}
 
@@ -206,73 +156,6 @@ bool ParserBeginValue(ConfigParser* parser, size_t entryLine) {
 	SkipUnknownEntry(parser, entryLine);
 
 	return false;
-}
-
-bool ParseIntegerToken(Token token, int* destination) {
-	char* string = TokenDuplicate(token);
-
-	char* end = NULL;
-
-	errno = 0;
-	long number = strtol(string, &end, 10);
-
-	bool valid = (errno == 0 && end != string && *end == '\0' &&
-		number >= INT_MIN && number <= INT_MAX);
-
-	free(string);
-
-	if(!valid) { return false; }
-
-	*destination = (int)number;
-
-	return true;
-}
-
-static int HexValue(char c) {
-	if(c >= '0' && c <= '9') { return c - '0'; }
-	if(c >= 'a' && c <= 'f') { return c - 'a' + 10; }
-	if(c >= 'A' && c <= 'F') { return c - 'A' + 10; }
-
-	return -1;
-}
-
-bool ParseColorToken(Token token, uint32_t* destination) {
-	if(!token.data || token.length < 2 || token.data[0] != '#') {
-		return false;
-	}
-
-	size_t digits = token.length - 1;
-	uint32_t value = 0;
-
-	if(digits == 3) {
-		for(size_t i = 0; i < 3; i++) {
-			int digit = HexValue(token.data[i + 1]);
-			if(digit < 0) { return false; }
-
-			value = (value << 4) | (uint32_t)digit;
-		}
-
-		uint32_t red = (value >> 8) & 0xF;
-		uint32_t green = (value >> 4) & 0xF;
-		uint32_t blue = value & 0xF;
-
-		value = ((red * 0x11u) << 16) | ((green * 0x11u) << 8) | (blue * 0x11u);
-	}
-	else if(digits == 6) {
-		for(size_t i = 0; i < 6; i++) {
-			int digit = HexValue(token.data[i + 1]);
-			if(digit < 0) { return false; }
-
-			value = (value << 4) | (uint32_t)digit;
-		}
-	}
-	else {
-		return false;
-	}
-
-	*destination = value;
-
-	return true;
 }
 
 void ParseStringValue(ConfigParser* parser, char** destination, size_t entryLine) {
@@ -363,37 +246,30 @@ void ParseColorValue(ConfigParser* parser, uint32_t* destination, size_t entryLi
 	ParserSkipSemicolon(parser, entryLine);
 }
 
-bool TokenEqualsIgnoreCase(Token token, const char* text) {
-	size_t length = strlen(text);
-
-	return token.data && token.length == length &&
-		strncasecmp(token.data, text, length) == 0;
-}
-
-bool ParseLayerName(Token token, uint32_t* layers) {
+bool ParseLayerName(Token token, ConfigLayers* layers) {
 	if(TokenEqualsIgnoreCase(token, "TTY")) {
-		*layers |= 1u << CONFIG_LAYER_TTY;
+		layers->enabled[LAYER_TTY] = true;
 		return true;
 	}
 
 	if(TokenEqualsIgnoreCase(token, "NORMAL")) {
-		*layers |= 1u << CONFIG_LAYER_NORMAL;
+		layers->enabled[LAYER_NORMAL] = true;
 		return true;
 	}
 
 	if(TokenEqualsIgnoreCase(token, "SUPER")) {
-		*layers |= 1u << CONFIG_LAYER_SUPER;
+		layers->enabled[LAYER_SUPER] = true;
 		return true;
 	}
 
 	return false;
 }
 
-uint32_t ParseLayerScope(ConfigParser* parser) {
-	uint32_t layers = 0;
+ConfigLayers ParseLayerScope(ConfigParser* parser) {
+	ConfigLayers layers = {0};
 
 	if(!ParserExpect(parser, "(")) {
-		return CONFIG_LAYER_ALL;
+		return ConfigLayersAll();
 	}
 
 	while(parser->token.data) {
@@ -407,29 +283,33 @@ uint32_t ParseLayerScope(ConfigParser* parser) {
 		ParserAdvance(parser);
 	}
 
-	return layers ? layers : CONFIG_LAYER_ALL;
+	return ConfigLayersAny(&layers) ? layers : ConfigLayersAll();
 }
 
-uint32_t ParseModifierName(const char* name) {
+bool ParseModifierName(const char* name, ConfigModifier* modifier) {
 	if(strcasecmp(name, "SUPER") == 0 ||
 		strcasecmp(name, "WIN") == 0 ||
 		strcasecmp(name, "LOGO") == 0 ||
 		strcasecmp(name, "MOD4") == 0) {
-		return CONFIG_MODIFIER_SUPER;
+		*modifier = CONFIG_MODIFIER_SUPER;
+		return true;
 	}
 
 	if(strcasecmp(name, "CTRL") == 0 ||
 		strcasecmp(name, "CONTROL") == 0) {
-		return CONFIG_MODIFIER_CTRL;
+		*modifier = CONFIG_MODIFIER_CTRL;
+		return true;
 	}
 
 	if(strcasecmp(name, "ALT") == 0 || strcasecmp(name, "MOD1") == 0) {
-		return CONFIG_MODIFIER_ALT;
+		*modifier = CONFIG_MODIFIER_ALT;
+		return true;
 	}
 
 	if(strcasecmp(name, "SHIFT") == 0) {
-		return CONFIG_MODIFIER_SHIFT;
+		*modifier = CONFIG_MODIFIER_SHIFT;
+		return true;
 	}
 
-	return 0;
+	return false;
 }

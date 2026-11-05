@@ -36,25 +36,29 @@
 #ifndef VTWM_CONFIG_H
 #define VTWM_CONFIG_H
 
+#include "../wm/wm.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#define CONFIG_LAYER_COUNT 3
-#define CONFIG_LAYER_ALL ((1u << CONFIG_LAYER_COUNT) - 1u)
-
-typedef enum ConfigLayer {
-	CONFIG_LAYER_TTY = 0,
-	CONFIG_LAYER_NORMAL = 1,
-	CONFIG_LAYER_SUPER = 2
-} ConfigLayer;
+#define CONFIG_LAYER_COUNT (LAYER_SUPER + 1)
 
 typedef enum ConfigModifier {
-	CONFIG_MODIFIER_SUPER = 1u << 0,
-	CONFIG_MODIFIER_CTRL = 1u << 1,
-	CONFIG_MODIFIER_ALT = 1u << 2,
-	CONFIG_MODIFIER_SHIFT = 1u << 3
+	CONFIG_MODIFIER_SUPER = 0,
+	CONFIG_MODIFIER_CTRL,
+	CONFIG_MODIFIER_ALT,
+	CONFIG_MODIFIER_SHIFT,
+	CONFIG_MODIFIER_COUNT
 } ConfigModifier;
+
+typedef struct ConfigLayers {
+	bool enabled[CONFIG_LAYER_COUNT];
+} ConfigLayers;
+
+typedef struct ConfigModifiers {
+	bool enabled[CONFIG_MODIFIER_COUNT];
+} ConfigModifiers;
 
 typedef struct ConfigMargin {
 	int top;
@@ -77,7 +81,7 @@ typedef struct ConfigLooks {
 } ConfigLooks;
 
 typedef struct ConfigCursor {
-	char* icon;
+	char* theme;
 	bool hardware;
 } ConfigCursor;
 
@@ -94,8 +98,8 @@ typedef struct ConfigStartUp {
 
 typedef struct ConfigKeybind {
 	char* binding;
-	uint32_t layers;
-	uint32_t modifiers;
+	ConfigLayers layers;
+	ConfigModifiers modifiers;
 
 	char* key;
 	char* action;
@@ -116,6 +120,10 @@ typedef struct Config {
 	ConfigKeybind* keybinds;
 	size_t keybindCount;
 } Config;
+
+ConfigLayers ConfigLayersAll(void);
+bool ConfigLayersAny(const ConfigLayers* layers);
+bool ConfigModifiersEqual(const ConfigModifiers* a, const ConfigModifiers* b);
 
 bool LoadConfig(void);
 bool ReloadConfig(void);

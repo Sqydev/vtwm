@@ -33,7 +33,7 @@
 *    source or binary distribution.
 */
 
-#include "./sections.h"
+#include "./categories.h"
 
 #include "../../coredata.h"
 #include "../../utils/utils.h"

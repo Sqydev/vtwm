@@ -17,7 +17,7 @@ Looks -> (NORMAL || SUPER) {
 };
 
 Cursor {
-	icon = default; // icon = any; or icon = "name";
+	theme = default; // default = system theme; or theme = "someTheme";
 	hardware = false;
 };
 

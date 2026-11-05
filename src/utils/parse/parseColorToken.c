@@ -33,39 +33,54 @@
 *    source or binary distribution.
 */
 
-#include "./sections.h"
+#include "./parse.h"
 
-#include "../../coredata.h"
+#include <stddef.h>
+#include <stdint.h>
 
-void ParseInputBlock(ConfigParser* parser) {
-	while(parser->token.data) {
-		if(ParserAccept(parser, "}")) { return; }
-		if(ParserAccept(parser, ";")) { continue; }
+static int HexValue(char c) {
+	if(c >= '0' && c <= '9') { return c - '0'; }
+	if(c >= 'a' && c <= 'f') { return c - 'a' + 10; }
+	if(c >= 'A' && c <= 'F') { return c - 'A' + 10; }
 
-		Token key = parser->token;
-		size_t entryLine = key.line;
-		ParserAdvance(parser);
+	return -1;
+}
 
-		if(TokenEquals(key, "layout")) {
-			if(ParserBeginValue(parser, entryLine)) {
-				ParseStringValue(parser, &CONFIG.input.layout, entryLine);
-			}
-		}
-		else if(TokenEquals(key, "repeatRate")) {
-			if(ParserBeginValue(parser, entryLine)) {
-				ParseIntegerValue(parser, &CONFIG.input.repeatRate, entryLine);
-			}
-		}
-		else if(TokenEquals(key, "repeatDelay")) {
-			if(ParserBeginValue(parser, entryLine)) {
-				ParseIntegerValue(parser, &CONFIG.input.repeatDelay, entryLine);
-			}
-		}
-		else {
-			ConfigWarning(entryLine, "Unknown Input field, ignoring");
-			SkipUnknownEntry(parser, entryLine);
-		}
+bool ParseColorToken(Token token, uint32_t* destination) {
+	if(!token.data || token.length < 2 || token.data[0] != '#') {
+		return false;
 	}
 
-	ConfigWarning(parser->line, "Unexpected end of file inside Input");
+	size_t digits = token.length - 1;
+	uint32_t value = 0;
+
+	if(digits == 3) {
+		for(size_t i = 0; i < 3; i++) {
+			int digit = HexValue(token.data[i + 1]);
+			if(digit < 0) { return false; }
+
+			value = (value << 4) | (uint32_t)digit;
+		}
+
+		uint32_t red = (value >> 8) & 0xF;
+		uint32_t green = (value >> 4) & 0xF;
+		uint32_t blue = value & 0xF;
+
+		value = ((red * 0x11u) << 16) | ((green * 0x11u) << 8) | (blue * 0x11u);
+	}
+	else if(digits == 6) {
+		for(size_t i = 0; i < 6; i++) {
+			int digit = HexValue(token.data[i + 1]);
+			if(digit < 0) { return false; }
+
+			value = (value << 4) | (uint32_t)digit;
+		}
+	}
+	else {
+		return false;
+	}
+
+	*destination = value;
+
+	return true;
 }

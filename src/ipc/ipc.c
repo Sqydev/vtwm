@@ -71,7 +71,15 @@ const char* HandleIpcCommand(const char* command) {
 
 	if(length == 6 && strncmp(command, "reload", length) == 0) {
 		wlr_log(WLR_DEBUG, "Got config reload command");
-		return ReloadConfig() ? "ok" : "error";
+
+		if(!ReloadConfig()) {
+			return "error";
+		}
+
+		UpdateCursorConfig();
+		UpdateKeyboardConfig();
+
+		return "ok";
 	}
 
 	return "unknown";

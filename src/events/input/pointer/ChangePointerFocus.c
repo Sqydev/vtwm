@@ -45,6 +45,6 @@ void ChangePointerFocus(struct wl_listener* listener, void* data) {
 	struct wlr_seat_pointer_focus_change_event* event = data;
 
 	if(!event->new_surface && INPUT.cursor && INPUT.cursor_manager) {
-		wlr_cursor_set_xcursor(INPUT.cursor, INPUT.cursor_manager, "default");
+		wlr_cursor_set_xcursor(INPUT.cursor, INPUT.cursor_manager, CURSOR_DEFAULT_ICON);
 	}
 }

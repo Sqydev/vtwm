@@ -41,6 +41,7 @@
 
 char* ExpandPath(const char* path);
 
+char* GetXdgConfigDir(void);
 char* GetHomePath(void);
 char* GetXdgRuntimePath(void);
 char* GetSelfPath(size_t* size);

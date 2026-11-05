@@ -36,6 +36,7 @@
 #ifndef VTWM_UTILS_STRINGS_H
 #define VTWM_UTILS_STRINGS_H
 
+#include <stdbool.h>
 #include <stddef.h>
 
 typedef struct {
@@ -44,11 +45,16 @@ typedef struct {
 	size_t line;
 } Token;
 
+char* DuplicateString(const char* value);
+char* TokenDuplicate(Token token);
+char* CopyTrimmed(const char* start, const char* end);
+
 char* JoinStrings(const char* a, const char* b);
 char** SplitString(const char* string);
 void FreeStringArray(char** array);
 
 Token NextToken(const char* data, size_t size, size_t* idx, size_t* line);
 int TokenEquals(Token token, const char* str);
+bool TokenEqualsIgnoreCase(Token token, const char* text);
 
 #endif

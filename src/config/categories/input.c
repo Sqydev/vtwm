@@ -33,22 +33,39 @@
 *    source or binary distribution.
 */
 
-#ifndef VTWM_CONFIG_SECTIONS_H
-#define VTWM_CONFIG_SECTIONS_H
+#include "./categories.h"
 
-#include "../parser/parser.h"
+#include "../../coredata.h"
 
-#include <stdint.h>
+void ParseInputBlock(ConfigParser* parser) {
+	while(parser->token.data) {
+		if(ParserAccept(parser, "}")) { return; }
+		if(ParserAccept(parser, ";")) { continue; }
 
-void ParseTerminalBlock(ConfigParser* parser);
-void TerminalCommandSet(void);
+		Token key = parser->token;
+		size_t entryLine = key.line;
+		ParserAdvance(parser);
 
-void ParseLooksBlock(ConfigParser* parser, uint32_t layers);
-void ParseCursorBlock(ConfigParser* parser);
-void ParseInputBlock(ConfigParser* parser);
-void ClearStartUp(void);
-void ParseStartUpBlock(ConfigParser* parser);
-void ClearKeybinds(void);
-void ParseKeybindsBlock(ConfigParser* parser);
+		if(TokenEquals(key, "layout")) {
+			if(ParserBeginValue(parser, entryLine)) {
+				ParseStringValue(parser, &CONFIG.input.layout, entryLine);
+			}
+		}
+		else if(TokenEquals(key, "repeatRate")) {
+			if(ParserBeginValue(parser, entryLine)) {
+				ParseIntegerValue(parser, &CONFIG.input.repeatRate, entryLine);
+			}
+		}
+		else if(TokenEquals(key, "repeatDelay")) {
+			if(ParserBeginValue(parser, entryLine)) {
+				ParseIntegerValue(parser, &CONFIG.input.repeatDelay, entryLine);
+			}
+		}
+		else {
+			ConfigWarning(entryLine, "Unknown Input field, ignoring");
+			SkipUnknownEntry(parser, entryLine);
+		}
+	}
 
-#endif
+	ConfigWarning(parser->line, "Unexpected end of file inside Input");
+}

@@ -47,28 +47,28 @@
 #include <wlr/util/log.h>
 
 bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers) {
-	uint32_t configModifiers = 0;
+	ConfigModifiers configModifiers = {0};
 
 	if(modifiers & WLR_MODIFIER_SHIFT) {
-		configModifiers |= CONFIG_MODIFIER_SHIFT;
+		configModifiers.enabled[CONFIG_MODIFIER_SHIFT] = true;
 	}
 
 	if(modifiers & WLR_MODIFIER_CTRL) {
-		configModifiers |= CONFIG_MODIFIER_CTRL;
+		configModifiers.enabled[CONFIG_MODIFIER_CTRL] = true;
 	}
 
 	if(modifiers & WLR_MODIFIER_ALT) {
-		configModifiers |= CONFIG_MODIFIER_ALT;
+		configModifiers.enabled[CONFIG_MODIFIER_ALT] = true;
 	}
 
 	if(modifiers & WLR_MODIFIER_LOGO) {
-		configModifiers |= CONFIG_MODIFIER_SUPER;
+		configModifiers.enabled[CONFIG_MODIFIER_SUPER] = true;
 	}
 
 	for(size_t i = 0; i < CONFIG.keybindCount; i++) {
 		ConfigKeybind* keybind = &CONFIG.keybinds[i];
 
-		if(keybind->modifiers != configModifiers) {
+		if(!ConfigModifiersEqual(&keybind->modifiers, &configModifiers)) {
 			continue;
 		}
 

@@ -35,75 +35,60 @@
 
 #include "./config.h"
 
-#include "./defaults/defaults.h"
+#include "./categories/categories.h"
 #include "./parser/parser.h"
-#include "./sections/sections.h"
+#include "./values/values.h"
 
 #include "../coredata.h"
 #include "../defines.h"
-#include "../utils/utils.h"
 
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
 
-#define CONFIG_FILE_NAME "config.vtwm"
+ConfigLayers ConfigLayersAll(void) {
+	ConfigLayers layers = {0};
 
-static char* GetUserConfigDir(void) {
-	const char* xdg = getenv("XDG_CONFIG_HOME");
-	if(xdg && xdg[0] == '/') {
-		return JoinStrings(xdg, "/vtwm");
+	for(size_t i = 0; i < CONFIG_LAYER_COUNT; i++) {
+		layers.enabled[i] = true;
 	}
 
-	const char* home = getenv("HOME");
-	if(!home) { return NULL; }
+	return layers;
+}
 
-	return JoinStrings(home, "/.config/vtwm");
+bool ConfigLayersAny(const ConfigLayers* layers) {
+	for(size_t i = 0; i < CONFIG_LAYER_COUNT; i++) {
+		if(layers->enabled[i]) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool ConfigModifiersEqual(const ConfigModifiers* a, const ConfigModifiers* b) {
+	for(size_t i = 0; i < CONFIG_MODIFIER_COUNT; i++) {
+		if(a->enabled[i] != b->enabled[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 static bool LoadConfigFile(void) {
-	FILE* configFile = fopen(CONFIG.configPath, "r");
-	if(!configFile) {
-		fprintf(
-			stderr,
-			"Config warning: failed to open %s: %s\n",
-			CONFIG.configPath,
-			strerror(errno)
-		);
+	const char* configStr = NULL;
+	size_t size = 0;
+
+	if(!MmapFile(CONFIG.configPath, &configStr, &size)) {
+		fprintf(stderr, "Config warning: failed to read %s: %s\n", CONFIG.configPath, strerror(errno));
 		return false;
 	}
 
-	int fd = fileno(configFile);
+	ParseConfig(configStr, size);
 
-	struct stat st;
-	if(fstat(fd, &st) != 0 || st.st_size <= 0) {
-		fprintf(stderr, "Config warning: config file is empty or unreadable: %s\n", CONFIG.configPath);
-		fclose(configFile);
-		return false;
-	}
-
-	char* configStr = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-
-	if(configStr == MAP_FAILED) {
-		fprintf(
-			stderr,
-			"Config warning: failed to map %s: %s\n",
-			CONFIG.configPath,
-			strerror(errno)
-		);
-		fclose(configFile);
-		return false;
-	}
-
-	ParseConfig(configStr, (size_t)st.st_size);
-
-	munmap(configStr, (size_t)st.st_size);
-	fclose(configFile);
+	UnmapFile(configStr, size);
 
 	return true;
 }
@@ -149,11 +134,9 @@ bool LoadConfig(void) {
 	const char* envPath = getenv("VTWM_CONFIG_PATH");
 	if(envPath && *envPath && TryConfigPath(envPath, true)) { return true; }
 
-	char* userDir = GetUserConfigDir();
-	char* userPath = userDir ? JoinStrings(userDir, "/" CONFIG_FILE_NAME) : NULL;
-	bool userConfigExists = userPath && PathExists(userPath);
-
-	if(userConfigExists) {
+	char* userDir = GetXdgConfigDir();
+	char* userPath = userDir ? JoinStrings(userDir, "/" VTWM_CONFIG_FILENAME) : NULL;
+	if(userPath && PathExists(userPath)) {
 		bool loaded = TryConfigPath(userPath, false);
 
 		free(userDir);
@@ -168,18 +151,12 @@ bool LoadConfig(void) {
 
 	const char* defaultPath = VTWM_DEFAULT_CONFIG_PATH;
 	bool loaded = false;
-
 	if(PathExists(defaultPath)) {
 		if(userDir && userPath && MakeDirP(userDir) && CopyFile(defaultPath, userPath)) {
 			loaded = TryConfigPath(userPath, false);
 		}
 		else if(userDir && userPath) {
-			fprintf(
-				stderr,
-				"Config warning: cannot create %s, loading %s\n",
-				userPath,
-				defaultPath
-			);
+			fprintf(stderr, "Config warning: cannot create %s, loading %s\n", userPath, defaultPath);
 		}
 
 		if(!loaded) {
@@ -233,7 +210,7 @@ bool ReloadConfig(void) {
 	return false;
 }
 
-static void ParseCategoryBody(ConfigParser* parser, Token name, uint32_t layers) {
+static void ParseCategoryBody(ConfigParser* parser, Token name, ConfigLayers layers) {
 	if(TokenEquals(name, "Terminal")) {
 		ParseTerminalBlock(parser);
 	}
@@ -280,7 +257,7 @@ void ParseConfig(const char* data, size_t size) {
 		size_t entryLine = name.line;
 		ParserAdvance(&parser);
 
-		uint32_t layers = CONFIG_LAYER_ALL;
+		ConfigLayers layers = ConfigLayersAll();
 
 		if(ParserAccept(&parser, "->")) {
 			layers = ParseLayerScope(&parser);
