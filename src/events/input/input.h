@@ -36,7 +36,6 @@
 #ifndef VTWM_EVENTS_INPUT_INPUT_H
 #define VTWM_EVENTS_INPUT_INPUT_H
 
-#define CURSOR_SIZE 24
 #define CURSOR_DEFAULT_ICON "default"
 
 #include <stdint.h>

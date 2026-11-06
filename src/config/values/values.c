@@ -42,10 +42,15 @@
 #include <string.h>
 
 #define DEFAULT_TERMINAL_COMMAND "alacritty"
+
 #define DEFAULT_CURSOR_THEME "default"
+#define DEFAULT_CURSOR_HARDWARE false
+#define DEFAULT_CURSOR_SCALE 24
+
 #define DEFAULT_INPUT_LAYOUT "en"
 #define DEFAULT_INPUT_REPEAT_RATE 25
 #define DEFAULT_INPUT_REPEAT_DELAY 600
+
 #define DEFAULT_BORDER_FOCUSED_COLOR 0xFFFFFFu
 #define DEFAULT_BORDER_UNFOCUSED_COLOR 0x000000u
 #define DEFAULT_BORDER_RADIUS 4
@@ -88,6 +93,7 @@ void ConfigClearValues(Config* config) {
 	free(config->cursor.theme);
 	config->cursor.theme = NULL;
 	config->cursor.hardware = false;
+	config->cursor.scale = 0;
 
 	free(config->input.layout);
 	config->input.layout = NULL;
@@ -119,7 +125,8 @@ void SetConfigDefaults(void) {
 	CONFIG.terminalCommand = IFNULLPANIC(strdup(DEFAULT_TERMINAL_COMMAND), EXIT_FAILURE, "Failed to allocate default config string\n");
 
 	CONFIG.cursor.theme = IFNULLPANIC(strdup(DEFAULT_CURSOR_THEME), EXIT_FAILURE, "Failed to allocate default config string\n");
-	CONFIG.cursor.hardware = false;
+	CONFIG.cursor.hardware = DEFAULT_CURSOR_HARDWARE;
+	CONFIG.cursor.scale = DEFAULT_CURSOR_SCALE;
 
 	CONFIG.input.layout = IFNULLPANIC(strdup(DEFAULT_INPUT_LAYOUT), EXIT_FAILURE, "Failed to allocate default config string\n");
 	CONFIG.input.repeatRate = DEFAULT_INPUT_REPEAT_RATE;

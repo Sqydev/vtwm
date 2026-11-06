@@ -83,6 +83,7 @@ typedef struct ConfigLooks {
 typedef struct ConfigCursor {
 	char* theme;
 	bool hardware;
+	int scale;
 } ConfigCursor;
 
 typedef struct ConfigInput {

@@ -18,6 +18,7 @@ Looks -> (NORMAL || SUPER) {
 
 Cursor {
 	theme = default; // default = system theme; or theme = "someTheme";
+	scale = 24;
 	hardware = false;
 };
 

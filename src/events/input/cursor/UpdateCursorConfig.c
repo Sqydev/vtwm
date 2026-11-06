@@ -57,6 +57,10 @@ static const char* CursorThemeName(void) {
 }
 
 void UpdateCursorConfig(void) {
+	if(INPUT.cursor) {
+		wlr_cursor_unset_image(INPUT.cursor);
+	}
+
 	if(INPUT.cursor_manager) {
 		wlr_xcursor_manager_destroy(INPUT.cursor_manager);
 		INPUT.cursor_manager = NULL;
@@ -64,13 +68,13 @@ void UpdateCursorConfig(void) {
 
 	const char* theme = CursorThemeName();
 
-	INPUT.cursor_manager = IFNULLPANIC(wlr_xcursor_manager_create(theme, CURSOR_SIZE), 1, "Failed to create xcursor manager\n");
+	INPUT.cursor_manager = IFNULLPANIC(wlr_xcursor_manager_create(theme, CONFIG.cursor.scale), 1, "Failed to create xcursor manager\n");
 
 	if(!wlr_xcursor_manager_load(INPUT.cursor_manager, 1)) {
 		wlr_log(WLR_ERROR, "Failed to load cursor theme '%s', falling back to system default", theme ? theme : "(system default)");
 
 		wlr_xcursor_manager_destroy(INPUT.cursor_manager);
-		INPUT.cursor_manager = IFNULLPANIC(wlr_xcursor_manager_create(NULL, CURSOR_SIZE), 1, "Failed to create xcursor manager\n");
+		INPUT.cursor_manager = IFNULLPANIC(wlr_xcursor_manager_create(NULL, CONFIG.cursor.scale), 1, "Failed to create xcursor manager\n");
 		wlr_xcursor_manager_load(INPUT.cursor_manager, 1);
 	}
 
