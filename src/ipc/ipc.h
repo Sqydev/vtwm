@@ -57,6 +57,13 @@ typedef struct Ipc {
 	IpcClient* clients;
 } Ipc;
 
+struct IpcClient {
+	int fd;
+	Ipc* ipc;
+	struct wl_event_source* source;
+	IpcClient* next;
+};
+
 bool InitIPC(struct wl_display* display);
 void FinishIPC(void);
 

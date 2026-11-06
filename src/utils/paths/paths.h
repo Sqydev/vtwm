@@ -44,6 +44,7 @@ char* ExpandPath(const char* path);
 char* GetXdgConfigDir(void);
 char* GetHomePath(void);
 char* GetXdgRuntimePath(void);
+// Null terminated!!!
 char* GetSelfPath(size_t* size);
 
 bool PathExists(const char* path);

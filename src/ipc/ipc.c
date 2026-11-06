@@ -35,6 +35,9 @@
 
 #include "./ipc.h"
 
+#include "../coredata.h"
+#include "./actions/actions.h"
+
 #include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -43,47 +46,6 @@
 #include <unistd.h>
 
 #include <wlr/util/log.h>
-
-#include "../config/config.h"
-#include "../coredata.h"
-
-struct IpcClient {
-	int fd;
-	Ipc* ipc;
-	struct wl_event_source* source;
-	IpcClient* next;
-};
-
-const char* HandleIpcCommand(const char* command) {
-	if(!command) {
-		return "unknown";
-	}
-
-	while(*command == ' ' || *command == '\t') {
-		command++;
-	}
-
-	size_t length = strlen(command);
-
-	while(length > 0 && (command[length - 1] == ' ' || command[length - 1] == '\t')) {
-		length--;
-	}
-
-	if(length == 6 && strncmp(command, "reload", length) == 0) {
-		wlr_log(WLR_DEBUG, "Got config reload command");
-
-		if(!ReloadConfig()) {
-			return "error";
-		}
-
-		UpdateCursorConfig();
-		UpdateKeyboardConfig();
-
-		return "ok";
-	}
-
-	return "unknown";
-}
 
 void DestroyIpcClient(Ipc* ipc, IpcClient* client) {
 	if(!ipc || !client) {
@@ -194,59 +156,55 @@ int IpcHandleAccept(int fd, uint32_t mask, void* data) {
 }
 
 bool InitIPC(struct wl_display* display) {
-	Ipc* ipc = &IPC;
-
-	memset(ipc, 0, sizeof(*ipc));
-	ipc->listenFd = -1;
-	ipc->display = display;
+	memset(&IPC, 0, sizeof(IPC));
+	IPC.listenFd = -1;
+	IPC.display = display;
 
 	if(!display) {
 		wlr_log(WLR_ERROR, "IPC: cannot initialize without a display");
 		return false;
 	}
 
-	if(!GetIpcServerPath(ipc->path, sizeof(ipc->path))) {
+	if(!GetIpcServerPath(IPC.path, sizeof(IPC.path))) {
 		wlr_log(WLR_ERROR, "IPC: cannot determine socket path: %s", strerror(errno));
 		return false;
 	}
 
-	int listenFd = CreateIpcListener(ipc->path);
+	int listenFd = CreateIpcListener(IPC.path);
 
 	if(listenFd < 0) {
-		wlr_log(WLR_ERROR, "IPC: cannot create %s: %s", ipc->path, strerror(errno));
-		ipc->path[0] = '\0';
+		wlr_log(WLR_ERROR, "IPC: cannot create %s: %s", IPC.path, strerror(errno));
+		IPC.path[0] = '\0';
 
 		return false;
 	}
 
-	ipc->listenFd = listenFd;
+	IPC.listenFd = listenFd;
 
 	struct wl_event_loop* loop = wl_display_get_event_loop(display);
 
-	ipc->source = wl_event_loop_add_fd(loop, listenFd, WL_EVENT_READABLE, IpcHandleAccept, ipc);
+	IPC.source = wl_event_loop_add_fd(loop, listenFd, WL_EVENT_READABLE, IpcHandleAccept, &IPC);
 
-	if(!ipc->source) {
+	if(!IPC.source) {
 		int error = errno;
 
 		close(listenFd);
-		unlink(ipc->path);
-		ipc->listenFd = -1;
-		ipc->path[0] = '\0';
+		unlink(IPC.path);
+		IPC.listenFd = -1;
+		IPC.path[0] = '\0';
 
 		wlr_log(WLR_ERROR, "IPC: cannot add listener: %s", strerror(error));
 
 		return false;
 	}
 
-	wlr_log(WLR_INFO, "IPC: listening on %s", ipc->path);
+	wlr_log(WLR_INFO, "IPC: listening on %s", IPC.path);
 
 	return true;
 }
 
 void FinishIPC(void) {
-	Ipc* ipc = &IPC;
-
-	IpcClient* client = ipc->clients;
+	IpcClient* client = IPC.clients;
 
 	while(client) {
 		IpcClient* next = client->next;
@@ -261,22 +219,22 @@ void FinishIPC(void) {
 		client = next;
 	}
 
-	ipc->clients = NULL;
+	IPC.clients = NULL;
 
-	if(ipc->source) {
-		wl_event_source_remove(ipc->source);
-		ipc->source = NULL;
+	if(IPC.source) {
+		wl_event_source_remove(IPC.source);
+		IPC.source = NULL;
 	}
 
-	if(ipc->listenFd >= 0) {
-		close(ipc->listenFd);
-		ipc->listenFd = -1;
+	if(IPC.listenFd >= 0) {
+		close(IPC.listenFd);
+		IPC.listenFd = -1;
 	}
 
-	if(ipc->path[0] != '\0') {
-		unlink(ipc->path);
-		ipc->path[0] = '\0';
+	if(IPC.path[0] != '\0') {
+		unlink(IPC.path);
+		IPC.path[0] = '\0';
 	}
 
-	ipc->display = NULL;
+	IPC.display = NULL;
 }

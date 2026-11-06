@@ -44,7 +44,7 @@ char* GetSelfPath(size_t* size) {
 	char link[PATH_MAX];
 	sprintf(link, "/proc/%d/exe", pid);
 
-	char* path = malloc(PATH_MAX * sizeof(char));
+	char* path = malloc((PATH_MAX + 1) * sizeof(char));
 
 	ssize_t n = readlink(link, path, PATH_MAX);
 	if(n == -1) {
