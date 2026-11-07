@@ -2,7 +2,7 @@ Terminal {
 	command = "alacritty";
 };
 
-Looks -> (NORMAL || SUPER) {
+Looks -> (TILEING || SUPER) {
 	Margin {
 		top = 0;
 		bottom = 0;

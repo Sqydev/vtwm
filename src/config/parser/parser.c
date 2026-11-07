@@ -252,8 +252,8 @@ bool ParseLayerName(Token token, ConfigLayers* layers) {
 		return true;
 	}
 
-	if(TokenEqualsIgnoreCase(token, "NORMAL")) {
-		layers->enabled[LAYER_NORMAL] = true;
+	if(TokenEqualsIgnoreCase(token, "TILEING")) {
+		layers->enabled[LAYER_TILEING] = true;
 		return true;
 	}
 

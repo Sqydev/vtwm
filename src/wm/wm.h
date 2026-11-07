@@ -42,7 +42,7 @@
 
 typedef enum LayerName {
 	LAYER_TTY = 0,
-	LAYER_NORMAL = 1,
+	LAYER_TILEING = 1,
 	LAYER_SUPER = 2
 } LayerName;
 
