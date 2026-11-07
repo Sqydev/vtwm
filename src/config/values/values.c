@@ -147,6 +147,6 @@ void SetConfigDefaults(void) {
 		}
 	};
 
-	CONFIG.looks[LAYER_TILEING] = looks;
+	CONFIG.looks[LAYER_TILING] = looks;
 	CONFIG.looks[LAYER_SUPER] = looks;
 }

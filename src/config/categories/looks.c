@@ -119,7 +119,7 @@ void ParseLooksBlock(ConfigParser* parser, ConfigLayers layers) {
 		.border = {0}
 	};
 
-	for(size_t i = 0; i < CONFIG_LAYER_COUNT; i++) {
+	for(size_t i = 0; i < LAYER_COUNT; i++) {
 		if(layers.enabled[i]) {
 			looks = CONFIG.looks[i];
 			break;
@@ -154,7 +154,7 @@ void ParseLooksBlock(ConfigParser* parser, ConfigLayers layers) {
 		ConfigWarning(parser->line, "Unexpected end of file inside Looks");
 	}
 
-	for(size_t i = 0; i < CONFIG_LAYER_COUNT; i++) {
+	for(size_t i = 0; i < LAYER_COUNT; i++) {
 		if(layers.enabled[i]) {
 			CONFIG.looks[i] = looks;
 		}

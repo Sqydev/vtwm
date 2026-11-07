@@ -45,7 +45,15 @@
 typedef struct XdgEvents {
 	struct wl_listener new_toplevel;
 	struct wl_listener new_popup;
+	struct wl_listener new_toplevel_decoration;
 } XdgEvents;
+
+typedef struct VtwmToplevelDecoration {
+    struct wlr_xdg_toplevel_decoration_v1* decoration;
+    struct wl_listener commit;
+    struct wl_listener request_mode;
+    struct wl_listener destroy;
+} VtwmToplevelDecoration;
 
 typedef struct VtwmView {
 	int x;
@@ -78,5 +86,10 @@ void DestroyToplevel(struct wl_listener* listener, void* data);
 
 void RequestToplevelMaximize(struct wl_listener* listener, void* data);
 void RequestToplevelFullscreen(struct wl_listener* listener, void* data);
+
+void CommitDecoration(struct wl_listener* listener, void* data);
+void RequestMode(struct wl_listener* listener, void* data);
+void DestroyDecoration(struct wl_listener* listener, void* data);
+void NewToplevelDecoration(struct wl_listener* listener, void* data);
 
 #endif

@@ -41,6 +41,7 @@
 #include "./input/input.h"
 #include "./config/config.h"
 #include "./ipc/ipc.h"
+#include "./wm/wm.h"
 
 #define COMP DATA.Compositor
 #define EVENTS DATA.Events
@@ -61,6 +62,8 @@ typedef struct Coredata {
 	Config Config;
 
 	Ipc Ipc;
+
+	WindowManager wm;
 
 	struct wl_event_source* exitSignalSources[3];
 } Coredata;

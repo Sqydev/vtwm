@@ -52,6 +52,7 @@
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_xdg_shell.h>
+#include <wlr/types/wlr_xdg_decoration_v1.h>
 
 typedef struct Compositor {
 	const char* socket;
@@ -69,6 +70,7 @@ typedef struct Compositor {
 	struct wlr_scene* scene;
 	struct wlr_scene_output_layout* scene_output_layout;
 
+	struct wlr_xdg_decoration_manager_v1* xdg_decoration;
 	struct wlr_xdg_shell* xdg_shell;
 	struct wl_list views;
 

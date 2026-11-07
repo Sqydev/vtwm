@@ -42,8 +42,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CONFIG_LAYER_COUNT (LAYER_SUPER + 1)
-
 typedef enum ConfigModifier {
 	CONFIG_MODIFIER_SUPER = 0,
 	CONFIG_MODIFIER_CTRL,
@@ -53,7 +51,7 @@ typedef enum ConfigModifier {
 } ConfigModifier;
 
 typedef struct ConfigLayers {
-	bool enabled[CONFIG_LAYER_COUNT];
+	bool enabled[LAYER_COUNT];
 } ConfigLayers;
 
 typedef struct ConfigModifiers {
@@ -112,7 +110,7 @@ typedef struct Config {
 	char* terminalCommand;
 	char** terminalCommandSliced;
 
-	ConfigLooks looks[CONFIG_LAYER_COUNT];
+	ConfigLooks looks[LAYER_COUNT];
 
 	ConfigCursor cursor;
 	ConfigInput input;

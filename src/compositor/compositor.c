@@ -155,6 +155,11 @@ void InitCompositor(void) {
 	EVENTS.Xdg.new_popup.notify = NewPopup;
 	wl_signal_add(&COMP.xdg_shell->events.new_popup, &EVENTS.Xdg.new_popup);
 
+	// GET RID OF THOES BAD DECORATIONS. >:(
+	COMP.xdg_decoration = IFNULLPANIC(wlr_xdg_decoration_manager_v1_create(COMP.display), 1, "Failed to create xdg decoration manager\n");
+	EVENTS.Xdg.new_toplevel_decoration.notify = NewToplevelDecoration;
+	wl_signal_add(&COMP.xdg_decoration->events.new_toplevel_decoration, &EVENTS.Xdg.new_toplevel_decoration);
+
 	// Add a Unix socket to the Wayland display.
 	COMP.socket = IFNULLPANICCONST(wl_display_add_socket_auto(COMP.display), 1, "Failed to create socket\n");
 	
@@ -199,6 +204,7 @@ void FreeCompositor(void) {
 	wl_list_remove(&EVENTS.Output.new_output.link);
 	wl_list_remove(&EVENTS.Xdg.new_toplevel.link);
 	wl_list_remove(&EVENTS.Xdg.new_popup.link);
+	wl_list_remove(&EVENTS.Xdg.new_toplevel_decoration.link);
 
 	DestroyInput();
 

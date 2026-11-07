@@ -50,7 +50,7 @@
 ConfigLayers ConfigLayersAll(void) {
 	ConfigLayers layers = {0};
 
-	for(size_t i = 0; i < CONFIG_LAYER_COUNT; i++) {
+	for(size_t i = 0; i < LAYER_COUNT; i++) {
 		layers.enabled[i] = true;
 	}
 
@@ -58,7 +58,7 @@ ConfigLayers ConfigLayersAll(void) {
 }
 
 bool ConfigLayersAny(const ConfigLayers* layers) {
-	for(size_t i = 0; i < CONFIG_LAYER_COUNT; i++) {
+	for(size_t i = 0; i < LAYER_COUNT; i++) {
 		if(layers->enabled[i]) {
 			return true;
 		}

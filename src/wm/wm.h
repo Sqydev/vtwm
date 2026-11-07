@@ -42,13 +42,16 @@
 
 typedef enum LayerName {
 	LAYER_TTY = 0,
-	LAYER_TILEING = 1,
-	LAYER_SUPER = 2
+	LAYER_TILING = 1,
+	LAYER_SUPER = 2,
+
+	LAYER_COUNT = 3
 } LayerName;
 
 typedef struct Window {
 	size_t ID;
 	size_t index;
+
 	LayerName layer;
 	size_t workspaceIdx;
 	size_t wdirIdx;
@@ -68,22 +71,27 @@ typedef struct Workspace {
 	size_t windowsCount;
 } Workspace;
 
-typedef struct WorkspaceDir {
-	Workspace* workspaces[3];
+typedef struct WorkspaceLayer {
+	Workspace** workspaces;
 
 	size_t workspacesCount;
 	size_t currentWorkspaceIdx;
+} WorkspaceLayer;
+
+typedef struct WorkspaceDir {
+	WorkspaceLayer layers[LAYER_COUNT];
 } WorkspaceDir;
 
 typedef struct WindowManager {
 	LayerName currLayer;
 
-	WorkspaceDir* wdir;
-
-	size_t lastWindowID;
+	WorkspaceDir* wdirs;
 
 	size_t wdirsCount;
 	size_t currentWdirIdx;
+
+	size_t lastWindowID;
 } WindowManager;
 
 #endif
+
