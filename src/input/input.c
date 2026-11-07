@@ -151,10 +151,15 @@ static int DispatchInput(int fd, uint32_t mask, void* data) {
 		return 0;
 	}
 
+	// The custom context isn't managed by the session, so it isn't suspended on VT switch
+	bool active = !COMP.session || COMP.session_active;
+
 	// The events are waiting in the queue, we take them one by one.
 	struct libinput_event* event = NULL;
 	while((event = libinput_get_event(INPUT.Hardware.context))) {
-		HandleEvdevEvent(event);
+		if(active) {
+			HandleEvdevEvent(event);
+		}
 		libinput_event_destroy(event);
 	}
 	return 0;

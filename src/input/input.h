@@ -33,8 +33,8 @@
 *    source or binary distribution.
 */
 
-#ifndef VTWM_INPUT_INPUT_H
-#define VTWM_INPUT_INPUT_H
+#ifndef VTWM_INPUT_H
+#define VTWM_INPUT_H
 
 #include <stdbool.h>
 #include <stddef.h>

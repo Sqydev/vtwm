@@ -63,6 +63,9 @@ typedef struct Compositor {
 
 	bool nested;
 
+	bool session_active;
+	struct wlr_session* session;
+
 	struct wlr_scene* scene;
 	struct wlr_scene_output_layout* scene_output_layout;
 

@@ -44,6 +44,7 @@
 
 #include <stdlib.h>
 #include <wayland-server-core.h>
+#include <wlr/backend/session.h>
 #include <wlr/util/log.h>
 
 void InitCompositor(void) {
@@ -66,7 +67,15 @@ void InitCompositor(void) {
 	// output hardware. The autocreate option will choose the most suitable
 	// backend based on the current environment, such as opening an X11 window
 	// if an X11 server is running.
-	COMP.backend = IFNULLPANIC(wlr_backend_autocreate(wl_display_get_event_loop(COMP.display), NULL), 1, "Failed to create wlr_backend\n");
+	COMP.backend = IFNULLPANIC(wlr_backend_autocreate(wl_display_get_event_loop(COMP.display), &COMP.session), 1, "Failed to create wlr_backend\n");
+
+	// Nested backends (Wayland/X11) have no session and no VT to switch
+	COMP.session_active = COMP.session ? COMP.session->active : true;
+
+	if(COMP.session) {
+		EVENTS.Session.session_active_listener.notify = SessionActive;
+		wl_signal_add(&COMP.session->events.active, &EVENTS.Session.session_active_listener);
+	}
 
 	// Autocreates a renderer, either Pixman, GLES2 or Vulkan for us. The user
 	// can also specify a renderer using the WLR_RENDERER env var.
@@ -216,6 +225,10 @@ void FreeCompositor(void) {
 	if(COMP.allocator) { wlr_allocator_destroy(COMP.allocator); COMP.allocator = NULL; }
 	if(COMP.renderer) { wlr_renderer_destroy(COMP.renderer); COMP.renderer = NULL; }
 	if(COMP.backend) { wlr_backend_destroy(COMP.backend); COMP.backend = NULL; }
+	if(COMP.session) { wl_list_remove(&EVENTS.Session.session_active_listener.link); }
+
 	wl_display_destroy(COMP.display);
 	COMP.display = NULL;
+	COMP.session = NULL;
+
 }

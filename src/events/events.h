@@ -33,17 +33,19 @@
 *    source or binary distribution.
 */
 
-#ifndef VTWM_EVENTS_EVENTS_H
-#define VTWM_EVENTS_EVENTS_H
+#ifndef VTWM_EVENTS_H
+#define VTWM_EVENTS_H
 
 #include "./output/output.h"
 #include "./xdg/xdg.h"
 #include "./input/input.h"
+#include "./session/session.h"
 
 typedef struct Events {
 	OutputEvents Output;
 	XdgEvents Xdg;
 	InputEvents Input;
+	SessionEvents Session;
 } Events;
 
 #endif

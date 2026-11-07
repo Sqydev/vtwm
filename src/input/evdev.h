@@ -33,8 +33,8 @@
 *    source or binary distribution.
 */
 
-#ifndef VTWM_INPUT_EVDEV_H
-#define VTWM_INPUT_EVDEV_H
+#ifndef VTWM_EVDEV_H
+#define VTWM_EVDEV_H
 
 #include "./input.h"
 

@@ -56,9 +56,23 @@ void KeyboardKey(struct wl_listener* listener, void* data) {
 	}
 	uint32_t mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
 
+	// The VT is in the background: the custom libinput context isn't suspended by the session
+	if(COMP.session && !COMP.session_active) {
+		return;
+	}
+
 	// The seat that gets the keys is the active one from now on
 	if(event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		SeatMakeActive(seat);
+	}
+
+	// Ctrl+Alt+F1...F12 is the VT switch, CONSUME it before anything else
+	if(nsyms > 0) {
+		for(int i = 0; i < nsyms; i++) {
+			if(HandleVT(syms[i])) {
+				return;
+			}
+		}
 	}
 
 	// Only handle shortcuts on active seat

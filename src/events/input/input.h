@@ -33,8 +33,8 @@
 *    source or binary distribution.
 */
 
-#ifndef VTWM_EVENTS_INPUT_INPUT_H
-#define VTWM_EVENTS_INPUT_INPUT_H
+#ifndef VTWM_EVENTS_INPUT_H
+#define VTWM_EVENTS_INPUT_H
 
 #define CURSOR_DEFAULT_ICON "default"
 
@@ -116,6 +116,8 @@ void KeyboardModifiers(struct wl_listener* listener, void* data);
 void DestroyKeyboard(struct wl_listener* listener, void* data);
 void SetKeymap(struct wlr_keyboard* keyboard);
 void UpdateKeyboardConfig(void);
+int GetVTNumber(void);
+bool HandleVT(xkb_keysym_t sym);
 
 void PointerMotion(struct wl_listener* listener, void* data);
 void PointerMotionAbsolute(struct wl_listener* listener, void* data);
