@@ -1,7 +1,5 @@
-Add just install
-
-Make the socket be in $XDG_RUNTIME_DIR/vtwm and not $XDG_RUNTIME_DIR
-
 Unify function and file naming and reorganise
+
+Add just install
 
 Make config opptions be declared by struct and you give default value, type, ...

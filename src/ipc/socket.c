@@ -48,8 +48,8 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-bool GetIpcServerPath(char* path, size_t size) {
-	if(!path || size == 0) {
+bool GetIpcRuntimeDir(char* dir, size_t size) {
+	if(!dir || size == 0) {
 		errno = EINVAL;
 		return false;
 	}
@@ -59,11 +59,45 @@ bool GetIpcServerPath(char* path, size_t size) {
 		return false;
 	}
 
+	int written = snprintf(dir, size, "%s/%s", runtime, IPC_RUNTIME_SOCKET_DIR_NAME);
+
+	if(written <= 0 || (size_t)written >= size) {
+		errno = ENAMETOOLONG;
+		return false;
+	}
+
+	return true;
+}
+
+static bool EnsureIpcRuntimeDir(char* dir, size_t size) {
+	if(!GetIpcRuntimeDir(dir, size)) {
+		return false;
+	}
+
+	if(mkdir(dir, 0700) != 0 && errno != EEXIST) {
+		return false;
+	}
+
+	return true;
+}
+
+bool GetIpcServerPath(char* path, size_t size) {
+	if(!path || size == 0) {
+		errno = EINVAL;
+		return false;
+	}
+
+	char dir[PATH_MAX];
+
+	if(!EnsureIpcRuntimeDir(dir, sizeof(dir))) {
+		return false;
+	}
+
 	int written = snprintf(
 		path,
 		size,
 		"%s/%s%d%s",
-		runtime,
+		dir,
 		IPC_SOCKET_PREFIX,
 		(int)getpid(),
 		IPC_SOCKET_SUFFIX

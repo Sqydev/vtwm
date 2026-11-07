@@ -47,6 +47,9 @@
 	#define VTWM_CONFIG_FILENAME "config.vtwm"
 #endif
 
+#ifndef IPC_RUNTIME_SOCKET_DIR_NAME
+	#define IPC_RUNTIME_SOCKET_DIR_NAME "vtwm"
+#endif
 #ifndef IPC_SOCKET_PREFIX
 	#define IPC_SOCKET_PREFIX "vtwm-"
 #endif

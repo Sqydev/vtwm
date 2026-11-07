@@ -54,16 +54,21 @@ int RunCtl(int argc, char** argv) {
 		return 1;
 	}
 
-	char* runtime;
+	char ipcDir[PATH_MAX];
 
-	if(!(runtime = GetXdgRuntimePath())) {
-		fprintf(stderr, "Cannot determine runtime directory: %s\n", strerror(errno));
+	if(!GetIpcRuntimeDir(ipcDir, sizeof(ipcDir))) {
+		fprintf(stderr, "Cannot determine IPC directory: %s\n", strerror(errno));
 		return 1;
 	}
 
-	DIR* dir = opendir(runtime);
+	DIR* dir = opendir(ipcDir);
 	if(!dir) {
-		fprintf(stderr, "Cannot open runtime directory %s: %s\n", runtime, strerror(errno));
+		if(errno == ENOENT) {
+			fprintf(stderr, "No running vtwm instance found\n");
+			return 1;
+		}
+
+		fprintf(stderr, "Cannot open IPC directory %s: %s\n", ipcDir, strerror(errno));
 		return 1;
 	}
 
@@ -90,7 +95,7 @@ int RunCtl(int argc, char** argv) {
 		}
 
 		char path[PATH_MAX];
-		int written = snprintf(path, sizeof(path), "%s/%s", runtime, name);
+		int written = snprintf(path, sizeof(path), "%s/%s", ipcDir, name);
 
 		if(written <= 0 || (size_t)written >= sizeof(path)) {
 			continue;

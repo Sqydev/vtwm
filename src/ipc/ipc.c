@@ -231,9 +231,15 @@ void FinishIPC(void) {
 		IPC.listenFd = -1;
 	}
 
+	char ipcDir[PATH_MAX];
+
 	if(IPC.path[0] != '\0') {
-		unlink(IPC.path);
-		IPC.path[0] = '\0';
+    	unlink(IPC.path);
+    	IPC.path[0] = '\0';
+	}
+	if(GetIpcRuntimeDir(ipcDir, sizeof(ipcDir))) {
+		// If there are other sockets it will just fail
+		rmdir(ipcDir);
 	}
 
 	IPC.display = NULL;

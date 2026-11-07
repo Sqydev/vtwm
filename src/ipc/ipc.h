@@ -67,6 +67,7 @@ struct IpcClient {
 bool InitIPC(struct wl_display* display);
 void FinishIPC(void);
 
+bool GetIpcRuntimeDir(char* dir, size_t size);
 bool GetIpcServerPath(char* path, size_t size);
 bool MakeIpcAddress(const char* path, struct sockaddr_un* addr, socklen_t* length);
 
