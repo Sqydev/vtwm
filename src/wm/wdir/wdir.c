@@ -35,10 +35,10 @@
 
 #include "../wm.h"
 
-#include "./wDir.h"
+#include "./wdir.h"
 
 void InitWdir(WorkspaceDir* wdir) {
-
+	(void)wdir;
 }
 
 void CloseWdirs(void) {

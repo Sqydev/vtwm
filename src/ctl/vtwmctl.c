@@ -35,7 +35,7 @@
 
 #include "./vtwmctl.h"
 
-#include "../ipc/ipc.h"
+#include "../ipc/socket/socket.h"
 #include "../defines.h"
 #include "../utils/utils.h"
 
@@ -137,8 +137,8 @@ int RunCtl(int argc, char** argv) {
 
 		response[strcspn(response, "\r\n")] = '\0';
 
+		printf("%s: %s\n", name, response);
 		if(strcmp(response, "ok") == 0) {
-			printf("%s: ok\n", name);
 			handled++;
 		}
 		else {

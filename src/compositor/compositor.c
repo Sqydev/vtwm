@@ -207,7 +207,7 @@ void FreeCompositor(void) {
 
 	wl_display_destroy_clients(COMP.display);
 
-	CloseWM();
+	FinishWM();
 
 	VtwmOutput* output = NULL;
 	VtwmOutput* output_tmp = NULL;

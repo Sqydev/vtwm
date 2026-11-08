@@ -35,7 +35,7 @@
 
 #include "./wm.h"
 
-#include "./wDir/wDir.h"
+#include "./wdir/wdir.h"
 
 #include "../coredata.h"
 #include "../utils/errors/errors.h"
@@ -53,7 +53,7 @@ void InitWM(void) {
 	WM.wdirsCount = 1;
 }
 
-void CloseWM(void) {
+void FinishWM(void) {
 	CloseWdirs();
 
 	memset(&WM, 0, sizeof(WindowManager));

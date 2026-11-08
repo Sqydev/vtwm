@@ -94,6 +94,6 @@ typedef struct WindowManager {
 } WindowManager;
 
 void InitWM(void);
-void CloseWM(void);
+void FinishWM(void);
 
 #endif
