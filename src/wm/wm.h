@@ -93,5 +93,7 @@ typedef struct WindowManager {
 	size_t lastWindowID;
 } WindowManager;
 
-#endif
+void InitWM(void);
+void CloseWM(void);
 
+#endif

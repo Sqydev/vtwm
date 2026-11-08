@@ -122,6 +122,8 @@ void InitCompositor(void) {
 
 	wl_list_init(&COMP.outputs);
 
+	InitWM();
+
 	// One xcursor manager for all the seats, they only share the images
 	UpdateCursorConfig();
 
@@ -181,24 +183,6 @@ void StartCompositor(void) {
   	wl_display_run(COMP.display);
 }
 
-static void DestroyOutputs(void) {
-	VtwmOutput* output = NULL;
-	VtwmOutput* output_tmp = NULL;
-	wl_list_for_each_safe(output, output_tmp, &COMP.outputs, link) {
-		wl_list_remove(&output->frame.link);
-		wl_list_remove(&output->request_state.link);
-		wl_list_remove(&output->destroy.link);
-		wl_list_remove(&output->link);
-
-		if(output->scene_output) {
-			wlr_scene_output_destroy(output->scene_output);
-			output->scene_output = NULL;
-		}
-
-		free(output);
-	}
-}
-
 void FreeCompositor(void) {
 	wl_list_remove(&EVENTS.Input.new_input.link);
 	wl_list_remove(&EVENTS.Output.new_output.link);
@@ -223,7 +207,23 @@ void FreeCompositor(void) {
 
 	wl_display_destroy_clients(COMP.display);
 
-	DestroyOutputs();
+	CloseWM();
+
+	VtwmOutput* output = NULL;
+	VtwmOutput* output_tmp = NULL;
+	wl_list_for_each_safe(output, output_tmp, &COMP.outputs, link) {
+		wl_list_remove(&output->frame.link);
+		wl_list_remove(&output->request_state.link);
+		wl_list_remove(&output->destroy.link);
+		wl_list_remove(&output->link);
+
+		if(output->scene_output) {
+			wlr_scene_output_destroy(output->scene_output);
+			output->scene_output = NULL;
+		}
+
+		free(output);
+	}
 
 	if(COMP.output_layout) { wlr_output_layout_destroy(COMP.output_layout); COMP.output_layout = NULL; }
 	if(COMP.scene_output_layout) { COMP.scene_output_layout = NULL; }
@@ -236,5 +236,4 @@ void FreeCompositor(void) {
 	wl_display_destroy(COMP.display);
 	COMP.display = NULL;
 	COMP.session = NULL;
-
 }

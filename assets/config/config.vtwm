@@ -13,6 +13,7 @@ Looks -> (TILEING || SUPER) {
 		focusedColor = #FFFFFF;
 		unFocusedColor = #000000;
 		radius = 4;
+		size = 1;
 	};
 };
 
