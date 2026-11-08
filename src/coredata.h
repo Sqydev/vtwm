@@ -48,6 +48,7 @@
 #define INPUT DATA.Input
 #define CONFIG DATA.Config
 #define IPC DATA.Ipc
+#define WM DATA.Wm
 
 typedef struct Coredata {
 	bool debug;
@@ -63,7 +64,7 @@ typedef struct Coredata {
 
 	Ipc Ipc;
 
-	WindowManager wm;
+	WindowManager Wm;
 
 	struct wl_event_source* exitSignalSources[3];
 } Coredata;

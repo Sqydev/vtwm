@@ -33,10 +33,28 @@
 *    source or binary distribution.
 */
 
+#include "./wm.h"
+
+#include "./wDir/wDir.h"
+
+#include "../coredata.h"
+#include "../utils/errors/errors.h"
+
+#include <stdlib.h>
+#include <string.h>
+
 void InitWM(void) {
-	
+	memset(&WM, 0, sizeof(WindowManager));
+	WM.lastWindowID = 1;
+
+	WM.wdirs = IFNULLPANIC(realloc(WM.wdirs, sizeof(WorkspaceDir)), EXIT_FAILURE, "Failed to allocate wdirs\n");
+
+	InitWdir(&WM.wdirs[0]);
+	WM.wdirsCount = 1;
 }
 
 void CloseWM(void) {
+	CloseWdirs();
 
+	memset(&WM, 0, sizeof(WindowManager));
 }
