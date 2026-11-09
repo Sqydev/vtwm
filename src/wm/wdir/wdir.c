@@ -36,6 +36,12 @@
 #include "../wm.h"
 
 #include "./wdir.h"
+#include "../../utils/utils.h"
+#include "../../compositor/compositor.h"
+#include "../../coredata.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 void InitWdir(WorkspaceDir* wdir) {
 	(void)wdir;
