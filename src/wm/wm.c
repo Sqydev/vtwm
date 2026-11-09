@@ -45,13 +45,13 @@
 
 void InitWM(void) {
 	memset(&WM, 0, sizeof(WindowManager));
-	WM.lastWindowID = 1;
-	WM.currLayer = LAYER_TILING;
 
 	WM.wdirs = IFNULLPANIC(realloc(WM.wdirs, sizeof(WorkspaceDir)), EXIT_FAILURE, "Failed to allocate wdirs\n");
-
 	InitWdir(&WM.wdirs[0]);
-	WM.currentWdirIdx = 0;
+
+	WM.focusedWindow = NULL;
+
+	WM.wdirIdx = 0;
 	WM.wdirsCount = 1;
 }
 

@@ -39,7 +39,6 @@
 #include "../wm.h"
 
 void InitWdir(WorkspaceDir* wdir);
-
 void CloseWdirs(void);
 
 #endif

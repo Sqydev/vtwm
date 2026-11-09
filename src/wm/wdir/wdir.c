@@ -44,7 +44,7 @@
 #include <string.h>
 
 void InitWdir(WorkspaceDir* wdir) {
-	(void)wdir;
+	wdir.
 }
 
 void CloseWdirs(void) {

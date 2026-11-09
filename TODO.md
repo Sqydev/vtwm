@@ -1,4 +1,6 @@
-Do  window manadgeing
+Make WorkspaceDir** instad of * so in the feature it's easier to make wdirs deallocate when not used and empty
+
+Do window manadgeing
 
 Add just install
 

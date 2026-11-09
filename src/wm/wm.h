@@ -50,8 +50,8 @@ typedef enum LayerName {
 
 typedef struct Window {
 	size_t ID;
-	size_t index;
 
+	size_t index; // In WorkspaceLayer(so like *windows[index];)
 	LayerName layer;
 	size_t workspaceIdx;
 	size_t wdirIdx;
@@ -66,31 +66,31 @@ typedef struct Window {
 	struct wlr_scene_node* sceneNode;
 } Window;
 
-typedef struct Workspace {
+typedef struct WorkspaceLayer {
 	Window** windows;
 	size_t windowsCount;
+} WorkspaceLayer;
+
+typedef struct Workspace {
+	WorkspaceLayer layers[LAYER_COUNT];
+
+	LayerName currentLayer;
 } Workspace;
 
-typedef struct WorkspaceLayer {
+typedef struct WorkspaceDir {
 	Workspace** workspaces;
 
 	size_t workspacesCount;
-	size_t currentWorkspaceIdx;
-} WorkspaceLayer;
-
-typedef struct WorkspaceDir {
-	WorkspaceLayer layers[LAYER_COUNT];
+	size_t workspaceIdx;
 } WorkspaceDir;
 
 typedef struct WindowManager {
-	LayerName currLayer;
+	Window* focusedWindow;
 
 	WorkspaceDir* wdirs;
 
 	size_t wdirsCount;
-	size_t currentWdirIdx;
-
-	size_t lastWindowID;
+	size_t wdirIdx;
 } WindowManager;
 
 void InitWM(void);
