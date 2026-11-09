@@ -36,17 +36,44 @@
 #include "../wm.h"
 
 #include "./wdir.h"
+#include "../workspace/workspace.h"
 #include "../../utils/utils.h"
-#include "../../compositor/compositor.h"
 #include "../../coredata.h"
 
 #include <stdlib.h>
-#include <string.h>
 
-void InitWdir(WorkspaceDir* wdir) {
-	wdir.
+void InitWdir(WorkspaceDir** wdir) {
+	WorkspaceDir* dir = IFNULLPANIC(calloc(1, sizeof(*dir)), EXIT_FAILURE, "Failed to allocate wdir\n");
+
+	dir->workspaces = IFNULLPANIC(calloc(1, sizeof(*dir->workspaces)), EXIT_FAILURE, "Failed to allocate workspaces\n");
+	InitWorkspace(&dir->workspaces[0]);
+
+	dir->workspacesCount = 1;
+	dir->workspaceIdx = 0;
+
+	*wdir = dir;
+}
+
+void CloseWdir(WorkspaceDir* wdir) {
+	if(!wdir) {
+		return;
+	}
+
+	for(size_t i = 0; i < wdir->workspacesCount; i++) {
+		CloseWorkspace(wdir->workspaces[i]);
+	}
+
+	free(wdir->workspaces);
+	free(wdir);
 }
 
 void CloseWdirs(void) {
+	for(size_t i = 0; i < WM.wdirsCount; i++) {
+		CloseWdir(WM.wdirs[i]);
+	}
 
+	free(WM.wdirs);
+	WM.wdirs = NULL;
+	WM.wdirsCount = 0;
+	WM.wdirIdx = 0;
 }

@@ -33,3 +33,35 @@
 *    source or binary distribution.
 */
 
+#include "./workspace.h"
+
+#include "../../utils/utils.h"
+
+#include <stdlib.h>
+
+void InitWorkspace(Workspace** workspace) {
+	Workspace* ws = IFNULLPANIC(calloc(1, sizeof(*ws)), EXIT_FAILURE, "Failed to allocate workspace\n");
+
+	for(int i = 0; i < LAYER_COUNT; i++) {
+		ws->layers[i].windows = NULL;
+		ws->layers[i].windowsCount = 0;
+	}
+
+	ws->currentLayer = LAYER_TTY;
+
+	*workspace = ws;
+}
+
+void CloseWorkspace(Workspace* workspace) {
+	if(!workspace) {
+		return;
+	}
+
+	for(int i = 0; i < LAYER_COUNT; i++) {
+		free(workspace->layers[i].windows);
+		workspace->layers[i].windows = NULL;
+		workspace->layers[i].windowsCount = 0;
+	}
+
+	free(workspace);
+}

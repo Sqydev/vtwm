@@ -33,9 +33,12 @@
 *    source or binary distribution.
 */
 
-#ifndef VTWM_WINDOW_MANAGER_WDIR_H
-#define VTWM_WINDOW_MANAGER_WDIR_H
+#ifndef VTWM_WINDOW_MANAGER_WORKSPACE_H
+#define VTWM_WINDOW_MANAGER_WORKSPACE_H
 
 #include "../wm.h"
+
+void InitWorkspace(Workspace** workspace);
+void CloseWorkspace(Workspace* workspace);
 
 #endif
