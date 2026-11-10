@@ -29,6 +29,10 @@ Input {
 	repeatDelay = 600;
 };
 
+Output {
+	wdirOnOutput = true;
+}
+
 StartUp {
 	spawn("pipewire");
 	spawn("steam");

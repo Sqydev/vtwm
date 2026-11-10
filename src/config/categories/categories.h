@@ -50,5 +50,6 @@ void ClearStartUp(void);
 void ParseStartUpBlock(ConfigParser* parser);
 void ClearKeybinds(void);
 void ParseKeybindsBlock(ConfigParser* parser);
+void ParseOutputBlock(ConfigParser* parser);
 
 #endif

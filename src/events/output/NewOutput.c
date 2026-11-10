@@ -38,6 +38,7 @@
 #include "../../coredata.h"
 #include "../../compositor/compositor.h"
 #include "../../utils/utils.h"
+#include "wm/wdir/wdir.h"
 
 #include <stdlib.h>
 
@@ -115,4 +116,11 @@ void NewOutput(struct wl_listener* listener, void* data) {
 	wlr_scene_output_layout_add_output(COMP.scene_output_layout, layout_output, output->scene_output);
 
 	ConfigureOutputCursor(output);
+
+	if(CONFIG.output.wdirOnOutput) {
+		NewWdir(output);
+	}
+	else {
+		
+	}
 }

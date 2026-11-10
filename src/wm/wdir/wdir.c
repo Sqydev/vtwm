@@ -39,19 +39,31 @@
 #include "../workspace/workspace.h"
 #include "../../utils/utils.h"
 #include "../../coredata.h"
+#include "utils/errors/errors.h"
+
+#include <wlr/util/log.h>
 
 #include <stdlib.h>
 
-void InitWdir(WorkspaceDir** wdir) {
+void InitWdir(WorkspaceDir** wdir, VtwmOutput* output) {
 	WorkspaceDir* dir = IFNULLPANIC(calloc(1, sizeof(*dir)), EXIT_FAILURE, "Failed to allocate wdir\n");
 
 	dir->workspaces = IFNULLPANIC(calloc(1, sizeof(*dir->workspaces)), EXIT_FAILURE, "Failed to allocate workspaces\n");
-	InitWorkspace(&dir->workspaces[0]);
+	InitWorkspace(&dir->workspaces[0], output);
 
 	dir->workspacesCount = 1;
 	dir->workspaceIdx = 0;
 
 	*wdir = dir;
+}
+
+void NewWdir(VtwmOutput* output) {
+	WM.wdirs = IFNULLPANIC(realloc(WM.wdirs, (WM.wdirsCount + 1) * sizeof(WorkspaceDir)), EXIT_FAILURE, "Failed to allocate new wdirs\n");
+
+	WM.wdirsCount++;
+	WM.wdirIdx++;
+
+	InitWdir(&WM.wdirs[WM.wdirIdx], output);
 }
 
 void CloseWdir(WorkspaceDir* wdir) {

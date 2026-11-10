@@ -90,6 +90,10 @@ typedef struct ConfigInput {
 	int repeatDelay;
 } ConfigInput;
 
+typedef struct ConfigOutput {
+	bool wdirOnOutput;
+} ConfigOutput;
+
 typedef struct ConfigStartUp {
 	char** commands;
 	size_t commandCount;
@@ -114,6 +118,7 @@ typedef struct Config {
 
 	ConfigCursor cursor;
 	ConfigInput input;
+	ConfigOutput output;
 	ConfigStartUp startup;
 
 	ConfigKeybind* keybinds;

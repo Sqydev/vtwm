@@ -71,8 +71,11 @@ typedef struct WorkspaceLayer {
 	size_t windowsCount;
 } WorkspaceLayer;
 
+typedef struct VtwmOutput VtwmOutput;
 typedef struct Workspace {
 	WorkspaceLayer layers[LAYER_COUNT];
+
+	VtwmOutput* output;
 
 	LayerName currentLayer;
 } Workspace;

@@ -39,7 +39,9 @@
 #include "../wm.h"
 
 // It allocs
-void InitWdir(WorkspaceDir** wdir);
+void InitWdir(WorkspaceDir** wdir, VtwmOutput* output);
+void NewWdir(VtwmOutput* output);
+
 void CloseWdir(WorkspaceDir* wdir);
 void CloseWdirs(void);
 

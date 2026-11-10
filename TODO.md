@@ -1,3 +1,5 @@
+Just do full config in output{} so: name, res, fps, wdir, workspace, ...
+
 Do window manadgeing
 
 Add just install

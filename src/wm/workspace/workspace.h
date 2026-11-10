@@ -38,7 +38,8 @@
 
 #include "../wm.h"
 
-void InitWorkspace(Workspace** workspace);
+void InitWorkspace(Workspace** workspace, VtwmOutput* output);
+void NewWorkspace(WorkspaceDir* wdir, VtwmOutput* output);
 void CloseWorkspace(Workspace* workspace);
 
 #endif

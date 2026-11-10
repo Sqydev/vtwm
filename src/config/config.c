@@ -41,6 +41,7 @@
 
 #include "../coredata.h"
 #include "../defines.h"
+#include "utils/strings/strings.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -228,6 +229,9 @@ static void ParseCategoryBody(ConfigParser* parser, Token name, ConfigLayers lay
 	}
 	else if(TokenEquals(name, "Keybinds")) {
 		ParseKeybindsBlock(parser);
+	}
+	else if(TokenEquals(name, "Output")) {
+		ParseOutputBlock(parser);
 	}
 	else {
 		ConfigWarning(name.line, "Unknown category, ignoring");

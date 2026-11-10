@@ -35,11 +35,13 @@
 
 #include "./workspace.h"
 
+#include "../../coredata.h"
 #include "../../utils/utils.h"
+#include "../wm.h"
 
 #include <stdlib.h>
 
-void InitWorkspace(Workspace** workspace) {
+void InitWorkspace(Workspace** workspace, VtwmOutput* output) {
 	Workspace* ws = IFNULLPANIC(calloc(1, sizeof(*ws)), EXIT_FAILURE, "Failed to allocate workspace\n");
 
 	for(int i = 0; i < LAYER_COUNT; i++) {
@@ -47,9 +49,20 @@ void InitWorkspace(Workspace** workspace) {
 		ws->layers[i].windowsCount = 0;
 	}
 
-	ws->currentLayer = LAYER_TTY;
+	ws->currentLayer = LAYER_TILING;
+
+	ws->output = output;
 
 	*workspace = ws;
+}
+
+void NewWorkspace(WorkspaceDir* wdir, VtwmOutput* output) {
+	wdir->workspaces = IFNULLPANIC(realloc(wdir->workspaces, (wdir->workspacesCount + 1) * sizeof(Workspace)), EXIT_FAILURE, "Failed to allocate workspace\n");
+
+	wdir->workspacesCount++;
+	wdir->workspaceIdx++;
+
+	InitWorkspace(&wdir->workspaces[wdir->workspaceIdx], output);
 }
 
 void CloseWorkspace(Workspace* workspace) {

@@ -51,6 +51,8 @@
 #define DEFAULT_INPUT_REPEAT_RATE 25
 #define DEFAULT_INPUT_REPEAT_DELAY 600
 
+#define DEFAULT_OUTPUT_NEW_WDIR_ON_OUTPUT true
+
 #define DEFAULT_BORDER_FOCUSED_COLOR 0xFFFFFFu
 #define DEFAULT_BORDER_UNFOCUSED_COLOR 0x000000u
 #define DEFAULT_BORDER_RADIUS 4
@@ -131,6 +133,8 @@ void SetConfigDefaults(void) {
 	CONFIG.input.layout = IFNULLPANIC(strdup(DEFAULT_INPUT_LAYOUT), EXIT_FAILURE, "Failed to allocate default config string\n");
 	CONFIG.input.repeatRate = DEFAULT_INPUT_REPEAT_RATE;
 	CONFIG.input.repeatDelay = DEFAULT_INPUT_REPEAT_DELAY;
+
+	CONFIG.output.wdirOnOutput = DEFAULT_OUTPUT_NEW_WDIR_ON_OUTPUT;
 
 	ConfigLooks looks = {
 		.defined = true,

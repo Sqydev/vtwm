@@ -42,8 +42,11 @@ typedef struct OutputEvents {
 	struct wl_listener new_output;
 } OutputEvents;
 
+typedef struct Workspace Workspace;
 typedef struct VtwmOutput {
 	struct wl_list link;
+
+	Workspace* workspace;
 
 	struct wlr_output* wlr_output;
 	struct wlr_scene_output* scene_output;
