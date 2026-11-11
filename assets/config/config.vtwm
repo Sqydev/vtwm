@@ -54,7 +54,6 @@ Output {
 
 StartUp {
 	spawn("pipewire");
-	spawn("steam");
 };
 
 Keybinds {
