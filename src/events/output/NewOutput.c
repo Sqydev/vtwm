@@ -38,13 +38,94 @@
 #include "../../coredata.h"
 #include "../../compositor/compositor.h"
 #include "../../utils/utils.h"
-#include "wm/wdir/wdir.h"
+#include "../../wm/wdir/wdir.h"
 
 #include <stdlib.h>
 
 #include <wayland-util.h>
 #include <wlr/util/log.h>
 #include <wlr/backend/headless.h>
+
+static ConfigOutputRule ResolveOutputRule(const char* name) {
+	ConfigOutputRule result = { 0 };
+	ConfigOutputRule* exact = NULL;
+	ConfigOutputRule* forEach = NULL;
+
+	for(size_t i = 0; i < CONFIG.output.ruleCount; i++) {
+		if(CONFIG.output.rules[i].name == NULL) { forEach = &CONFIG.output.rules[i]; }
+		else if(name && strcmp(CONFIG.output.rules[i].name, name) == 0) { exact = &CONFIG.output.rules[i]; }
+	}
+
+	if(forEach) { result = *forEach; }
+
+	if(exact) {
+		if(exact->hzType != CONFIG_OUTPUT_VALUE_UNSET) {
+			result.hzType = exact->hzType;
+			result.hz = exact->hz;
+		}
+		if(exact->resType != CONFIG_OUTPUT_VALUE_UNSET) {
+			result.resType = exact->resType;
+			result.resWidth = exact->resWidth;
+			result.resHeight = exact->resHeight;
+		}
+		if(exact->wdirType != CONFIG_OUTPUT_VALUE_UNSET) {
+			result.wdirType = exact->wdirType;
+			result.wdir = exact->wdir;
+		}
+		if(exact->workspaceType != CONFIG_OUTPUT_VALUE_UNSET) {
+			result.workspaceType = exact->workspaceType;
+			result.workspace = exact->workspace;
+		}
+	}
+	return result;
+}
+
+static bool ModeMatchesResolution(ConfigOutputRule* rule, struct wlr_output_mode* mode) {
+	if(rule->resType != CONFIG_OUTPUT_VALUE_NUMBER) { return true; }
+	return mode->width == rule->resWidth && mode->height == rule->resHeight;
+}
+
+static bool ModeMatchesRefresh(ConfigOutputRule* rule, struct wlr_output_mode* mode) {
+	if(rule->hzType != CONFIG_OUTPUT_VALUE_NUMBER) { return true; }
+
+	int target = rule->hz * 1000;
+	int diff = mode->refresh - target;
+	if(diff < 0) { diff = -diff; }
+
+	return diff <= 1000;
+}
+
+static struct wlr_output_mode* SelectOutputMode(struct wlr_output* wlr_output, ConfigOutputRule* rule) {
+	if(!rule) { return wlr_output_preferred_mode(wlr_output); }
+
+	struct wlr_output_mode* best = NULL;
+	struct wlr_output_mode* mode;
+
+	wl_list_for_each(mode, &wlr_output->modes, link) {
+		// I know that wlr arleady does this set of logs but 1. I arleady did that and 2. I requie more CONTEXT!
+		mode->preferred ? wlr_log(WLR_DEBUG, "Checking prefered output mode with:") : wlr_log(WLR_DEBUG, "Checking output mode with:");
+		wlr_log(WLR_DEBUG, "Refresh rate: %d(%dhz)", mode->refresh, mode->refresh / 1000);
+		wlr_log(WLR_DEBUG, "Resolution: %dx%d", mode->width, mode->height);
+		wlr_log(WLR_DEBUG, "Aspect ratio: %d", mode->picture_aspect_ratio);
+
+		if(!ModeMatchesResolution(rule, mode)) { continue; }
+		if(!ModeMatchesRefresh(rule, mode)) { continue; }
+
+		if(!best) { best = mode; continue; }
+
+		long area = (long)mode->width * (long)mode->height;
+		long bestArea = (long)best->width * (long)best->height;
+
+		if(rule->resType == CONFIG_OUTPUT_VALUE_MAX && area != bestArea) {
+			if(area > bestArea) { best = mode; }
+		}
+		else if(mode->refresh > best->refresh) {
+			best = mode;
+		}
+	}
+
+	return best ? best : wlr_output_preferred_mode(wlr_output);
+}
 
 void NewOutput(struct wl_listener* listener, void* data) {
 	(void)listener;
@@ -59,17 +140,27 @@ void NewOutput(struct wl_listener* listener, void* data) {
 	wlr_output_state_init(&state);
 	wlr_output_state_set_enabled(&state, true);
 
-	// Get mode preffered mode(f.e. My monitor may preffer 165Hz and 2k resolution). If headless set fullHD
-	struct wlr_output_mode* mode = wlr_output_preferred_mode(wlr_output);
+	ConfigOutputRule rule = ResolveOutputRule(wlr_output->name);
+
+	struct wlr_output_mode* mode = SelectOutputMode(wlr_output, &rule);
 	if(mode != NULL) {
 		wlr_output_state_set_mode(&state, mode);
 	}
 	else if(wlr_output_is_headless(wlr_output)) {
-		wlr_log(WLR_INFO, "Headless output. Setting mode with 1920x1080");
-		wlr_output_state_set_custom_mode(&state, 1920, 1080, 0);
-	}
-	else {
-		wlr_log(WLR_INFO, "No preferred output mode");
+		int width = 1920;
+		int height = 1080;
+		int refresh = 0;
+
+		if(rule.resType == CONFIG_OUTPUT_VALUE_NUMBER) {
+			width = rule.resWidth;
+			height = rule.resHeight;
+		}
+		if(rule.hzType == CONFIG_OUTPUT_VALUE_NUMBER) {
+			refresh = rule.hz * 1000;
+		}
+
+		wlr_log(WLR_INFO, "Headless output. Setting mode with %dx%d", width, height);
+		wlr_output_state_set_custom_mode(&state, width, height, refresh);
 	}
 
 	// Apply the settings of the output
