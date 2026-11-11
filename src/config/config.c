@@ -41,7 +41,7 @@
 
 #include "../coredata.h"
 #include "../defines.h"
-#include "utils/strings/strings.h"
+#include "../utils/strings/strings.h"
 
 #include <errno.h>
 #include <stdio.h>
