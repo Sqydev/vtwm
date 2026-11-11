@@ -35,11 +35,27 @@
 
 #include "../xdg.h"
 
+#include "../../../coredata.h"
+
 void CommitToplevel(struct wl_listener* listener, void* data) {
 	(void)data;
 	VtwmView* view = wl_container_of(listener, view, commit);
 
 	if(view->xdg_toplevel->base->initial_commit) {
-		wlr_xdg_toplevel_set_size(view->xdg_toplevel, 0, 0);
+		struct wlr_output* wlr_output = wlr_output_layout_output_at(COMP.output_layout, view->x, view->y);
+
+		if(!wlr_output && !wl_list_empty(&COMP.outputs)) {
+			VtwmOutput* out = wl_container_of(COMP.outputs.next, out, link);
+			wlr_output = out->wlr_output;
+		}
+
+		if(wlr_output) {
+			struct wlr_box box;
+			wlr_output_layout_get_box(COMP.output_layout, wlr_output, &box);
+			wlr_xdg_toplevel_set_size(view->xdg_toplevel, box.width, box.height);
+		}
+		else {
+			wlr_xdg_toplevel_set_size(view->xdg_toplevel, 0, 0);
+		}
 	}
 }
