@@ -90,8 +90,33 @@ typedef struct ConfigInput {
 	int repeatDelay;
 } ConfigInput;
 
+typedef enum ConfigOutputValueType {
+	CONFIG_OUTPUT_VALUE_UNSET = 0,
+	CONFIG_OUTPUT_VALUE_NUMBER, // hz = 165; res = 2560x1440; wdir = 0; workspace = 1;
+	CONFIG_OUTPUT_VALUE_MAX, // hz = maxHz; res = maxRes;
+	CONFIG_OUTPUT_VALUE_NEXT // wdir = wdir++; workspace = workspace++;
+} ConfigOutputValueType;
+
+typedef struct ConfigOutputRule {
+	char* name; // NULL = forEach (any output)
+
+	ConfigOutputValueType hzType;
+	int hz;
+
+	ConfigOutputValueType resType;
+	int resWidth;
+	int resHeight;
+
+	ConfigOutputValueType wdirType;
+	int wdir;
+
+	ConfigOutputValueType workspaceType;
+	int workspace;
+} ConfigOutputRule;
+
 typedef struct ConfigOutput {
-	bool wdirOnOutput;
+	ConfigOutputRule* rules;
+	size_t ruleCount;
 } ConfigOutput;
 
 typedef struct ConfigStartUp {

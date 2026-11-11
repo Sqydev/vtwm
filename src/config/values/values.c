@@ -51,8 +51,6 @@
 #define DEFAULT_INPUT_REPEAT_RATE 25
 #define DEFAULT_INPUT_REPEAT_DELAY 600
 
-#define DEFAULT_OUTPUT_NEW_WDIR_ON_OUTPUT true
-
 #define DEFAULT_BORDER_FOCUSED_COLOR 0xFFFFFFu
 #define DEFAULT_BORDER_UNFOCUSED_COLOR 0x000000u
 #define DEFAULT_BORDER_RADIUS 4
@@ -77,6 +75,16 @@ void ConfigClearKeybinds(ConfigKeybind** keybinds, size_t* keybindCount) {
 	free(*keybinds);
 	*keybinds = NULL;
 	*keybindCount = 0;
+}
+
+void ConfigClearOutputRules(ConfigOutputRule** rules, size_t* ruleCount) {
+	for(size_t i = 0; i < *ruleCount; i++) {
+		free((*rules)[i].name);
+	}
+
+	free(*rules);
+	*rules = NULL;
+	*ruleCount = 0;
 }
 
 void ConfigClearValues(Config* config) {
@@ -104,6 +112,7 @@ void ConfigClearValues(Config* config) {
 
 	ConfigClearStartUp(&config->startup);
 	ConfigClearKeybinds(&config->keybinds, &config->keybindCount);
+	ConfigClearOutputRules(&config->output.rules, &config->output.ruleCount);
 }
 
 void ConfigDestroy(Config* config) {
@@ -134,7 +143,21 @@ void SetConfigDefaults(void) {
 	CONFIG.input.repeatRate = DEFAULT_INPUT_REPEAT_RATE;
 	CONFIG.input.repeatDelay = DEFAULT_INPUT_REPEAT_DELAY;
 
-	CONFIG.output.wdirOnOutput = DEFAULT_OUTPUT_NEW_WDIR_ON_OUTPUT;
+	ConfigOutputRule* defaultRules = IFNULLPANIC(realloc(CONFIG.output.rules, sizeof(ConfigOutputRule)), EXIT_FAILURE, "Failed to allocate default output rule\n");
+	defaultRules[0] = (ConfigOutputRule){
+		.name = NULL,
+		.hzType = CONFIG_OUTPUT_VALUE_MAX,
+		.hz = 0,
+		.resType = CONFIG_OUTPUT_VALUE_MAX,
+		.resWidth = 0,
+		.resHeight = 0,
+		.wdirType = CONFIG_OUTPUT_VALUE_NEXT,
+		.wdir = 0,
+		.workspaceType = CONFIG_OUTPUT_VALUE_NUMBER,
+		.workspace = 0
+	};
+	CONFIG.output.rules = defaultRules;
+	CONFIG.output.ruleCount = 1;
 
 	ConfigLooks looks = {
 		.defined = true,

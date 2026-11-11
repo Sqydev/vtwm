@@ -41,6 +41,7 @@
 void ClearConfigValues(void);
 void ConfigClearStartUp(ConfigStartUp* startup);
 void ConfigClearKeybinds(ConfigKeybind** keybinds, size_t* keybindCount);
+void ConfigClearOutputRules(ConfigOutputRule** rules, size_t* ruleCount);
 void ConfigClearValues(Config* config);
 void ConfigDestroy(Config* config);
 void SetConfigDefaults(void);

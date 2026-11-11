@@ -30,8 +30,27 @@ Input {
 };
 
 Output {
-	wdirOnOutput = true;
-}
+	forEach {
+		hz = maxHz;
+		res = maxRes;
+		wdir = wdir++;
+		workspace = 0;
+	};
+
+//	"DP-1" {
+//		hz = 165;
+//		res = 2560x1440;
+//		wdir = 0;
+//		workspace = 0;
+//	};
+
+//	"HDMI-A-1" {
+//		hz = maxHz;
+//		res = 1920x1080;
+//		wdir = 0;
+//		workspace = workspace++;
+//	};
+};
 
 StartUp {
 	spawn("pipewire");

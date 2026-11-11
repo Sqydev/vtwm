@@ -247,6 +247,7 @@ void ParseConfig(const char* data, size_t size) {
 
 	bool startupSeen = false;
 	bool keybindsSeen = false;
+	bool outputSeen = false;
 
 	while(parser.token.data) {
 		if(ParserAccept(&parser, ";")) { continue; }
@@ -279,6 +280,10 @@ void ParseConfig(const char* data, size_t size) {
 		else if(TokenEquals(name, "Keybinds") && !keybindsSeen) {
 			ClearKeybinds();
 			keybindsSeen = true;
+		}
+		else if(TokenEquals(name, "Output") && !outputSeen) {
+			ClearOutputRules();
+			outputSeen = true;
 		}
 
 		ParseCategoryBody(&parser, name, layers);
