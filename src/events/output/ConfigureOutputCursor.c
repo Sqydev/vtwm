@@ -37,7 +37,9 @@
 
 #include "../../coredata.h"
 #include "../input/input.h"
+#include "../../compositor/compositor.h"
 
+#include <wlr/util/box.h>
 #include <wlr/util/log.h>
 
 void ConfigureOutputCursor(VtwmOutput* output) {
@@ -57,12 +59,17 @@ void ConfigureOutputCursor(VtwmOutput* output) {
 	}
 
 	if(!INPUT.cursorPosInited) {
-		wlr_cursor_warp(INPUT.cursor, NULL, (float)output->wlr_output->width / 2, (float)output->wlr_output->height / 2);
+		struct wlr_box boxer;
+		wlr_output_layout_get_box(COMP.output_layout, output->wlr_output, &boxer);
+
 		if(CONFIG.cursor.outputName && strcmp(CONFIG.cursor.outputName, "default") != 0) {
-			if(strcmp(output->wlr_output->name, CONFIG.cursor.outputName)) {
-				wlr_cursor_warp(INPUT.cursor, NULL, (float)output->wlr_output->width / 2, (float)output->wlr_output->height / 2);
+			if(strcmp(output->wlr_output->name, CONFIG.cursor.outputName) == 0) {
+				wlr_cursor_warp(INPUT.cursor, NULL, boxer.x + ((float)boxer.width / 2), boxer.y + ((float)boxer.height / 2));
 				INPUT.cursorPosInited = true;
 			}
+		}
+		else {
+			wlr_cursor_warp(INPUT.cursor, NULL, boxer.x + ((float)boxer.width / 2), boxer.y + ((float)boxer.height / 2));
 		}
 	}
 }
