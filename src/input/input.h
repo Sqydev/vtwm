@@ -103,6 +103,7 @@ typedef struct InputManager {
 
 	struct wlr_xcursor_manager* cursor_manager;
 	struct wlr_cursor* cursor;
+	bool cursorPosInited;
 
 	size_t seat_counter;
 } InputManager;

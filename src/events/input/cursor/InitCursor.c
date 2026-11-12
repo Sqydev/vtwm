@@ -38,6 +38,7 @@
 #include "../../../coredata.h"
 #include "../../../compositor/compositor.h"
 #include "../../../utils/utils.h"
+#include "../../../events/output/output.h"
 
 #include <wlr/types/wlr_cursor.h>
 

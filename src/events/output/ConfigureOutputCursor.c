@@ -36,6 +36,7 @@
 #include "./output.h"
 
 #include "../../coredata.h"
+#include "../input/input.h"
 
 #include <wlr/util/log.h>
 
@@ -44,8 +45,7 @@ void ConfigureOutputCursor(VtwmOutput* output) {
 		return;
 	}
 
-	if(INPUT.cursor_manager &&
-		!wlr_xcursor_manager_load(INPUT.cursor_manager, output->wlr_output->scale)) {
+	if(INPUT.cursor_manager && !wlr_xcursor_manager_load(INPUT.cursor_manager, output->wlr_output->scale)) {
 		wlr_log(WLR_ERROR, "Failed to load cursor theme for output scale %.2f", output->wlr_output->scale);
 	}
 
@@ -54,5 +54,15 @@ void ConfigureOutputCursor(VtwmOutput* output) {
 	if(output->softwareCursorLocked != lockSoftwareCursor) {
 		wlr_output_lock_software_cursors(output->wlr_output, lockSoftwareCursor);
 		output->softwareCursorLocked = lockSoftwareCursor;
+	}
+
+	if(!INPUT.cursorPosInited) {
+		wlr_cursor_warp(INPUT.cursor, NULL, (float)output->wlr_output->width / 2, (float)output->wlr_output->height / 2);
+		if(CONFIG.cursor.outputName && strcmp(CONFIG.cursor.outputName, "default") != 0) {
+			if(strcmp(output->wlr_output->name, CONFIG.cursor.outputName)) {
+				wlr_cursor_warp(INPUT.cursor, NULL, (float)output->wlr_output->width / 2, (float)output->wlr_output->height / 2);
+				INPUT.cursorPosInited = true;
+			}
+		}
 	}
 }

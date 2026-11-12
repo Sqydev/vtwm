@@ -61,6 +61,11 @@ void ParseCursorBlock(ConfigParser* parser) {
 				ParseIntegerValue(parser, &CONFIG.cursor.scale, entryLine);
 			}
 		}
+		else if(TokenEquals(key, "output")) {
+			if(ParserBeginValue(parser, entryLine)) {
+				ParseStringValue(parser, &CONFIG.cursor.outputName, entryLine);
+			}
+		}
 		else {
 			ConfigWarning(entryLine, "Unknown Cursor field, ignoring");
 			SkipUnknownEntry(parser, entryLine);

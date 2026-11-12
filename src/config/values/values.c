@@ -46,6 +46,7 @@
 #define DEFAULT_CURSOR_THEME "default"
 #define DEFAULT_CURSOR_HARDWARE false
 #define DEFAULT_CURSOR_SCALE 24
+#define DEFAULT_CURSOR_OUTPUT "default"
 
 #define DEFAULT_INPUT_LAYOUT "en"
 #define DEFAULT_INPUT_REPEAT_RATE 25
@@ -100,12 +101,13 @@ void ConfigClearValues(Config* config) {
 
 	memset(config->looks, 0, sizeof(config->looks));
 
-	free(config->cursor.theme);
+	if(config->cursor.outputName) { free(config->cursor.theme); }
 	config->cursor.theme = NULL;
 	config->cursor.hardware = false;
 	config->cursor.scale = 0;
+	if(config->cursor.outputName) { free(CONFIG.cursor.outputName); }
 
-	free(config->input.layout);
+	if(config->input.layout) { free(config->input.layout); }
 	config->input.layout = NULL;
 	config->input.repeatRate = 0;
 	config->input.repeatDelay = 0;
@@ -138,6 +140,7 @@ void SetConfigDefaults(void) {
 	CONFIG.cursor.theme = IFNULLPANIC(strdup(DEFAULT_CURSOR_THEME), EXIT_FAILURE, "Failed to allocate default config string\n");
 	CONFIG.cursor.hardware = DEFAULT_CURSOR_HARDWARE;
 	CONFIG.cursor.scale = DEFAULT_CURSOR_SCALE;
+	CONFIG.cursor.outputName = IFNULLPANIC(strdup(DEFAULT_CURSOR_OUTPUT), EXIT_FAILURE, "Failed to allocate default config string\n");
 
 	CONFIG.input.layout = IFNULLPANIC(strdup(DEFAULT_INPUT_LAYOUT), EXIT_FAILURE, "Failed to allocate default config string\n");
 	CONFIG.input.repeatRate = DEFAULT_INPUT_REPEAT_RATE;

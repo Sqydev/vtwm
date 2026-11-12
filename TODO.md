@@ -1,3 +1,5 @@
+Check if cursor being in the middle of screen works
+
 Add ptrs to parents on WindowManager children so you can acces them faster and you get more options so index or ptr depending on which is faster or better
 
 Do window manadgeing

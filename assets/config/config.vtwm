@@ -21,6 +21,8 @@ Cursor {
 	theme = default; // default = system theme; or theme = "someTheme";
 	scale = 29;
 	hardware = false;
+
+	output = default; // On which output(monitor) should the cursor appear on start(So. f.e. if you wannt it to be on DP-1 then: output = "DP-1";)
 };
 
 Input {

@@ -82,6 +82,8 @@ typedef struct ConfigCursor {
 	char* theme;
 	bool hardware;
 	int scale;
+
+	char* outputName;
 } ConfigCursor;
 
 typedef struct ConfigInput {
