@@ -40,31 +40,32 @@
 
 #include <wlr/types/wlr_seat.h>
 
-// The view is gone, so no seat can point at it anymore
+static VtwmView* SeatViewUnderCursor(VtwmSeat* seat, VtwmView* ignore) {
+	if(!seat || !INPUT.cursor) {
+		return NULL;
+	}
+
+	VtwmView* view = SeatViewAt(seat, INPUT.cursor->x, INPUT.cursor->y, NULL, NULL, NULL, NULL);
+	if(view == ignore) {
+		return NULL;
+	}
+	return view;
+}
+
 void SeatForgetView(struct VtwmView* view) {
+	if(view->mapped) {
+		wl_list_remove(&view->link);
+		view->mapped = false;
+	}
+
 	VtwmSeat* seat = NULL;
 	wl_list_for_each(seat, &INPUT.seats, link) {
-		if(seat->focused_view != view) {
-			continue;
+		if(seat->focused_view == view) {
+			seat->focused_view = NULL;
+
+			SeatFocusView(seat, SeatViewUnderCursor(seat, view));
 		}
 
-		seat->focused_view = NULL;
-
-		// The keyboard should not go dead when the focused window closes
-		VtwmView* next = NULL;
-		VtwmView* candidate = NULL;
-		wl_list_for_each(candidate, &COMP.views, link) {
-			if(candidate != view) {
-				next = candidate;
-				break;
-			}
-		}
-
-		if(next) {
-			SeatFocusView(seat, next);
-		}
-		else if(seat->wlr_seat) {
-			wlr_seat_keyboard_notify_clear_focus(seat->wlr_seat);
-		}
+		SeatRefreshFocus(seat);
 	}
 }

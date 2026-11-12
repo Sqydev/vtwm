@@ -51,17 +51,25 @@ void ProcessCursorMotion(VtwmSeat* seat, uint32_t time) {
 	double sx = 0.0;
 	double sy = 0.0;
 
-	struct wlr_scene_surface* scene_surface = SeatSurfaceAt(seat, INPUT.cursor->x, INPUT.cursor->y, &sx, &sy);
+	struct wlr_scene_surface* scene_surface = NULL;
+	struct VtwmView* view = SeatViewAt(seat, INPUT.cursor->x, INPUT.cursor->y, &scene_surface, NULL, &sx, &sy);
+
 	// Nothing under the cursor, so nobody has the focus now
 	if(!scene_surface) {
 		if(INPUT.cursor_manager) {
 			wlr_cursor_set_xcursor(INPUT.cursor, INPUT.cursor_manager, CURSOR_DEFAULT_ICON);
 		}
 		wlr_seat_pointer_notify_clear_focus(seat->wlr_seat);
+		SeatFocusView(seat, NULL);
 		return;
 	}
 
 	// The enter event also makes the surface the focused one
 	wlr_seat_pointer_notify_enter(seat->wlr_seat, scene_surface->surface, sx, sy);
 	wlr_seat_pointer_notify_motion(seat->wlr_seat, time, sx, sy);
+
+	// Focus follows the mouse, but never a view that is already going away
+	if(view && view->mapped) {
+		SeatFocusView(seat, view);
+	}
 }

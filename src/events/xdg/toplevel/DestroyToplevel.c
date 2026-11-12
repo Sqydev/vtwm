@@ -50,12 +50,6 @@ void DestroyToplevel(struct wl_listener* listener, void* data) {
 	wl_list_remove(&view->request_maximize.link);
 	wl_list_remove(&view->request_fullscreen.link);
 
-	// A client can destroy a mapped top-level without unmapping it first
-	if(view->mapped) {
-		wl_list_remove(&view->link);
-		view->mapped = false;
-	}
-
 	// Make sure no seat keeps a pointer to the memory that's about to free
 	SeatForgetView(view);
 

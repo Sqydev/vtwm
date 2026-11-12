@@ -149,6 +149,8 @@ void SeatKeyboardEnter(VtwmSeat* seat, struct VtwmView* view);
 void SeatKeyboardEnterFocused(VtwmSeat* seat);
 void SeatForgetView(struct VtwmView* view);
 
+void SeatRefreshFocus(VtwmSeat* seat);
+
 struct wlr_scene_node* SeatBufferAt(double x, double y, double* sx, double* sy);
 struct wlr_scene_surface* SeatSurfaceAt(VtwmSeat* seat, double x, double y, double* sx, double* sy);
 

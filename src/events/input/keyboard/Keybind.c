@@ -118,8 +118,7 @@ bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers) {
 
 			const char* close = strrchr(action, ')');
 			const char* argumentStart = open + 1;
-			const char* argumentEnd =
-				close && close > argumentStart ? close : action + strlen(action);
+			const char* argumentEnd = close && close > argumentStart ? close : action + strlen(action);
 
 			while(argumentStart < argumentEnd && isspace((unsigned char)argumentStart[0])) {
 				argumentStart++;

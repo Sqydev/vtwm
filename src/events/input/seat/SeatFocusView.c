@@ -49,13 +49,13 @@ static void SeatRaiseView(struct VtwmView* view) {
 	}
 }
 
-// Gives the keyboard focus to the given view
+// Gives the keyboard focus to the given view. Passing NULL clears the focus.
 void SeatFocusView(VtwmSeat* seat, struct VtwmView* view) {
 	if(!seat || !seat->wlr_seat) {
 		return;
 	}
 
-	if(seat->focused_view == view) {
+	if(view && seat->focused_view == view) {
 		SeatRaiseView(view);
 		return;
 	}

@@ -42,7 +42,10 @@ void CommitToplevel(struct wl_listener* listener, void* data) {
 	VtwmView* view = wl_container_of(listener, view, commit);
 
 	if(view->xdg_toplevel->base->initial_commit) {
-		struct wlr_output* wlr_output = wlr_output_layout_output_at(COMP.output_layout, view->x, view->y);
+		struct wlr_output* wlr_output = NULL;
+		if(INPUT.cursor) {
+		    wlr_output = wlr_output_layout_output_at(COMP.output_layout, INPUT.cursor->x, INPUT.cursor->y);
+		}
 
 		if(!wlr_output && !wl_list_empty(&COMP.outputs)) {
 			VtwmOutput* out = wl_container_of(COMP.outputs.next, out, link);
@@ -53,6 +56,10 @@ void CommitToplevel(struct wl_listener* listener, void* data) {
 			struct wlr_box box;
 			wlr_output_layout_get_box(COMP.output_layout, wlr_output, &box);
 			wlr_xdg_toplevel_set_size(view->xdg_toplevel, box.width, box.height);
+
+			view->x = box.x;
+  			view->y = box.y;
+    		wlr_scene_node_set_position(&view->scene_tree->node, box.x, box.y);
 		}
 		else {
 			wlr_xdg_toplevel_set_size(view->xdg_toplevel, 0, 0);
