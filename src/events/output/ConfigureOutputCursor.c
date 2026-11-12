@@ -64,7 +64,6 @@ void ConfigureOutputCursor(VtwmOutput* output) {
 
 		if(CONFIG.cursor.outputName && strcmp(CONFIG.cursor.outputName, "default") != 0) {
 			if(strcmp(output->wlr_output->name, CONFIG.cursor.outputName) == 0) {
-				wlr_cursor_warp(INPUT.cursor, NULL, boxer.x + ((float)boxer.width / 2), boxer.y + ((float)boxer.height / 2));
 				INPUT.cursorPosInited = true;
 			}
 		}
