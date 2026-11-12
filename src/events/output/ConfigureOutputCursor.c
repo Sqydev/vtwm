@@ -38,6 +38,7 @@
 #include "../../coredata.h"
 #include "../input/input.h"
 #include "../../compositor/compositor.h"
+#include "../../utils/system/system.h"
 
 #include <wlr/util/box.h>
 #include <wlr/util/log.h>
@@ -62,13 +63,15 @@ void ConfigureOutputCursor(VtwmOutput* output) {
 		struct wlr_box boxer;
 		wlr_output_layout_get_box(COMP.output_layout, output->wlr_output, &boxer);
 
+		wlr_cursor_warp(INPUT.cursor, NULL, boxer.x + ((float)boxer.width / 2), boxer.y + ((float)boxer.height / 2));
 		if(CONFIG.cursor.outputName && strcmp(CONFIG.cursor.outputName, "default") != 0) {
 			if(strcmp(output->wlr_output->name, CONFIG.cursor.outputName) == 0) {
 				INPUT.cursorPosInited = true;
 			}
+			if(GetUptime().tv_sec >= 10) { INPUT.cursorPosInited = true; }
 		}
 		else {
-			wlr_cursor_warp(INPUT.cursor, NULL, boxer.x + ((float)boxer.width / 2), boxer.y + ((float)boxer.height / 2));
+			INPUT.cursorPosInited = true;
 		}
 	}
 }

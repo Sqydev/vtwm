@@ -53,6 +53,7 @@
 typedef struct Coredata {
 	bool debug;
 	int exitCode;
+	struct timespec startTime;
 
 	Compositor Compositor;
 

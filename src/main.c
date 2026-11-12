@@ -103,6 +103,8 @@ static void HandleOpts(int* argc, char*** argv) {
 int main(int argc, char** argv) {
 	InitPanic();
 
+	clock_gettime(CLOCK_MONOTONIC, &DATA.startTime);
+
 	DATA.debug = false;
 
 	if(argc > 1 && strcmp(argv[1], "ctl") == 0) {

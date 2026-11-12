@@ -55,4 +55,6 @@ void Spawn(char** arguments);
 void SpawnCommand(const char* command);
 void SpawnCommandRange(const char* start, size_t length);
 
+struct timespec GetUptime(void);
+
 #endif
