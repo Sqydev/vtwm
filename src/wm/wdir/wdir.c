@@ -49,21 +49,26 @@ void InitWdir(WorkspaceDir** wdir, VtwmOutput* output) {
 	WorkspaceDir* dir = IFNULLPANIC(calloc(1, sizeof(*dir)), EXIT_FAILURE, "Failed to allocate wdir\n");
 
 	dir->workspaces = IFNULLPANIC(calloc(1, sizeof(*dir->workspaces)), EXIT_FAILURE, "Failed to allocate workspaces\n");
+
 	InitWorkspace(&dir->workspaces[0], output);
 
 	dir->workspacesCount = 1;
 	dir->workspaceIdx = 0;
 
 	*wdir = dir;
+
+	if(output) { output->workspace = dir->workspaces[0]; }
 }
 
 void NewWdir(VtwmOutput* output) {
-	WM.wdirs = IFNULLPANIC(realloc(WM.wdirs, (WM.wdirsCount + 1) * sizeof(WorkspaceDir)), EXIT_FAILURE, "Failed to allocate new wdirs\n");
+	size_t index = WM.wdirsCount;
+
+	WM.wdirs = IFNULLPANIC(realloc(WM.wdirs, (index + 1) * sizeof(*WM.wdirs)), EXIT_FAILURE, "Failed to allocate new wdirs\n");
+
+	InitWdir(&WM.wdirs[index], output);
 
 	WM.wdirsCount++;
-	WM.wdirIdx++;
-
-	InitWdir(&WM.wdirs[WM.wdirIdx], output);
+	WM.wdirIdx = index;
 }
 
 void CloseWdir(WorkspaceDir* wdir) {

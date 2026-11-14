@@ -40,6 +40,8 @@
 void UnmapToplevel(struct wl_listener* listener, void* data) {
 	(void)data;
 	VtwmView* view = wl_container_of(listener, view, unmap);
+	view->mapped = false;
+	view->visible = false;
 
 	// An unmapped window can't keep the keyboard focus
 	SeatForgetView(view);

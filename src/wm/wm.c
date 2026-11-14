@@ -52,3 +52,24 @@ void FinishWM(void) {
 
 	memset(&WM, 0, sizeof(WindowManager));
 }
+
+void AddWindow(Workspace* workspace, VtwmView* view, LayerName layer) {
+	if(!workspace || !view || layer >= LAYER_COUNT) {
+		return;
+	}
+
+	WorkspaceLayer* workspaceLayer = &workspace->layers[layer];
+
+	size_t index = workspaceLayer->windowsCount;
+
+	workspaceLayer->windows = IFNULLPANIC(realloc(workspaceLayer->windows, (index + 1) * sizeof(*workspaceLayer->windows)), EXIT_FAILURE, "Failed to allocate workspace windows\n");
+
+	Window* window = IFNULLPANIC(calloc(1, sizeof(*window)), EXIT_FAILURE, "Failed to allocate window\n");
+
+	window->view = view;
+	window->layer = layer;
+	window->index = index;
+
+	workspaceLayer->windows[index] = window;
+	workspaceLayer->windowsCount++;
+}

@@ -43,6 +43,7 @@ void MapToplevel(struct wl_listener* listener, void* data) {
 
 	wl_list_insert(&COMP.views, &view->link);
 	view->mapped = true;
+	view->visible = true;
 
 	// The window that just appeared gets the keyboard
 	SeatFocusView(SeatGetActive(), view);

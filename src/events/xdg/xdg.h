@@ -59,6 +59,7 @@ typedef struct VtwmView {
 	int x;
 	int y;
 	bool mapped;
+	bool visible;
 
 	struct wl_list link;
 	struct wlr_xdg_toplevel* xdg_toplevel;

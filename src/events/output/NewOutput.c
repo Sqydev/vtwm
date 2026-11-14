@@ -207,4 +207,7 @@ void NewOutput(struct wl_listener* listener, void* data) {
 	wlr_scene_output_layout_add_output(COMP.scene_output_layout, layout_output, output->scene_output);
 
 	ConfigureOutputCursor(output);
+
+	// // SUPERSCARYHARDCODEDFORTESTINGFORNOWDONTFORGET: FOR TESTING IT WILL CREATE NEW WDIR NO MATTER WHAT! Do it so it complys with the config of doom and despear
+	NewWdir(output);
 }

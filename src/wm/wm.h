@@ -36,6 +36,8 @@
 #ifndef VTWM_WINDOW_MANAGER_H
 #define VTWM_WINDOW_MANAGER_H
 
+#include "../events/xdg/xdg.h"
+
 #include <stddef.h>
 
 #include <wayland-server-core.h>
@@ -56,14 +58,7 @@ typedef struct Window {
 	size_t workspaceIdx;
 	size_t wdirIdx;
 
-	struct wlr_xdg_toplevel* toplevel;
-
-	struct wl_listener map;
-	struct wl_listener unmap;
-	struct wl_listener commit;
-	struct wl_listener destroy;
-
-	struct wlr_scene_node* sceneNode;
+	VtwmView* view;
 } Window;
 
 typedef struct WorkspaceLayer {
@@ -98,5 +93,7 @@ typedef struct WindowManager {
 
 void InitWM(void);
 void FinishWM(void);
+
+void AddWindow(Workspace* workspace, VtwmView* view, LayerName layer);
 
 #endif

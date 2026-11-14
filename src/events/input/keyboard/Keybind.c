@@ -38,6 +38,8 @@
 #include "../../../coredata.h"
 #include "../../../utils/utils.h"
 #include "../../xdg/xdg.h"
+#include "../../../wm/workspace/workspace.h"
+#include "../../output/output.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -63,6 +65,18 @@ bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers) {
 
 	if(modifiers & WLR_MODIFIER_LOGO) {
 		configModifiers.enabled[CONFIG_MODIFIER_SUPER] = true;
+	}
+
+	// SUPERSCARYHARDCODEDFORTESTINGFORNOWDONTFORGET: config keybinds, yk and... first output to focused one
+	if(sym == XKB_KEY_1 || sym == XKB_KEY_2) {
+		if(wl_list_empty(&COMP.outputs)) {
+			return true;
+		}
+
+		VtwmOutput* output = wl_container_of(COMP.outputs.next, output, link);
+
+		SwitchToWorkspace(output, sym == XKB_KEY_1 ? 1 : 2, 0, LAYER_TILING);
+		return true;
 	}
 
 	for(size_t i = 0; i < CONFIG.keybindCount; i++) {

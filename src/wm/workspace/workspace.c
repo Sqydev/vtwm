@@ -40,6 +40,7 @@
 #include "../wm.h"
 
 #include <stdlib.h>
+#include <wlr/util/log.h>
 
 void InitWorkspace(Workspace** workspace, VtwmOutput* output) {
 	Workspace* ws = IFNULLPANIC(calloc(1, sizeof(*ws)), EXIT_FAILURE, "Failed to allocate workspace\n");
@@ -57,12 +58,14 @@ void InitWorkspace(Workspace** workspace, VtwmOutput* output) {
 }
 
 void NewWorkspace(WorkspaceDir* wdir, VtwmOutput* output) {
-	wdir->workspaces = IFNULLPANIC(realloc(wdir->workspaces, (wdir->workspacesCount + 1) * sizeof(Workspace)), EXIT_FAILURE, "Failed to allocate workspace\n");
+	size_t index = wdir->workspacesCount;
+
+	wdir->workspaces = IFNULLPANIC(realloc(wdir->workspaces, (index + 1) * sizeof(*wdir->workspaces)), EXIT_FAILURE, "Failed to allocate workspace\n");
+
+	InitWorkspace(&wdir->workspaces[index], output);
 
 	wdir->workspacesCount++;
-	wdir->workspaceIdx++;
-
-	InitWorkspace(&wdir->workspaces[wdir->workspaceIdx], output);
+	wdir->workspaceIdx = index;
 }
 
 void CloseWorkspace(Workspace* workspace) {
@@ -77,4 +80,55 @@ void CloseWorkspace(Workspace* workspace) {
 	}
 
 	free(workspace);
+}
+
+void SwitchToWorkspace(VtwmOutput* output, size_t workspace, size_t wdir, LayerName layer) {
+	wlr_log(WLR_DEBUG, "output=%p, workspace=%p, wdir=%zu, wdirsCount=%zu, layer=%d, LAYER_COUNT=%d", (void*)output, output ? (void*)output->workspace : NULL, wdir, WM.wdirsCount, layer, LAYER_COUNT);
+	if(!output || !output->workspace || wdir >= WM.wdirsCount || layer >= LAYER_COUNT) { return; }
+
+	WorkspaceDir* dir = WM.wdirs[wdir];
+	if(!dir) { return; }
+
+	wlr_log(WLR_DEBUG, "Switching to workspace %zu, wdir %zu, layer %d", workspace, wdir, layer);
+
+	while(dir->workspacesCount <= workspace) {
+		wlr_log(WLR_DEBUG, "Creating workspace %zu", dir->workspacesCount);
+		NewWorkspace(dir, NULL);
+	}
+
+	wlr_log(WLR_DEBUG, "Workspace pointer: %p", (void*)dir->workspaces[workspace]);
+
+	Workspace* newWorkspace = dir->workspaces[workspace];
+
+	if(!newWorkspace || (output->workspace == newWorkspace && output->workspace->currentLayer == layer)) { return; }
+
+	WorkspaceLayer* currentWorkspacer = &output->workspace->layers[output->workspace->currentLayer];
+
+	wlr_log(WLR_DEBUG, "OLD workspace: %p, layer: %d, windows: %zu", (void*)output->workspace, output->workspace->currentLayer, currentWorkspacer->windowsCount);
+
+	for(size_t i = 0; i < currentWorkspacer->windowsCount; i++) {
+		VtwmView* view = currentWorkspacer->windows[i]->view;
+
+		wlr_log(WLR_DEBUG, "HIDE: view=%p mapped=%d visible=%d tree=%p", (void*)view, view->mapped, view->visible, (void*)view->scene_tree);
+
+		view->visible = false;
+		if(view->mapped) { wlr_scene_node_set_enabled(&view->scene_tree->node, false); }
+	}
+
+	output->workspace->output = NULL;
+	output->workspace = newWorkspace;
+
+	output->workspace->output = output;
+	output->workspace->currentLayer = layer;
+
+	WorkspaceLayer* newWorkspacer = &newWorkspace->layers[layer];
+
+	for(size_t i = 0; i < newWorkspacer->windowsCount; i++) {
+		VtwmView* view = newWorkspacer->windows[i]->view;
+
+		view->visible = true;
+		if(view->mapped) { wlr_scene_node_set_enabled(&view->scene_tree->node, true); }
+	}
+
+	wlr_log(WLR_DEBUG, "NEW workspace: %p, layer: %d, windows: %zu", (void*)newWorkspace, layer, newWorkspacer->windowsCount);
 }

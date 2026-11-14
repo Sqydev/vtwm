@@ -42,4 +42,6 @@ void InitWorkspace(Workspace** workspace, VtwmOutput* output);
 void NewWorkspace(WorkspaceDir* wdir, VtwmOutput* output);
 void CloseWorkspace(Workspace* workspace);
 
+void SwitchToWorkspace(VtwmOutput* output, size_t workspace, size_t wdir, LayerName layer);
+
 #endif

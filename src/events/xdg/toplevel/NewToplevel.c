@@ -37,6 +37,7 @@
 
 #include "../../../coredata.h"
 #include "../../../utils/utils.h"
+#include "../../../wm/wm.h"
 
 #include <stdlib.h>
 
@@ -72,5 +73,10 @@ void NewToplevel(struct wl_listener* listener, void* data) {
 	view->request_fullscreen.notify = RequestToplevelFullscreen;
 	wl_signal_add(&xdg_toplevel->events.request_fullscreen, &view->request_fullscreen);
 
-	wlr_log(WLR_INFO, "New toplevel: %s (%s)", xdg_toplevel->title ? xdg_toplevel->title : "?", xdg_toplevel->app_id ? xdg_toplevel->app_id : "?");
+	wlr_log(WLR_DEBUG, "New toplevel: %s (%s)", xdg_toplevel->title ? xdg_toplevel->title : "?", xdg_toplevel->app_id ? xdg_toplevel->app_id : "?");
+
+	// SUPERSCARYHARDCODEDFORTESTINGFORNOWDONTFORGET: HERE REPLACE IT WITH CURRENT OUTPUT AND NOT THE FIRST ONE
+	VtwmOutput* output = wl_container_of(COMP.outputs.next, output, link);
+	AddWindow(output->workspace, view, LAYER_TILING);
+	wlr_log(WLR_DEBUG, "Window registered successfully in workspace");
 }
