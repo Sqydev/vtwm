@@ -75,7 +75,7 @@ bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers) {
 
 		VtwmOutput* output = wl_container_of(COMP.outputs.next, output, link);
 
-		SwitchToWorkspace(output, sym == XKB_KEY_1 ? 1 : 2, 0, LAYER_TILING);
+		SwitchToWorkspace(output, sym == XKB_KEY_1 ? 0 : 1, 0, LAYER_TILING);
 		return true;
 	}
 

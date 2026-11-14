@@ -36,8 +36,6 @@
 #ifndef VTWM_WINDOW_MANAGER_H
 #define VTWM_WINDOW_MANAGER_H
 
-#include "../events/xdg/xdg.h"
-
 #include <stddef.h>
 
 #include <wayland-server-core.h>
@@ -50,11 +48,13 @@ typedef enum LayerName {
 	LAYER_COUNT = 3
 } LayerName;
 
+typedef struct VtwmView VtwmView;
 typedef struct Window {
 	size_t ID;
 
 	size_t index; // In WorkspaceLayer(so like *windows[index];)
 	LayerName layer;
+	struct Workspace* workspace;
 	size_t workspaceIdx;
 	size_t wdirIdx;
 
@@ -95,5 +95,6 @@ void InitWM(void);
 void FinishWM(void);
 
 void AddWindow(Workspace* workspace, VtwmView* view, LayerName layer);
+void RemoveWindow(VtwmView* view);
 
 #endif

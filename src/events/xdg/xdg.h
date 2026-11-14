@@ -55,11 +55,14 @@ typedef struct VtwmToplevelDecoration {
     struct wl_listener destroy;
 } VtwmToplevelDecoration;
 
+typedef struct Window Window;
 typedef struct VtwmView {
 	int x;
 	int y;
 	bool mapped;
 	bool visible;
+
+	Window* window;
 
 	struct wl_list link;
 	struct wlr_xdg_toplevel* xdg_toplevel;

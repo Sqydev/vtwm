@@ -67,9 +67,64 @@ void AddWindow(Workspace* workspace, VtwmView* view, LayerName layer) {
 	Window* window = IFNULLPANIC(calloc(1, sizeof(*window)), EXIT_FAILURE, "Failed to allocate window\n");
 
 	window->view = view;
+	window->workspace = workspace;
 	window->layer = layer;
 	window->index = index;
 
+	view->window = window;
+
 	workspaceLayer->windows[index] = window;
 	workspaceLayer->windowsCount++;
+}
+
+void RemoveWindow(VtwmView* view) {
+	if(!view || !view->window) {
+		return;
+	}
+
+	Window* window = view->window;
+	view->window = NULL;
+
+	Workspace* workspace = window->workspace;
+	if(!workspace || window->layer >= LAYER_COUNT) {
+		free(window);
+		return;
+	}
+
+	WorkspaceLayer* workspaceLayer = &workspace->layers[window->layer];
+	if(!workspaceLayer->windows) {
+		free(window);
+		return;
+	}
+
+	size_t index = window->index;
+	if(index >= workspaceLayer->windowsCount || workspaceLayer->windows[index] != window) {
+		index = workspaceLayer->windowsCount;
+
+		for(size_t i = 0; i < workspaceLayer->windowsCount; i++) {
+			if(workspaceLayer->windows[i] == window) {
+				index = i;
+				break;
+			}
+		}
+
+		if(index == workspaceLayer->windowsCount) {
+			free(window);
+			return;
+		}
+	}
+
+	for(size_t i = index + 1; i < workspaceLayer->windowsCount; i++) {
+		workspaceLayer->windows[i - 1] = workspaceLayer->windows[i];
+		workspaceLayer->windows[i - 1]->index = i - 1;
+	}
+
+	workspaceLayer->windowsCount--;
+
+	if(workspaceLayer->windowsCount == 0) {
+		free(workspaceLayer->windows);
+		workspaceLayer->windows = NULL;
+	}
+
+	free(window);
 }

@@ -52,6 +52,7 @@ void DestroyToplevel(struct wl_listener* listener, void* data) {
 
 	// Make sure no seat keeps a pointer to the memory that's about to free
 	SeatForgetView(view);
+	RemoveWindow(view);
 
 	free(view);
 }

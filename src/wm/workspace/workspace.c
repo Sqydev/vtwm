@@ -74,6 +74,10 @@ void CloseWorkspace(Workspace* workspace) {
 	}
 
 	for(int i = 0; i < LAYER_COUNT; i++) {
+		for(size_t j = 0; j < workspace->layers[i].windowsCount; j++) {
+			free(workspace->layers[i].windows[j]);
+		}
+
 		free(workspace->layers[i].windows);
 		workspace->layers[i].windows = NULL;
 		workspace->layers[i].windowsCount = 0;
@@ -128,6 +132,22 @@ void SwitchToWorkspace(VtwmOutput* output, size_t workspace, size_t wdir, LayerN
 
 		view->visible = true;
 		if(view->mapped) { wlr_scene_node_set_enabled(&view->scene_tree->node, true); }
+	}
+
+	VtwmSeat* seat = SeatGetActive();
+	VtwmView* focus = NULL;
+
+	for(size_t i = newWorkspacer->windowsCount; i > 0; i--) {
+		VtwmView* view = newWorkspacer->windows[i - 1]->view;
+
+		if(view && view->mapped) {
+			focus = view;
+			break;
+		}
+	}
+
+	if(seat) {
+		SeatFocusView(seat, focus);
 	}
 
 	wlr_log(WLR_DEBUG, "NEW workspace: %p, layer: %d, windows: %zu", (void*)newWorkspace, layer, newWorkspacer->windowsCount);
