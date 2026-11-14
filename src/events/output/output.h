@@ -59,6 +59,7 @@ typedef struct VtwmOutput {
 } VtwmOutput;
 
 void NewOutput(struct wl_listener* listener, void* data);
+VtwmOutput* OutputGetActive(void);
 void ConfigureOutputCursor(VtwmOutput* output);
 void OutputFrame(struct wl_listener* listener, void* data);
 void RequestState(struct wl_listener* listener, void* data);

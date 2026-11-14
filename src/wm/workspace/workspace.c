@@ -86,6 +86,32 @@ void CloseWorkspace(Workspace* workspace) {
 	free(workspace);
 }
 
+bool WorkspaceGetLocation(Workspace* workspace, size_t* wdirIdx, size_t* workspaceIdx) {
+	if(!workspace) {
+		return false;
+	}
+
+	for(size_t i = 0; i < WM.wdirsCount; i++) {
+		WorkspaceDir* dir = WM.wdirs[i];
+		if(!dir) {
+			continue;
+		}
+
+		for(size_t j = 0; j < dir->workspacesCount; j++) {
+			if(dir->workspaces[j] != workspace) {
+				continue;
+			}
+
+			if(wdirIdx) { *wdirIdx = i; }
+			if(workspaceIdx) { *workspaceIdx = j; }
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void SwitchToWorkspace(VtwmOutput* output, size_t workspace, size_t wdir, LayerName layer) {
 	wlr_log(WLR_DEBUG, "output=%p, workspace=%p, wdir=%zu, wdirsCount=%zu, layer=%d, LAYER_COUNT=%d", (void*)output, output ? (void*)output->workspace : NULL, wdir, WM.wdirsCount, layer, LAYER_COUNT);
 	if(!output || !output->workspace || wdir >= WM.wdirsCount || layer >= LAYER_COUNT) { return; }

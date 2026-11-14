@@ -83,8 +83,6 @@ typedef struct WorkspaceDir {
 } WorkspaceDir;
 
 typedef struct WindowManager {
-	Window* focusedWindow;
-
 	WorkspaceDir** wdirs;
 
 	size_t wdirsCount;

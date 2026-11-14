@@ -43,5 +43,6 @@
 
 bool ParseIntegerToken(Token token, int* destination);
 bool ParseColorToken(Token token, uint32_t* destination);
+bool ParseWorkspaceTarget(const char* action, const char* open, int rangeValue, int* workspace);
 
 #endif

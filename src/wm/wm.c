@@ -36,6 +36,7 @@
 #include "./wm.h"
 
 #include "./wdir/wdir.h"
+#include "./workspace/workspace.h"
 
 #include "../coredata.h"
 #include "../utils/errors/errors.h"
@@ -70,6 +71,8 @@ void AddWindow(Workspace* workspace, VtwmView* view, LayerName layer) {
 	window->workspace = workspace;
 	window->layer = layer;
 	window->index = index;
+
+	WorkspaceGetLocation(workspace, &window->wdirIdx, &window->workspaceIdx);
 
 	view->window = window;
 

@@ -42,11 +42,38 @@
 #include "../../output/output.h"
 
 #include <ctype.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/log.h>
+
+static bool KeybindMatchesKey(const char* binding, const char* keyName, int* rangeValue) {
+	if(binding[0] != '(') {
+		return strcasecmp(keyName, binding) == 0;
+	}
+
+	int first = 0;
+	int last = 0;
+
+	if(sscanf(binding, "(%d, ..., %d)", &first, &last) != 2 &&
+		sscanf(binding, "(%d...%d)", &first, &last) != 2) {
+		return false;
+	}
+
+	char* end = NULL;
+	long value = strtol(keyName, &end, 10);
+
+	if(end == keyName || *end != '\0') { return false; }
+	if(value < first || value > last) { return false; }
+
+	*rangeValue = (int)value;
+
+	return true;
+}
 
 bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers) {
 	ConfigModifiers configModifiers = {0};
@@ -67,18 +94,6 @@ bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers) {
 		configModifiers.enabled[CONFIG_MODIFIER_SUPER] = true;
 	}
 
-	// SUPERSCARYHARDCODEDFORTESTINGFORNOWDONTFORGET: config keybinds, yk and... first output to focused one
-	if(sym == XKB_KEY_1 || sym == XKB_KEY_2) {
-		if(wl_list_empty(&COMP.outputs)) {
-			return true;
-		}
-
-		VtwmOutput* output = wl_container_of(COMP.outputs.next, output, link);
-
-		SwitchToWorkspace(output, sym == XKB_KEY_1 ? 0 : 1, 0, LAYER_TILING);
-		return true;
-	}
-
 	for(size_t i = 0; i < CONFIG.keybindCount; i++) {
 		ConfigKeybind* keybind = &CONFIG.keybinds[i];
 
@@ -95,7 +110,9 @@ bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers) {
 			continue;
 		}
 
-		if(strcasecmp(keyName, keybind->key) != 0) {
+		int rangeValue = 0;
+
+		if(!KeybindMatchesKey(keybind->key, keyName, &rangeValue)) {
 			continue;
 		}
 
@@ -156,6 +173,61 @@ bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers) {
 			else {
 				SpawnCommandRange(argumentStart, argumentLength);
 			}
+
+			return true;
+		}
+
+		if(nameLength == 13 && strncasecmp(action, "gotoWorkspace", nameLength) == 0) {
+			int workspace = 0;
+
+			if(!ParseWorkspaceTarget(action, open, rangeValue, &workspace)) {
+				wlr_log(WLR_ERROR, "Invalid gotoWorkspace action: %s\n", action);
+				return true;
+			}
+
+			VtwmOutput* output = NULL;
+			LayerName layer = LAYER_TILING;
+
+			Window* window = seat && seat->focused_view ? seat->focused_view->window : NULL;
+
+			if(window && window->workspace) {
+				layer = window->layer;
+
+				if(window->workspace->output) {
+					output = window->workspace->output;
+				}
+				else {
+					VtwmOutput* candidate = NULL;
+					wl_list_for_each(candidate, &COMP.outputs, link) {
+						if(candidate->workspace == window->workspace) {
+							output = candidate;
+							break;
+						}
+					}
+				}
+			}
+
+			if(!output) {
+				output = OutputGetActive();
+
+				if(output && output->workspace) {
+					layer = output->workspace->currentLayer;
+				}
+			}
+
+			if(!output || !output->workspace || workspace < 0) {
+				wlr_log(WLR_ERROR, "Cannot switch to workspace %d: no output available\n", workspace);
+				return true;
+			}
+
+			size_t wdir = 0;
+
+			if(!WorkspaceGetLocation(output->workspace, &wdir, NULL)) {
+				wlr_log(WLR_ERROR, "Cannot switch to workspace %d: output workspace not found\n", workspace);
+				return true;
+			}
+
+			SwitchToWorkspace(output, (size_t)workspace, wdir, layer);
 
 			return true;
 		}

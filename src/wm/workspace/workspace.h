@@ -36,11 +36,15 @@
 #ifndef VTWM_WINDOW_MANAGER_WORKSPACE_H
 #define VTWM_WINDOW_MANAGER_WORKSPACE_H
 
+#include <stdbool.h>
+
 #include "../wm.h"
 
 void InitWorkspace(Workspace** workspace, VtwmOutput* output);
 void NewWorkspace(WorkspaceDir* wdir, VtwmOutput* output);
 void CloseWorkspace(Workspace* workspace);
+
+bool WorkspaceGetLocation(Workspace* workspace, size_t* wdirIdx, size_t* workspaceIdx);
 
 void SwitchToWorkspace(VtwmOutput* output, size_t workspace, size_t wdir, LayerName layer);
 
