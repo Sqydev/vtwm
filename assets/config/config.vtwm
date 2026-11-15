@@ -1,0 +1,73 @@
+Terminal {
+	command = "alacritty";
+};
+
+Looks -> (TILEING || SUPER) {
+	Margin {
+		top = 0;
+		bottom = 0;
+		left = 0;
+		right = 0;
+	};
+	Border {
+		focusedColor = #FFFFFF;
+		unFocusedColor = #000000;
+		radius = 4;
+		size = 1;
+	};
+};
+
+Cursor {
+	theme = default; // default = system theme; or theme = "someTheme";
+	scale = 29;
+	hardware = false;
+
+	output = default; // On which output(monitor) should the cursor appear on start(So. f.e. if you wannt it to be on DP-1 then: output = "DP-1";)
+};
+
+Input {
+	layout = "pl";
+	repeatRate = 25;
+	repeatDelay = 600;
+};
+
+Output {
+	forEach {
+		hz = maxHz;
+		res = maxRes;
+		wdir = wdir++;
+		workspace = 0;
+	};
+
+//	"DP-1" {
+//		hz = 165;
+//		res = 2560x1440;
+//		wdir = 0;
+//		workspace = 0;
+//	};
+
+//	"HDMI-A-1" {
+//		hz = maxHz;
+//		res = 1920x1080;
+//		wdir = 0;
+//		workspace = workspace++;
+//	};
+};
+
+StartUp {
+	spawn("pipewire");
+};
+
+Keybinds {
+	SUPER && Q -> closeFocused();
+
+	SUPER && (1, ..., 9) -> gotoWorkspace(argv[1] - 1);
+	SUPER && CTRL && (1...9) -> gotoWorkspaceDir(argv[2] - 1);
+
+	SUPER && W -> switchLayer(TTY);
+	SUPER && E -> switchLayer(TILING);
+	SUPER && R -> switchLayer(SUPER);
+
+	SUPER && Escape -> quit();
+	SUPER && Return -> spawn(Terminal.command);
+};

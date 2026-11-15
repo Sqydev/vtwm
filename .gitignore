@@ -1,0 +1,13 @@
+.cache/
+
+compile_commands.json
+
+build/
+compiled/
+obj/
+
+result
+result-*
+
+log.log
+core

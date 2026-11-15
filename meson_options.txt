@@ -1,0 +1,13 @@
+option(
+	'vtwm_debug',
+	type: 'boolean',
+	value: false,
+	description: 'Guess',
+)
+
+option(
+	'vtwm_assets_dir',
+	type: 'string',
+	value: '',
+	description: 'Compile-time override assets directory(defaults to ./assets/ at runtime)',
+)
