@@ -36,6 +36,7 @@
 #include "../xdg.h"
 
 #include "../../../coredata.h"
+#include "../../../wm/workspace/workspace.h"
 
 void MapToplevel(struct wl_listener* listener, void* data) {
 	(void)data;
@@ -43,8 +44,11 @@ void MapToplevel(struct wl_listener* listener, void* data) {
 
 	wl_list_insert(&COMP.views, &view->link);
 	view->mapped = true;
-	view->visible = true;
 
-	// The window that just appeared gets the keyboard
-	SeatFocusView(SeatGetActive(), view);
+	Workspace* workspace = view->window ? view->window->workspace : NULL;
+	WorkspaceApplyViewVisibility(workspace, view);
+
+	if(workspace && view->visible && view->window && view->window->layer == workspace->currentLayer) {
+		SeatFocusView(SeatGetActive(), view);
+	}
 }

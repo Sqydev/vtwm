@@ -36,6 +36,8 @@
 #ifndef VTWM_COMPOSITOR_H
 #define VTWM_COMPOSITOR_H
 
+#include "../wm/wm.h"
+
 #include <wayland-server-core.h>
 #include <wayland-util.h>
 #include <wlr/backend.h>
@@ -69,6 +71,9 @@ typedef struct Compositor {
 
 	struct wlr_scene* scene;
 	struct wlr_scene_output_layout* scene_output_layout;
+	struct wlr_scene_tree* layerTrees[LAYER_COUNT];
+
+	bool shuttingDown;
 
 	struct wlr_xdg_decoration_manager_v1* xdg_decoration;
 	struct wlr_xdg_shell* xdg_shell;

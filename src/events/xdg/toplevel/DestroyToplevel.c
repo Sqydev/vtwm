@@ -36,12 +36,15 @@
 #include "../xdg.h"
 
 #include "../../../coredata.h"
+#include "../../../wm/workspace/workspace.h"
 
 #include <stdlib.h>
 
 void DestroyToplevel(struct wl_listener* listener, void* data) {
 	(void)data;
 	VtwmView* view = wl_container_of(listener, view, destroy);
+
+	Workspace* workspace = view->window ? view->window->workspace : NULL;
 
 	wl_list_remove(&view->map.link);
 	wl_list_remove(&view->unmap.link);
@@ -50,9 +53,10 @@ void DestroyToplevel(struct wl_listener* listener, void* data) {
 	wl_list_remove(&view->request_maximize.link);
 	wl_list_remove(&view->request_fullscreen.link);
 
-	// Make sure no seat keeps a pointer to the memory that's about to free
 	SeatForgetView(view);
 	RemoveWindow(view);
+
+	WorkspaceTTYClosed(workspace, view);
 
 	free(view);
 }

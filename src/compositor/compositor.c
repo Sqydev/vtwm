@@ -109,6 +109,10 @@ void InitCompositor(void) {
 	// rendering surfaces by hand, we add them as scene nodes and let
 	// wlr_scene_output handle the composition and damage tracking.
 	COMP.scene = IFNULLPANIC(wlr_scene_create(), 1, "Failed to create wlr_scene\n");
+	for(size_t layer = 0; layer < LAYER_COUNT; layer++) {
+		COMP.layerTrees[layer] = IFNULLPANIC(wlr_scene_tree_create(&COMP.scene->tree), 1, "Failed to create layer scene tree\n");
+		wlr_scene_node_raise_to_top(&COMP.layerTrees[layer]->node);
+	}
 	// Attaches the output layout to the scene, so each scene output keeps
 	// the same position as its corresponding output layout output.
 	COMP.scene_output_layout = wlr_scene_attach_output_layout(COMP.scene, COMP.output_layout);
@@ -184,6 +188,8 @@ void StartCompositor(void) {
 }
 
 void FreeCompositor(void) {
+	COMP.shuttingDown = true;
+
 	wl_list_remove(&EVENTS.Input.new_input.link);
 	wl_list_remove(&EVENTS.Output.new_output.link);
 	wl_list_remove(&EVENTS.Xdg.new_toplevel.link);

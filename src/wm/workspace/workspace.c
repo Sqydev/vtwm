@@ -68,10 +68,28 @@ void NewWorkspace(WorkspaceDir* wdir, VtwmOutput* output) {
 	wdir->workspaceIdx = index;
 }
 
+static void WorkspaceDropTTYSpawn(Workspace* workspace) {
+	TtySpawn* ttySpawn = NULL;
+	TtySpawn* ttySpawnTmp = NULL;
+	wl_list_for_each_safe(ttySpawn, ttySpawnTmp, &WM.ttySpawns, link) {
+		if(ttySpawn->workspace != workspace) {
+			continue;
+		}
+
+		wl_list_remove(&ttySpawn->link);
+		free(ttySpawn);
+	}
+
+	workspace->ttySpawnPending = false;
+}
+
 void CloseWorkspace(Workspace* workspace) {
 	if(!workspace) {
 		return;
 	}
+
+	WorkspaceDropTTYSpawn(workspace);
+	workspace->ttyTerminal = NULL;
 
 	for(int i = 0; i < LAYER_COUNT; i++) {
 		for(size_t j = 0; j < workspace->layers[i].windowsCount; j++) {
@@ -112,6 +130,222 @@ bool WorkspaceGetLocation(Workspace* workspace, size_t* wdirIdx, size_t* workspa
 	return false;
 }
 
+void WorkspaceApplyViewVisibility(Workspace* workspace, struct VtwmView* view) {
+	if(!workspace || !view) {
+		return;
+	}
+
+	bool visible = workspace->output != NULL &&
+		view->window != NULL &&
+		view->window->workspace == workspace &&
+		view->window->layer <= workspace->currentLayer &&
+		view->mapped;
+
+	view->visible = visible;
+
+	if(view->scene_tree) {
+		wlr_scene_node_set_enabled(&view->scene_tree->node, visible);
+	}
+}
+
+void WorkspaceApplyLayerVisibility(Workspace* workspace) {
+	if(!workspace) {
+		return;
+	}
+
+	for(size_t layer = 0; layer < LAYER_COUNT; layer++) {
+		WorkspaceLayer* workspaceLayer = &workspace->layers[layer];
+
+		for(size_t i = 0; i < workspaceLayer->windowsCount; i++) {
+			Window* window = workspaceLayer->windows[i];
+
+			if(window && window->view) {
+				WorkspaceApplyViewVisibility(workspace, window->view);
+			}
+		}
+	}
+}
+
+static VtwmView* WorkspaceTopView(Workspace* workspace, LayerName layer) {
+	if(!workspace || layer >= LAYER_COUNT) {
+		return NULL;
+	}
+
+	WorkspaceLayer* workspaceLayer = &workspace->layers[layer];
+
+	for(size_t i = workspaceLayer->windowsCount; i > 0; i--) {
+		VtwmView* view = workspaceLayer->windows[i - 1]->view;
+
+		if(view && view->mapped) {
+			return view;
+		}
+	}
+
+	return NULL;
+}
+
+static void WorkspaceFocusLayer(Workspace* workspace, LayerName layer) {
+	VtwmSeat* seat = SeatGetActive();
+
+	if(seat) {
+		if(seat->wlr_seat) {
+			wlr_seat_pointer_notify_clear_focus(seat->wlr_seat);
+		}
+
+		SeatFocusView(seat, WorkspaceTopView(workspace, layer));
+	}
+}
+
+void WorkspaceEnsureTTY(Workspace* workspace, bool allowFallback) {
+	if(!workspace || workspace->ttyTerminal || COMP.shuttingDown) {
+		return;
+	}
+
+	if(workspace->ttySpawnPending) {
+		if(allowFallback) {
+			TtySpawn* pending = NULL;
+			wl_list_for_each(pending, &WM.ttySpawns, link) {
+				if(pending->workspace == workspace) {
+					pending->allowFallback = true;
+					break;
+				}
+			}
+		}
+
+		return;
+	}
+
+	if(!CONFIG.terminalCommandSliced || !CONFIG.terminalCommandSliced[0]) {
+		wlr_log(WLR_ERROR, "Cannot create the TTY terminal: the terminal command is empty\n");
+		return;
+	}
+
+	pid_t pid = Spawn(CONFIG.terminalCommandSliced);
+
+	if(pid <= 0) {
+		wlr_log(WLR_ERROR, "Failed to spawn the TTY terminal\n");
+		return;
+	}
+
+	TtySpawn* ttySpawn = IFNULLPANIC(calloc(1, sizeof(*ttySpawn)), EXIT_FAILURE, "Failed to allocate TTY spawn\n");
+	ttySpawn->workspace = workspace;
+	ttySpawn->pid = pid;
+	ttySpawn->allowFallback = allowFallback;
+
+	wl_list_insert(&WM.ttySpawns, &ttySpawn->link);
+	workspace->ttySpawnPending = true;
+
+	wlr_log(WLR_DEBUG, "Spawned TTY terminal on workspace %p with pid %d", (void*)workspace, (int)pid);
+}
+
+Workspace* WorkspaceClaimTTY(pid_t pid) {
+	TtySpawn* match = NULL;
+
+	if(pid > 0) {
+		TtySpawn* ttySpawn = NULL;
+		wl_list_for_each(ttySpawn, &WM.ttySpawns, link) {
+			if(ttySpawn->pid == pid) {
+				match = ttySpawn;
+				break;
+			}
+		}
+	}
+
+	if(!match) {
+		TtySpawn* ttySpawn = NULL;
+		wl_list_for_each(ttySpawn, &WM.ttySpawns, link) {
+			if(ttySpawn->allowFallback) {
+				match = ttySpawn;
+				wlr_log(WLR_DEBUG, "Falling back to a pending TTY spawn\n");
+				break;
+			}
+		}
+	}
+
+	if(!match) {
+		return NULL;
+	}
+
+	Workspace* workspace = match->workspace;
+
+	if(workspace) {
+		workspace->ttySpawnPending = false;
+	}
+
+	wl_list_remove(&match->link);
+	free(match);
+
+	return workspace;
+}
+
+void WorkspaceTTYClaimed(Workspace* workspace, struct VtwmView* view) {
+	if(!workspace || !view) {
+		return;
+	}
+
+	workspace->ttyTerminal = view;
+	workspace->ttySpawnPending = false;
+}
+
+void WorkspaceTTYClosed(Workspace* workspace, struct VtwmView* view) {
+	if(!workspace || workspace->ttyTerminal != view) {
+		return;
+	}
+
+	workspace->ttyTerminal = NULL;
+
+	if(!COMP.shuttingDown) {
+		WorkspaceEnsureTTY(workspace, workspace->output != NULL);
+	}
+}
+
+bool WorkspaceIsTTYView(const struct VtwmView* view) {
+	return view &&
+		view->window &&
+		view->window->workspace &&
+		view->window->workspace->ttyTerminal == view;
+}
+
+void WorkspacePrewarmNext(Workspace* workspace) {
+	size_t wdirIdx = 0;
+	size_t workspaceIdx = 0;
+
+	if(!WorkspaceGetLocation(workspace, &wdirIdx, &workspaceIdx) || wdirIdx >= WM.wdirsCount) {
+		return;
+	}
+
+	WorkspaceDir* dir = WM.wdirs[wdirIdx];
+	if(!dir) {
+		return;
+	}
+
+	size_t nextWorkspace = workspaceIdx + 1;
+
+	while(dir->workspacesCount <= nextWorkspace) {
+		NewWorkspace(dir, NULL);
+	}
+
+	if(dir->workspaces[nextWorkspace]) {
+		WorkspaceEnsureTTY(dir->workspaces[nextWorkspace], false);
+	}
+}
+
+void SwitchToLayer(VtwmOutput* output, LayerName layer) {
+	if(!output || !output->workspace || layer >= LAYER_COUNT) {
+		return;
+	}
+
+	Workspace* workspace = output->workspace;
+
+	if(workspace->currentLayer != layer) {
+		workspace->currentLayer = layer;
+		WorkspaceApplyLayerVisibility(workspace);
+	}
+
+	WorkspaceEnsureTTY(workspace, true);
+	WorkspaceFocusLayer(workspace, layer);
+}
+
 void SwitchToWorkspace(VtwmOutput* output, size_t workspace, size_t wdir, LayerName layer) {
 	wlr_log(WLR_DEBUG, "output=%p, workspace=%p, wdir=%zu, wdirsCount=%zu, layer=%d, LAYER_COUNT=%d", (void*)output, output ? (void*)output->workspace : NULL, wdir, WM.wdirsCount, layer, LAYER_COUNT);
 	if(!output || !output->workspace || wdir >= WM.wdirsCount || layer >= LAYER_COUNT) { return; }
@@ -126,55 +360,27 @@ void SwitchToWorkspace(VtwmOutput* output, size_t workspace, size_t wdir, LayerN
 		NewWorkspace(dir, NULL);
 	}
 
-	wlr_log(WLR_DEBUG, "Workspace pointer: %p", (void*)dir->workspaces[workspace]);
-
 	Workspace* newWorkspace = dir->workspaces[workspace];
 
-	if(!newWorkspace || (output->workspace == newWorkspace && output->workspace->currentLayer == layer)) { return; }
+	if(!newWorkspace) { return; }
 
-	WorkspaceLayer* currentWorkspacer = &output->workspace->layers[output->workspace->currentLayer];
-
-	wlr_log(WLR_DEBUG, "OLD workspace: %p, layer: %d, windows: %zu", (void*)output->workspace, output->workspace->currentLayer, currentWorkspacer->windowsCount);
-
-	for(size_t i = 0; i < currentWorkspacer->windowsCount; i++) {
-		VtwmView* view = currentWorkspacer->windows[i]->view;
-
-		wlr_log(WLR_DEBUG, "HIDE: view=%p mapped=%d visible=%d tree=%p", (void*)view, view->mapped, view->visible, (void*)view->scene_tree);
-
-		view->visible = false;
-		if(view->mapped) { wlr_scene_node_set_enabled(&view->scene_tree->node, false); }
+	if(output->workspace == newWorkspace) {
+		SwitchToLayer(output, layer);
+		return;
 	}
 
-	output->workspace->output = NULL;
+	Workspace* oldWorkspace = output->workspace;
+	oldWorkspace->output = NULL;
+	WorkspaceApplyLayerVisibility(oldWorkspace);
+
 	output->workspace = newWorkspace;
+	newWorkspace->output = output;
+	newWorkspace->currentLayer = layer;
 
-	output->workspace->output = output;
-	output->workspace->currentLayer = layer;
+	WorkspaceApplyLayerVisibility(newWorkspace);
+	WorkspaceEnsureTTY(newWorkspace, true);
+	WorkspaceFocusLayer(newWorkspace, layer);
+	WorkspacePrewarmNext(newWorkspace);
 
-	WorkspaceLayer* newWorkspacer = &newWorkspace->layers[layer];
-
-	for(size_t i = 0; i < newWorkspacer->windowsCount; i++) {
-		VtwmView* view = newWorkspacer->windows[i]->view;
-
-		view->visible = true;
-		if(view->mapped) { wlr_scene_node_set_enabled(&view->scene_tree->node, true); }
-	}
-
-	VtwmSeat* seat = SeatGetActive();
-	VtwmView* focus = NULL;
-
-	for(size_t i = newWorkspacer->windowsCount; i > 0; i--) {
-		VtwmView* view = newWorkspacer->windows[i - 1]->view;
-
-		if(view && view->mapped) {
-			focus = view;
-			break;
-		}
-	}
-
-	if(seat) {
-		SeatFocusView(seat, focus);
-	}
-
-	wlr_log(WLR_DEBUG, "NEW workspace: %p, layer: %d, windows: %zu", (void*)newWorkspace, layer, newWorkspacer->windowsCount);
+	wlr_log(WLR_DEBUG, "NEW workspace: %p, layer: %d", (void*)newWorkspace, layer);
 }

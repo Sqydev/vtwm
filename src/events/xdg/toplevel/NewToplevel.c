@@ -38,19 +38,47 @@
 #include "../../../coredata.h"
 #include "../../../utils/utils.h"
 #include "../../../wm/wm.h"
+#include "../../../wm/workspace/workspace.h"
+#include "../../output/output.h"
 
 #include <stdlib.h>
 
+#include <sys/types.h>
 #include <wlr/util/log.h>
 
 void NewToplevel(struct wl_listener* listener, void* data) {
 	(void)listener;
 	struct wlr_xdg_toplevel* xdg_toplevel = data;
 
+	pid_t pid = 0;
+	if(xdg_toplevel->base->client && xdg_toplevel->base->client->client) {
+		wl_client_get_credentials(xdg_toplevel->base->client->client, &pid, NULL, NULL);
+	}
+
+	Workspace* ttyWorkspace = WorkspaceClaimTTY(pid);
+	Workspace* workspace = ttyWorkspace;
+	LayerName layer = LAYER_TTY;
+
+	if(!workspace) {
+		VtwmOutput* output = OutputGetFocused();
+		if(!output || !output->workspace) {
+			wlr_log(WLR_ERROR, "Cannot create a toplevel without an output\n");
+			return;
+		}
+
+		workspace = output->workspace;
+		layer = workspace->currentLayer;
+	}
+
+	if(!workspace || layer >= LAYER_COUNT || !COMP.layerTrees[layer]) {
+		wlr_log(WLR_ERROR, "Cannot create a toplevel without a workspace layer\n");
+		return;
+	}
+
 	VtwmView* view = IFNULLPANIC(calloc(1, sizeof(*view)), 1, "Failed to allocate view\n");
 
 	view->xdg_toplevel = xdg_toplevel;
-	view->scene_tree = IFNULLPANIC(wlr_scene_xdg_surface_create(&COMP.scene->tree, xdg_toplevel->base), 1, "Failed to create scene tree\n");
+	view->scene_tree = IFNULLPANIC(wlr_scene_xdg_surface_create(COMP.layerTrees[layer], xdg_toplevel->base), 1, "Failed to create scene tree\n");
 
 	view->scene_tree->node.data = view;
 	xdg_toplevel->base->data = view->scene_tree;
@@ -75,8 +103,13 @@ void NewToplevel(struct wl_listener* listener, void* data) {
 
 	wlr_log(WLR_DEBUG, "New toplevel: %s (%s)", xdg_toplevel->title ? xdg_toplevel->title : "?", xdg_toplevel->app_id ? xdg_toplevel->app_id : "?");
 
-	// SUPERSCARYHARDCODEDFORTESTINGFORNOWDONTFORGET: HERE REPLACE IT WITH CURRENT OUTPUT AND NOT THE FIRST ONE
-	VtwmOutput* output = wl_container_of(COMP.outputs.next, output, link);
-	AddWindow(output->workspace, view, LAYER_TILING);
-	wlr_log(WLR_DEBUG, "Window registered successfully in workspace");
+	AddWindow(workspace, view, layer);
+
+	if(ttyWorkspace) {
+		WorkspaceTTYClaimed(ttyWorkspace, view);
+	}
+
+	WorkspaceApplyViewVisibility(workspace, view);
+
+	wlr_log(WLR_DEBUG, "Window registered successfully in workspace layer %d", layer);
 }

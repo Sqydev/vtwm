@@ -36,12 +36,17 @@
 #include "../xdg.h"
 
 #include "../../../coredata.h"
+#include "../../../wm/workspace/workspace.h"
 
 void UnmapToplevel(struct wl_listener* listener, void* data) {
 	(void)data;
 	VtwmView* view = wl_container_of(listener, view, unmap);
 	view->mapped = false;
 	view->visible = false;
+
+	if(view->window) {
+		WorkspaceApplyViewVisibility(view->window->workspace, view);
+	}
 
 	// An unmapped window can't keep the keyboard focus
 	SeatForgetView(view);

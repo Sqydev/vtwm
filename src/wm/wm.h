@@ -36,7 +36,9 @@
 #ifndef VTWM_WINDOW_MANAGER_H
 #define VTWM_WINDOW_MANAGER_H
 
+#include <stdbool.h>
 #include <stddef.h>
+#include <sys/types.h>
 
 #include <wayland-server-core.h>
 
@@ -73,6 +75,9 @@ typedef struct Workspace {
 	VtwmOutput* output;
 
 	LayerName currentLayer;
+
+	VtwmView* ttyTerminal;
+	bool ttySpawnPending;
 } Workspace;
 
 typedef struct WorkspaceDir {
@@ -82,11 +87,20 @@ typedef struct WorkspaceDir {
 	size_t workspaceIdx;
 } WorkspaceDir;
 
+typedef struct TtySpawn {
+	struct wl_list link;
+	struct Workspace* workspace;
+	pid_t pid;
+	bool allowFallback;
+} TtySpawn;
+
 typedef struct WindowManager {
 	WorkspaceDir** wdirs;
 
 	size_t wdirsCount;
 	size_t wdirIdx;
+
+	struct wl_list ttySpawns;
 } WindowManager;
 
 void InitWM(void);

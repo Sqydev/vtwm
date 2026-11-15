@@ -36,20 +36,21 @@
 #include "../xdg.h"
 
 #include "../../../coredata.h"
+#include "../../output/output.h"
 
 void CommitToplevel(struct wl_listener* listener, void* data) {
 	(void)data;
 	VtwmView* view = wl_container_of(listener, view, commit);
 
 	if(view->xdg_toplevel->base->initial_commit) {
-		struct wlr_output* wlr_output = NULL;
-		if(INPUT.cursor) {
-		    wlr_output = wlr_output_layout_output_at(COMP.output_layout, INPUT.cursor->x, INPUT.cursor->y);
-		}
+		VtwmOutput* targetOutput = view->window && view->window->workspace ? view->window->workspace->output : NULL;
+		struct wlr_output* wlr_output = targetOutput ? targetOutput->wlr_output : NULL;
 
-		if(!wlr_output && !wl_list_empty(&COMP.outputs)) {
-			VtwmOutput* out = wl_container_of(COMP.outputs.next, out, link);
-			wlr_output = out->wlr_output;
+		if(!wlr_output) {
+			VtwmOutput* focusedOutput = OutputGetFocused();
+			if(focusedOutput) {
+				wlr_output = focusedOutput->wlr_output;
+			}
 		}
 
 		if(wlr_output) {

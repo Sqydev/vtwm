@@ -46,9 +46,17 @@
 
 void InitWM(void) {
 	memset(&WM, 0, sizeof(WindowManager));
+	wl_list_init(&WM.ttySpawns);
 }
 
 void FinishWM(void) {
+	TtySpawn* ttySpawn = NULL;
+	TtySpawn* ttySpawnTmp = NULL;
+	wl_list_for_each_safe(ttySpawn, ttySpawnTmp, &WM.ttySpawns, link) {
+		wl_list_remove(&ttySpawn->link);
+		free(ttySpawn);
+	}
+
 	CloseWdirs();
 
 	memset(&WM, 0, sizeof(WindowManager));

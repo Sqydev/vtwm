@@ -42,17 +42,23 @@
 #include <string.h>
 #include <unistd.h>
 
-void Spawn(char** arguments) {
+pid_t Spawn(char** arguments) {
 	if(!arguments || !arguments[0]) {
-		return;
+		return -1;
 	}
 
 	pid_t pid = fork();
+
+	if(pid < 0) {
+		return -1;
+	}
 
 	if(pid == 0) {
 		execvp(arguments[0], arguments);
 		_exit(1);
 	}
+
+	return pid;
 }
 
 void SpawnCommand(const char* command) {

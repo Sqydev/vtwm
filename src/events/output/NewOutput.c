@@ -39,6 +39,7 @@
 #include "../../compositor/compositor.h"
 #include "../../utils/utils.h"
 #include "../../wm/wdir/wdir.h"
+#include "../../wm/workspace/workspace.h"
 
 #include <stdlib.h>
 
@@ -210,4 +211,7 @@ void NewOutput(struct wl_listener* listener, void* data) {
 
 	// // SUPERSCARYHARDCODEDFORTESTINGFORNOWDONTFORGET: FOR TESTING IT WILL CREATE NEW WDIR NO MATTER WHAT! Do it so it complys with the config of doom and despear
 	NewWdir(output);
+
+	WorkspaceEnsureTTY(output->workspace, true);
+	WorkspacePrewarmNext(output->workspace);
 }

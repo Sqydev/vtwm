@@ -41,16 +41,31 @@
 
 #include <wlr/types/wlr_output_layout.h>
 
+VtwmOutput* OutputAt(double x, double y) {
+	if(!COMP.output_layout) {
+		return NULL;
+	}
+
+	struct wlr_output* wlr_output = wlr_output_layout_output_at(COMP.output_layout, x, y);
+	if(!wlr_output) {
+		return NULL;
+	}
+
+	VtwmOutput* output = NULL;
+	wl_list_for_each(output, &COMP.outputs, link) {
+		if(output->wlr_output == wlr_output) {
+			return output;
+		}
+	}
+
+	return NULL;
+}
+
 VtwmOutput* OutputGetActive(void) {
 	if(INPUT.cursor && COMP.output_layout) {
-		struct wlr_output* wlr_output = wlr_output_layout_output_at(COMP.output_layout, INPUT.cursor->x, INPUT.cursor->y);
-		if(wlr_output) {
-			VtwmOutput* output = NULL;
-			wl_list_for_each(output, &COMP.outputs, link) {
-				if(output->wlr_output == wlr_output) {
-					return output;
-				}
-			}
+		VtwmOutput* output = OutputAt(INPUT.cursor->x, INPUT.cursor->y);
+		if(output) {
+			return output;
 		}
 	}
 
@@ -60,4 +75,24 @@ VtwmOutput* OutputGetActive(void) {
 	}
 
 	return NULL;
+}
+
+VtwmOutput* OutputGetFocused(void) {
+	VtwmSeat* seat = SeatGetActive();
+	Window* window = seat && seat->focused_view ? seat->focused_view->window : NULL;
+
+	if(window && window->workspace) {
+		if(window->workspace->output) {
+			return window->workspace->output;
+		}
+
+		VtwmOutput* candidate = NULL;
+		wl_list_for_each(candidate, &COMP.outputs, link) {
+			if(candidate->workspace == window->workspace) {
+				return candidate;
+			}
+		}
+	}
+
+	return OutputGetActive();
 }

@@ -64,6 +64,10 @@ Keybinds {
 	SUPER && (1, ..., 9) -> gotoWorkspace(argv[1] - 1);
 	SUPER && CTRL && (1...9) -> gotoWorkspaceDir(argv[2] - 1);
 
+	SUPER && W -> switchLayer(TTY);
+	SUPER && E -> switchLayer(TILING);
+	SUPER && R -> switchLayer(SUPER);
+
 	SUPER && Escape -> quit();
 	SUPER && Return -> spawn(Terminal.command);
 };

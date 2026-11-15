@@ -40,6 +40,7 @@
 #include "../../xdg/xdg.h"
 #include "../../../wm/workspace/workspace.h"
 #include "../../output/output.h"
+#include "../../../wm/wm.h"
 
 #include <ctype.h>
 #include <limits.h>
@@ -50,6 +51,47 @@
 
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/log.h>
+
+static bool KeybindParseLayer(const char* action, const char* open, LayerName* layer) {
+	if(!open) {
+		return false;
+	}
+
+	const char* close = strrchr(action, ')');
+	if(!close || close <= open) {
+		return false;
+	}
+
+	const char* start = open + 1;
+	const char* end = close;
+
+	while(start < end && isspace((unsigned char)*start)) {
+		start++;
+	}
+
+	while(end > start && isspace((unsigned char)end[-1])) {
+		end--;
+	}
+
+	size_t length = (size_t)(end - start);
+
+	if(length == 3 && strncasecmp(start, "TTY", length) == 0) {
+		*layer = LAYER_TTY;
+		return true;
+	}
+
+	if(length == 6 && strncasecmp(start, "TILING", length) == 0) {
+		*layer = LAYER_TILING;
+		return true;
+	}
+
+	if(length == 5 && strncasecmp(start, "SUPER", length) == 0) {
+		*layer = LAYER_SUPER;
+		return true;
+	}
+
+	return false;
+}
 
 static bool KeybindMatchesKey(const char* binding, const char* keyName, int* rangeValue) {
 	if(binding[0] != '(') {
@@ -134,7 +176,7 @@ bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers) {
 		}
 
 		if(nameLength == 12 && strncasecmp(action, "closeFocused", nameLength) == 0) {
-			if(seat && seat->focused_view && seat->focused_view->xdg_toplevel) {
+			if(seat && seat->focused_view && seat->focused_view->xdg_toplevel && !WorkspaceIsTTYView(seat->focused_view)) {
 				wlr_xdg_toplevel_send_close(seat->focused_view->xdg_toplevel);
 			}
 
@@ -173,6 +215,54 @@ bool KeybindHandle(VtwmSeat* seat, xkb_keysym_t sym, uint32_t modifiers) {
 			else {
 				SpawnCommandRange(argumentStart, argumentLength);
 			}
+
+			return true;
+		}
+
+		if(nameLength == 11 && strncasecmp(action, "switchLayer", nameLength) == 0) {
+			LayerName layer = LAYER_TILING;
+
+			if(!KeybindParseLayer(action, open, &layer)) {
+				wlr_log(WLR_ERROR, "Invalid switchLayer action: %s\n", action);
+				return true;
+			}
+
+			VtwmOutput* output = OutputGetFocused();
+			if(!output || !output->workspace) {
+				wlr_log(WLR_ERROR, "Cannot switch layer: no output available\n");
+				return true;
+			}
+
+			SwitchToLayer(output, layer);
+
+			return true;
+		}
+
+		if(nameLength == 9 && strncasecmp(action, "nextLayer", nameLength) == 0) {
+			VtwmOutput* output = OutputGetFocused();
+			if(!output || !output->workspace) {
+				wlr_log(WLR_ERROR, "Cannot switch layer: no output available\n");
+				return true;
+			}
+
+			LayerName layer = (output->workspace->currentLayer + 1) % LAYER_COUNT;
+
+			SwitchToLayer(output, layer);
+
+			return true;
+		}
+
+			if(nameLength == 13 && strncasecmp(action, "previousLayer", nameLength) == 0) {
+			VtwmOutput* output = OutputGetFocused();
+			if(!output || !output->workspace) {
+				wlr_log(WLR_ERROR, "Cannot switch layer: no output available\n");
+				return true;
+			}
+
+			LayerName layer = (output->workspace->currentLayer - 1) % LAYER_COUNT;
+			if(layer < 0) { layer = 0; }
+
+			SwitchToLayer(output, layer);
 
 			return true;
 		}

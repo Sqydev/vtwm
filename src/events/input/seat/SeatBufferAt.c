@@ -37,6 +37,7 @@
 
 #include "../../../coredata.h"
 #include "../../../compositor/compositor.h"
+#include "../../output/output.h"
 
 #include <wlr/types/wlr_scene.h>
 
@@ -46,10 +47,20 @@ struct wlr_scene_node* SeatBufferAt(double x, double y, double* sx, double* sy) 
 		return NULL;
 	}
 
+	VtwmOutput* output = OutputAt(x, y);
+	if(!output || !output->workspace || output->workspace->currentLayer >= LAYER_COUNT) {
+		return NULL;
+	}
+
+	struct wlr_scene_tree* layerTree = COMP.layerTrees[output->workspace->currentLayer];
+	if(!layerTree) {
+		return NULL;
+	}
+
 	double local_x = 0.0;
 	double local_y = 0.0;
 
-	struct wlr_scene_node* node = wlr_scene_node_at(&COMP.scene->tree.node, x, y, &local_x, &local_y);
+	struct wlr_scene_node* node = wlr_scene_node_at(&layerTree->node, x, y, &local_x, &local_y);
 	if(!node || node->type != WLR_SCENE_NODE_BUFFER) {
 		return NULL;
 	}

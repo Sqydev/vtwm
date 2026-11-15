@@ -46,6 +46,17 @@ void CloseWorkspace(Workspace* workspace);
 
 bool WorkspaceGetLocation(Workspace* workspace, size_t* wdirIdx, size_t* workspaceIdx);
 
+void WorkspaceApplyViewVisibility(Workspace* workspace, struct VtwmView* view);
+void WorkspaceApplyLayerVisibility(Workspace* workspace);
+
+Workspace* WorkspaceClaimTTY(pid_t pid);
+void WorkspaceTTYClaimed(Workspace* workspace, struct VtwmView* view);
+void WorkspaceTTYClosed(Workspace* workspace, struct VtwmView* view);
+bool WorkspaceIsTTYView(const struct VtwmView* view);
+void WorkspaceEnsureTTY(Workspace* workspace, bool allowFallback);
+void WorkspacePrewarmNext(Workspace* workspace);
+
+void SwitchToLayer(VtwmOutput* output, LayerName layer);
 void SwitchToWorkspace(VtwmOutput* output, size_t workspace, size_t wdir, LayerName layer);
 
 #endif

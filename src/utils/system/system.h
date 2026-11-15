@@ -38,6 +38,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <sys/types.h>
 
 bool MakeDirP(const char* path);
 bool MakeDir(const char* path);
@@ -51,7 +52,7 @@ void FullWrite(int fd, const char* buffer, size_t size);
 
 char* GetRandomFile(const char* dirPath);
 
-void Spawn(char** arguments);
+pid_t Spawn(char** arguments);
 void SpawnCommand(const char* command);
 void SpawnCommandRange(const char* start, size_t length);
 
