@@ -33,10 +33,18 @@
 *    source or binary distribution.
 */
 
-#include <stdio.h>
+#include "coredata.h"
+#include "opts/opts.h"
+#include "utils/errors/errors.h"
+#include "utils/close/close.h"
 
-int main(void) {
-	printf("Hello World!\n");
+Coredata DATA;
 
-	return 0;
+int main(int argc, char** argv) {
+	InitPanic();
+
+	clock_gettime(CLOCK_MONOTONIC, &DATA.startTime);
+	HandleOpts(&argc, &argv);
+
+	return Finish();
 }

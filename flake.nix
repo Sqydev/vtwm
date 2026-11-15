@@ -1,61 +1,70 @@
 {
   description = "vtwm";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  };
+	inputs = {
+		nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+	};
 
-  outputs = { nixpkgs, ... }:
-    let
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-      ];
+	outputs = { self, nixpkgs }:
+		let
+			systems = [ "x86_64-linux" "aarch64-linux" ];
 
-      forAllSystems = nixpkgs.lib.genAttrs systems;
-    in
-    {
-      devShells = forAllSystems (system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
+			forAllSystems = nixpkgs.lib.genAttrs systems;
 
-          libinputNoUdev = pkgs.libinput.override {
-            udev = pkgs.libudev-zero;
-            wacomSupport = false;
-          };
+			pkgsFor = system: nixpkgs.legacyPackages.${system};
+		in
+		{
+			devShells = forAllSystems (system:
+				let
+					pkgs = pkgsFor system;
 
-          wlrootsNoUdev = pkgs.wlroots.override {
-            libinput = libinputNoUdev;
-          };
-        in
-        {
-          default = pkgs.mkShell {
-            packages = with pkgs; [
-              clang-tools
-              fish
-              gcc
-              just
-              libinputNoUdev
-              libudev-zero
-              libxkbcommon
-              meson
-              ninja
-              pixman
-              pkg-config
-              wayland
-              wayland-protocols
-              wlrootsNoUdev
-            ];
+					libinputZ = pkgs.libinput.override {
+						udev = pkgs.libudev-zero;
+						wacomSupport = false;
+					};
 
-            shellHook = ''
-              if [[ $- == *i* ]]; then
-                exec ${pkgs.fish}/bin/fish
-              fi
-            '';
-          };
-        });
+					wlrootsZ = pkgs.wlroots.override {
+						libinput = libinputZ;
+					};
 
-      formatter = forAllSystems (system:
-        nixpkgs.legacyPackages.${system}.nixpkgs-fmt);
-    };
+					wlrootsInclude = "${wlrootsZ}/include/wlroots-${pkgs.lib.concatStringsSep "." (pkgs.lib.take 2 (pkgs.lib.splitString "." wlrootsZ.version))}";
+
+					envIncludes = builtins.concatStringsSep ":" [
+						"${pkgs.wayland.dev}/include"
+						wlrootsInclude
+						"${pkgs.libxkbcommon.dev}/include"
+						"${pkgs.pixman}/include/pixman-1"
+						"${libinputZ.dev}/include"
+						"${pkgs.glibc.dev}/include"
+						"${pkgs.wayland-protocols}/include"
+						"${pkgs.libudev-zero}/include"
+					];
+				in
+				{
+					default = pkgs.mkShell {
+						packages = with pkgs; [
+							gcc
+							clang-tools
+              				meson
+							ninja
+							just
+							pkg-config
+							wayland
+							wayland-protocols
+							wlrootsZ
+							libxkbcommon
+							pixman
+							libinputZ
+							fish
+							libudev-zero
+						];
+
+						shellHook = "exec fish";
+
+						C_INCLUDE_PATH = envIncludes;
+						CPLUS_INCLUDE_PATH = envIncludes;
+						CPATH = envIncludes;
+					};
+				});
+		};
 }
