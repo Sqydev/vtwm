@@ -45,5 +45,8 @@
 #ifndef STB_IMAGE_IMPLEMENTATION
 	#define STB_IMAGE_IMPLEMENTATION
 #endif
+#ifndef STB_DS_IMPLEMENTATION
+	#define STB_DS_IMPLEMENTATION
+#endif
 
 #endif

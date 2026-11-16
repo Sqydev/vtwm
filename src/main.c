@@ -37,14 +37,28 @@
 #include "opts/opts.h"
 #include "utils/errors/errors.h"
 #include "utils/close/close.h"
+#include "ipc/ctl/vtwmctl.h"
+
+#include <string.h>
+#include <wlr/util/log.h>
 
 Coredata DATA;
 
 int main(int argc, char** argv) {
 	InitPanic();
-
 	clock_gettime(CLOCK_MONOTONIC, &DATA.startTime);
+
+	if(argc > 1 && strcmp(argv[1], "ctl") == 0) {
+		return RunCtl(argc, argv);
+	}
+
 	HandleOpts(&argc, &argv);
+	if(!DATA.debug) {
+		wlr_log_init(WLR_INFO, NULL);
+	}
+	else {
+		wlr_log_init(WLR_DEBUG, NULL);
+	}
 
 	return Finish();
 }

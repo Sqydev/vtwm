@@ -36,15 +36,21 @@
 #ifndef VTWM_COREDATA_H
 #define VTWM_COREDATA_H
 
+#include "ipc/ipc.h"
+
 #include <stdbool.h>
 #include <time.h>
 #include <wayland-server-core.h>
+
+#define IPC DATA.Ipc
 
 typedef struct Coredata {
 	bool debug;
 	int exitCode;
 	struct timespec startTime;
 	struct wl_event_source* exitSignalSources[3];
+
+	Ipc Ipc;
 } Coredata;
 
 extern Coredata DATA;
