@@ -12,19 +12,8 @@ project(
 
 cc = meson.get_compiler('c')
 
-wlroots_dep = dependency('wlroots-0.20', required: false)
-if not wlroots_dep.found()
-	wlroots_dep = dependency('wlroots-0.19', required: false)
-endif
-if not wlroots_dep.found()
-	wlroots_dep = dependency('wlroots', required: false)
-endif
-if not wlroots_dep.found()
-	error('wlroots not found in the pkg-config search path')
-endif
-
 deps = [
-	wlroots_dep,
+	dependency('wlroots-0.20'),
 	dependency('wayland-server'),
 	dependency('wayland-client'),
 	dependency('xkbcommon'),
